@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProBot Chat UI</title>
+  <link rel="stylesheet" href="css/advisor.css">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="sidebar">
+  <div class="nav-section">
+    <h3>New Chat</h3> <!-- Now clickable -->
+    <a href="#" class="nav-item">History</a>
+    <a href="ai-detection.html" class="nav-item">AI-Verify</a>
+  </div>
+
+  <div class="upgrade-card">
+    <h3>Upgrade to Pro</h3>
+    <p>Unlock advanced features and priority support.</p>
+    <button>Go Pro</button>
+  </div>
+
+  <div class="ai-status">
+    <p>AI Advisor</p>
+    <span style="color: #4f46e5;">Active</span>
+  </div>
+</div>
+
+<div class="chat-container">
+  <div class="chat-messages"></div>
+
+  <div class="chat-input">
+    <input type="text" placeholder="Type your message...">
+    <button>Send ↑</button>
+  </div>
+
+</div>
+<script src="js/advisor.js"></script>
+</body>
+</html>

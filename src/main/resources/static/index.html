@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIVerify - Quick Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/sign-up.css">
+</head>
+<body>
+<header class="header">
+    <div class="header-content">
+        <a href="#" class="logo">
+            <img src="img/logo.jpg" alt="AIVerify Logo">
+            <span class="logo-text">AIVerify</span>
+        </a>
+    </div>
+</header>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h2>Quick Access</h2>
+            <p>Enter your username to continue</p>
+        </div>
+        <div class="username-input">
+            <i class="fas fa-user"></i>
+            <input type="text" id="usernameInput" placeholder="Enter username" autofocus>
+        </div>
+        <a href="ai-detection.html" id="continueLink">
+            <button class="continue-btn">
+                Continue <i class="fas fa-arrow-right"></i>
+            </button>
+        </a>
+    </div>
+</div>
+<script>
+    document.getElementById('continueLink').addEventListener('click', function(event) {
+        event.preventDefault();
+        const username = document.getElementById('usernameInput').value.trim();
+        if (!username) {
+            alert("Please enter your username.");
+            return;
+        }
+        // Save username in localStorage
+        localStorage.setItem('username', username);
+        // Redirect to ai-detection.html
+        window.location.href = 'ai-detection.html';
+    });
+</script>
+</body>
+</html>
