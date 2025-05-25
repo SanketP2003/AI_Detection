@@ -5,7 +5,7 @@ FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 
 # Add the jar file to the container
-COPY target/ai_verify-*.jar app.jar
+COPY target/ai_verify-0.0.1-SNAPSHOT.jar app.jar
 
 # Expose the port your app runs on
 EXPOSE 8080
