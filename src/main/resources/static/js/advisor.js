@@ -1,14 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
     const chatMessages = document.querySelector('.chat-messages');
     const chatInput = document.querySelector('.chat-input input');
     const sendButton = document.querySelector('.chat-input button');
+    const newChatBtn = document.querySelector('.nav-section h3'); // "New Chat"
+    const historyBtn = document.querySelector('.nav-item[href="#"]'); // "History"
 
+    let currentChatId = null;
+    let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+    // --- Helper Functions ---
+
+    // Create chat message element
     function createMessageElement(text, isUser = false) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${isUser ? 'user-message' : ''}`;
 
         const timestamp = new Date().toLocaleTimeString([], {
-            hour: '2-digit', minute: '2-digit'
+            hour: '2-digit',
+            minute: '2-digit'
         });
 
         messageDiv.innerHTML = `
@@ -18,15 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return messageDiv;
     }
 
+    // Send chat message
     async function sendMessage() {
         const message = chatInput.value.trim();
         if (!message) return;
 
-        // Add user message
+        // Display user message
         chatMessages.appendChild(createMessageElement(message, true));
         chatInput.value = '';
 
-        // Add loading indicator
+        // Show loading
         const loading = createMessageElement('Thinking...');
         chatMessages.appendChild(loading);
 
@@ -50,26 +61,57 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.appendChild(createMessageElement('Connection error. Please try again.'));
         }
 
-        // Scroll to bottom
+        // Auto-scroll
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // Event Listeners
-    sendButton.addEventListener('click', sendMessage);
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') sendMessage();
-    });
-});
+    // Create a new chat session
+    function createNewChat() {
+        if (currentChatId && chatMessages.children.length > 0) {
+            const existingChat = chatHistory.find(c => c.id === currentChatId);
+            if (!existingChat) {
+                chatHistory.push({
+                    id: currentChatId,
+                    title: chatMessages.children[0].textContent.slice(0, 30) + '...',
+                    timestamp: new Date().toISOString(),
+                    messages: Array.from(chatMessages.children).map(msg => msg.outerHTML)
+                });
+            }
+        }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const chatMessages = document.querySelector('.chat-messages');
-    const chatInput = document.querySelector('.chat-input input');
-    const sendButton = document.querySelector('.chat-input button');
-    const newChatBtn = document.querySelector('.nav-section h3'); // New Chat button
-    const historyBtn = document.querySelector('.nav-item[href="#"]'); // History button
-    let currentChatId = null;
+        currentChatId = Date.now().toString();
+        chatMessages.innerHTML = '';
+        chatInput.value = '';
+        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        updateHistoryList();
+    }
 
-    // History Modal Elements
+    // Update history modal list
+    function updateHistoryList() {
+        const historyList = historyModal.querySelector('.history-list');
+        historyList.innerHTML = chatHistory.map(chat => `
+            <div class="history-item" data-chatid="${chat.id}">
+                <div class="history-item-header">
+                    <span>${chat.title}</span>
+                    <small>${new Date(chat.timestamp).toLocaleDateString()}</small>
+                </div>
+                <button class="delete-history">&times;</button>
+            </div>
+        `).join('');
+    }
+
+    // Load a selected chat from history
+    function loadChat(chatId) {
+        const chat = chatHistory.find(c => c.id === chatId);
+        if (chat) {
+            currentChatId = chatId;
+            chatMessages.innerHTML = chat.messages.join('');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    // --- History Modal Setup ---
+
     const historyModal = document.createElement('div');
     historyModal.className = 'history-modal';
     historyModal.innerHTML = `
@@ -83,76 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     document.body.appendChild(historyModal);
 
-    // Load existing history
-    let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+    // --- Event Listeners ---
 
-    // Create new chat
-    function createNewChat() {
-        // Save current chat if exists
-        if(currentChatId && chatMessages.children.length > 0) {
-            const existingChat = chatHistory.find(c => c.id === currentChatId);
-            if(!existingChat) {
-                chatHistory.push({
-                    id: currentChatId,
-                    title: chatMessages.children[0].textContent.slice(0, 30) + '...',
-                    timestamp: new Date().toISOString(),
-                    messages: Array.from(chatMessages.children).map(msg => msg.outerHTML)
-                });
-            }
-        }
-
-        // Create new chat
-        currentChatId = Date.now().toString();
-        chatMessages.innerHTML = '';
-        chatInput.value = '';
-        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
-        updateHistoryList();
-    }
-
-    // Update history list UI
-    function updateHistoryList() {
-        const historyList = historyModal.querySelector('.history-list');
-        historyList.innerHTML = chatHistory
-            .map(chat => `
-                <div class="history-item" data-chatid="${chat.id}">
-                    <div class="history-item-header">
-                        <span>${chat.title}</span>
-                        <small>${new Date(chat.timestamp).toLocaleDateString()}</small>
-                    </div>
-                    <button class="delete-history">&times;</button>
-                </div>
-            `).join('');
-    }
-
-    // Load chat from history
-    function loadChat(chatId) {
-        const chat = chatHistory.find(c => c.id === chatId);
-        if(chat) {
-            currentChatId = chatId;
-            chatMessages.innerHTML = chat.messages.join('');
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    }
-
-    // Message creation (same as before)
-    function createMessageElement(text, isUser = false) {
-        // ... (keep previous implementation)
-    }
-
-    // Modified sendMessage function
-    async function sendMessage() {
-        // ... (keep previous implementation)
-        // Add auto-save after successful response
-        if(!currentChatId) createNewChat();
-        // ... rest of implementation
-    }
-
-    // Event Listeners
-    newChatBtn.addEventListener('click', () => {
-        createNewChat();
+    sendButton.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') sendMessage();
     });
 
-    historyBtn.addEventListener('click', (e) => {
+    newChatBtn.addEventListener('click', createNewChat);
+
+    historyBtn.addEventListener('click', e => {
         e.preventDefault();
         historyModal.style.display = 'block';
         updateHistoryList();
@@ -162,12 +144,12 @@ document.addEventListener('DOMContentLoaded', () => {
         historyModal.style.display = 'none';
     });
 
-    historyModal.addEventListener('click', (e) => {
-        if(e.target.classList.contains('history-item')) {
+    historyModal.addEventListener('click', e => {
+        if (e.target.classList.contains('history-item')) {
             loadChat(e.target.dataset.chatid);
             historyModal.style.display = 'none';
         }
-        if(e.target.classList.contains('delete-history')) {
+        if (e.target.classList.contains('delete-history')) {
             const chatId = e.target.parentElement.dataset.chatid;
             chatHistory = chatHistory.filter(c => c.id !== chatId);
             localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
@@ -175,6 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Initialize first chat
+    // --- Initialize ---
     createNewChat();
 });
