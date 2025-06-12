@@ -3,19 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ProBot Chat UI</title>
-  <link rel="stylesheet" href="css/advisor.css">
+  <title>Pro AI Advisor</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="css/advisor.css">
 </head>
 <body>
-<button class="menu-toggle" id="menuToggleBtn">&#9776;</button>
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="mobile-menu-toggle"><i class="fas fa-bars"></i></div>
 
 <div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <i class="fas fa-robot" style="color: white;"></i>
+    </div>
+    <h2>AI - Advisor</h2>
+  </div>
+
   <div class="nav-section">
-    <h3>New Chat</h3> <!-- Now clickable -->
-    <a href="#" class="nav-item">History</a>
-    <a href="ai-detection.html" class="nav-item">AI-Verify</a>
+    <h3><i class="fas fa-plus"></i> New Chat</h3>
+    <a href="#" class="nav-item"><i class="fas fa-history"></i> History</a>
+    <a href="ai-detection.html" class="nav-item"><i class="fas fa-shield-alt"></i> AI-Verify</a>
   </div>
 
   <div class="upgrade-card">
@@ -26,36 +33,121 @@
 
   <div class="ai-status">
     <p>AI Advisor</p>
-    <span style="color: #4f46e5;">Active</span>
+    <div class="status-indicator">
+      <div class="status-dot"></div>
+      <span>Active</span>
+    </div>
   </div>
 </div>
 
 <div class="chat-container">
-  <div class="chat-messages"></div>
-
-  <div class="chat-input">
-    <input type="text" placeholder="Type your message...">
-    <button>Send ↑</button>
+  <div class="chat-header">
+    <div class="chat-title">New Conversation</div>
+    <div class="chat-actions">
+      <button><i class="fas fa-sync-alt"></i></button>
+      <button><i class="fas fa-trash-alt"></i></button>
+    </div>
   </div>
 
+  <div class="chat-messages">
+    <div class="message bot-message">
+      <div class="message-header">
+        <div class="avatar bot-avatar">AI</div>
+        <div class="sender">ProBot Advisor</div>
+      </div>
+      <div class="message-content">
+        <p>Hello! I'm your AI assistant. How can I help you today?</p>
+        <p>Here are some things I can assist with:</p>
+        <ul>
+          <li>Answering questions on various topics</li>
+          <li>Providing explanations and insights</li>
+          <li>Helping with coding problems</li>
+          <li>Generating content ideas</li>
+        </ul>
+      </div>
+      <div class="timestamp">10:24 AM</div>
+    </div>
+
+    <div class="message user-message">
+      <div class="message-header">
+        <div class="avatar user-avatar">U</div>
+        <div class="sender">You</div>
+      </div>
+      <div class="message-content">
+        <p>Can you explain how neural networks work?</p>
+      </div>
+      <div class="timestamp">10:25 AM</div>
+    </div>
+
+    <div class="message bot-message">
+      <div class="message-header">
+        <div class="avatar bot-avatar">AI</div>
+        <div class="sender">ProBot Advisor</div>
+      </div>
+      <div class="message-content">
+        <p>Neural networks are computing systems inspired by the human brain. They consist of layers of interconnected nodes (neurons) that process information. Here's a simple breakdown:</p>
+        <ol>
+          <li><strong>Input Layer:</strong> Receives the initial data</li>
+          <li><strong>Hidden Layers:</strong> Perform computations and feature extraction</li>
+          <li><strong>Output Layer:</strong> Produces the final result or prediction</li>
+        </ol>
+        <p>Each connection has a weight that adjusts during training to minimize errors. The network learns by adjusting these weights through backpropagation.</p>
+      </div>
+      <div class="timestamp">10:26 AM</div>
+    </div>
+
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  </div>
+
+  <div class="chat-input-container">
+    <div class="chat-input">
+      <input type="text" placeholder="Type your message..." id="messageInput">
+      <button id="sendButton">
+        <span>Send</span>
+        <i class="fas fa-arrow-up"></i>
+      </button>
+    </div>
+  </div>
 </div>
-<script>
-  const menuToggleBtn = document.getElementById("menuToggleBtn");
-  const sidebar = document.querySelector(".sidebar");
-  const overlay = document.getElementById("sidebarOverlay");
 
-  menuToggleBtn.addEventListener("click", () => {
-    sidebar.classList.add("active");
-    overlay.style.display = "block";
-    menuToggleBtn.style.display = "none"; // Hide the menu button
-  });
-
-  overlay.addEventListener("click", () => {
-    sidebar.classList.remove("active");
-    overlay.style.display = "none";
-    menuToggleBtn.style.display = "block"; // Show the menu button again
-  });
-</script>
+<div class="history-modal">
+  <div class="history-content">
+    <div class="history-header">
+      <h3>Chat History</h3>
+      <span class="close-history">&times;</span>
+    </div>
+    <div class="history-list">
+      <div class="history-item">
+        <div class="history-item-header">
+          <div class="history-item-title">Neural Networks Explanation</div>
+          <div class="history-item-date">Today</div>
+        </div>
+        <div class="history-item-preview">Can you explain how neural networks work?</div>
+        <button class="delete-history">&times;</button>
+      </div>
+      <div class="history-item">
+        <div class="history-item-header">
+          <div class="history-item-title">JavaScript Closure</div>
+          <div class="history-item-date">Yesterday</div>
+        </div>
+        <div class="history-item-preview">What is a closure in JavaScript?</div>
+        <button class="delete-history">&times;</button>
+      </div>
+      <div class="history-item">
+        <div class="history-item-header">
+          <div class="history-item-title">React vs Vue</div>
+          <div class="history-item-date">Jun 10</div>
+        </div>
+        <div class="history-item-preview">What are the differences between React and Vue?</div>
+        <button class="delete-history">&times;</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="js/advisor.js"></script>
 </body>
 </html>
