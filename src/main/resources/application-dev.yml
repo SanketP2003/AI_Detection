@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: ai_verify
+  mail:
+    web-application-type: reactive
+server:
+  port: 8080
+
+gemini:
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+    key: AIzaSyDPNleFI-UdiFlieUmu3ZWic5S-YFsHuXs
+  model: gpt-4o
+  temperature: 0.7
+  max-tokens: 600
