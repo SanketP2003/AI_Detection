@@ -8,8 +8,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -30,17 +32,27 @@ public class AiAdvisor {
         this.webClient = webClientBuilder.build();
     }
 
-    @PostMapping("/chat")
-    public Mono<ResponseEntity<Map<String, String>>> chatWithGemini(@RequestBody Map<String, String> request) {
-        String userPrompt = request.get("prompt");
+    public record Message(String role, String text) {}
 
-        Map<String, Object> payload = Map.of(
-                "contents", List.of(
-                        Map.of("role", "user", "parts", List.of(
-                                Map.of("text", SYSTEM_PROMPT + "\n\n" + userPrompt)
-                        ))
-                )
-        );
+    public record ChatRequest(String prompt, List<Message> history) {}
+
+    @PostMapping("/chat")
+    public Mono<ResponseEntity<Map<String, String>>> chatWithGemini(@RequestBody ChatRequest request) {
+        List<Map<String, Object>> contents = new ArrayList<>();
+        contents.add(Map.of("role", "user", "parts", List.of(Map.of("text", SYSTEM_PROMPT))));
+        contents.add(Map.of("role", "model", "parts", List.of(Map.of("text", "Understood. I'm ready to help."))));
+        if (request.history() != null) {
+            List<Map<String, Object>> historyContents = request.history().stream()
+                    .map(message -> Map.of(
+                            "role", message.role().equals("model") ? "model" : "user",
+                            "parts", List.of(Map.of("text", message.text()))
+                    ))
+                    .collect(Collectors.toList());
+            contents.addAll(historyContents);
+        }
+        contents.add(Map.of("role", "user", "parts", List.of(Map.of("text", request.prompt()))));
+
+        Map<String, Object> payload = Map.of("contents", contents);
 
         return webClient.post()
                 .uri(geminiApiUrl + "?key=" + geminiApiKey)
@@ -52,19 +64,18 @@ public class AiAdvisor {
                 .map(response -> {
                     try {
                         List<?> candidates = (List<?>) response.get("candidates");
-                        Map candidate = (Map) candidates.get(0);
-                        Map content = (Map) candidate.get("content");
-                        List parts = (List) content.get("parts");
-                        Map part = (Map) parts.get(0);
+                        Map<?,?> candidate = (Map<?,?>) candidates.get(0);
+                        Map<?,?> content = (Map<?,?>) candidate.get("content");
+                        List<?> parts = (List<?>) content.get("parts");
+                        Map<?,?> part = (Map<?,?>) parts.get(0);
                         String result = part.get("text").toString();
-                        return ResponseEntity.ok(Map.of("text", result)); // ✅ Return as JSON
+                        return ResponseEntity.ok(Map.of("text", result));
                     } catch (Exception ex) {
                         return ResponseEntity.internalServerError()
                                 .body(Map.of("error", "Invalid response structure from Gemini: " + ex.getMessage()));
                     }
                 })
                 .onErrorResume(e -> Mono.just(ResponseEntity.internalServerError()
-                        .body(Map.of("error", "Error: " + e.getMessage()))));
+                        .body(Map.of("error", "Error communicating with the AI service: " + e.getMessage()))));
     }
 }
-
