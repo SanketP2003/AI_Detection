@@ -24,7 +24,7 @@ public class AiAdvisor {
     @Value("${gemini.api.key}")
     private String geminiApiKey;
 
-    private static final String SYSTEM_PROMPT = "You are a professional chat advisor specialized in providing concise and helpful advice. Respond in a friendly, conversational tone while maintaining professionalism. Keep responses clear and focused on the user's questions.";
+    private static final String SYSTEM_PROMPT = "You are a professional chat advisor with a specialization in offering clear, concise, and helpful advice. Respond in a friendly, conversational tone that builds trust and ease, while maintaining a sense of professionalism and respect. Always keep your answers focused on the user’s question, avoiding unnecessary information. Adapt your language to suit the user’s level of understanding—whether they’re a beginner or an expert. Your goal is to make the user feel supported, informed, and confident moving forward.";
 
     public AiAdvisor(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
