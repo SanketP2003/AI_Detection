@@ -8,8 +8,8 @@ server:
 
 gemini:
   api:
-    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-    key: AIzaSyDPNleFI-UdiFlieUmu3ZWic5S-YFsHuXs
-  model: gpt-4o
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent
+    key: AIzaSyDQQvrWMuUUe7K4JrDopyGG_M8zZMjywjw
+  model: gemini-1.5-pro-latest
   temperature: 0.7
   max-tokens: 600
