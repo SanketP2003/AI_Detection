@@ -1,11 +1,11 @@
 /*
- * AI Insight - Complete Stylesheet
- * Version: 7.1 (Landing Page + Login Page - Corrected)
+ * AI Insight - Landing Page Stylesheet
+ * Version: 6.0 (Forced Fullscreen Hero)
  */
 
-/* ========================================= */
-/* Global Styles, Variables & Resets         */
-/* ========================================= */
+/* ------------------- */
+/* Variables & Resets  */
+/* ------------------- */
 :root {
     --color-gray-900: hsl(222, 24%, 9%);
     --color-gray-800: hsl(223, 23%, 14%);
@@ -32,14 +32,30 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.page-container {
+    width: 100%;
+    overflow-x: hidden;
 }
 
-/* ========================================= */
-/* Common Reusable Components                */
-/* ========================================= */
+
+/* ------------------- */
+/* Animations          */
+/* ------------------- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+/* ------------------- */
+/* Common Components   */
+/* ------------------- */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -87,19 +103,16 @@ body {
 }
 .logo svg { color: var(--color-indigo-500); }
 
-/* ========================================= */
-/* Landing Page Specific Styles              */
-/* ========================================= */
-.page-container {
-    width: 100%;
-    overflow-x: hidden;
-}
 
+/* ------------------- */
+/* Header              */
+/* ------------------- */
 .header {
     width: 100%;
     padding: 0.5rem 5rem;
     background-color: hsla(222, 24%, 9%, 0.8);
     backdrop-filter: blur(8px);
+    /* CHANGED: Use absolute positioning to overlay the header on the hero section */
     position: absolute;
     top: 0;
     left: 0;
@@ -129,11 +142,26 @@ body {
 }
 .nav-menu a:hover { color: var(--color-white); }
 
+
+/* ------------------- */
+/* Main Content        */
+/* ------------------- */
+.main-content {
+    /* No special styles needed */
+}
+
+/* ------------------- */
+/* Hero Section        */
+/* ------------------- */
 .hero-section {
     position: relative;
     width: 100%;
     padding: 3rem 1.25rem;
+
+    /* === KEY CHANGE === */
+    /* Force section to be exactly the height of the browser window */
     height: 100vh;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -142,28 +170,42 @@ body {
 }
 .hero-content {
     z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     max-width: 948px;
     width: 100%;
     animation: fadeIn 1s ease-out 0.2s forwards;
     opacity: 0;
 }
 .hero-content h1 {
+    /* === KEY CHANGE === */
+    /* Make font size responsive to the window width */
     font-size: clamp(2.5rem, 8vw, 6rem);
+
     font-weight: 700;
     line-height: 1.1;
     letter-spacing: -0.02em;
 }
 .hero-content p {
     margin-top: 2rem;
+
+    /* === KEY CHANGE === */
+    /* Make font size responsive to the window width */
     font-size: clamp(1rem, 2.5vw, 1.25rem);
+
     line-height: 1.7;
     color: var(--color-gray-300);
     max-width: 650px;
 }
 .hero-content .btn { margin-top: 2.5rem; }
 
-.features-section { padding: 6rem 1.25rem; }
-.features-container { max-width: 1200px; margin: 0 auto; }
+
+/* ------------------- */
+/* Features Section    */
+/* ------------------- */
+.features-section { padding: 6rem 0; background-color: transparent; }
+.features-container { padding: 0 6.25rem; width: 100%; }
 .features-header { text-align: center; max-width: 602px; margin: 0 auto; }
 .features-header h2 { font-size: 3rem; line-height: 1; }
 .features-header p {
@@ -199,7 +241,7 @@ body {
     font-size: 1rem;
     line-height: 1.5;
 }
-.feature-list { margin-top: 1.5rem; color: var(--color-gray-300); list-style: none; }
+.feature-list { margin-top: 1.5rem; color: var(--color-gray-300); }
 .feature-list li {
     display: flex;
     gap: 0.75rem;
@@ -208,7 +250,14 @@ body {
 }
 .feature-list svg { color: var(--color-indigo-500); }
 
-.cta-section { text-align: center; padding: 6rem 1.25rem; }
+
+/* ------------------- */
+/* Call to Action      */
+/* ------------------- */
+.cta-section {
+    text-align: center;
+    padding: 6rem 1.25rem;
+}
 .cta-content { max-width: 768px; margin: 0 auto; }
 .cta-content h2 { font-size: 3rem; line-height: 1.2; }
 .cta-content p {
@@ -225,12 +274,16 @@ body {
     flex-wrap: wrap;
 }
 
+
+/* ------------------- */
+/* Footer              */
+/* ------------------- */
 .footer {
     padding: 4rem 5rem;
     background-color: var(--color-gray-900);
     border-top: 1px solid var(--color-gray-800);
 }
-.footer-content { max-width: 1200px; margin: 0 auto; }
+.footer-content { padding: 0 1.5rem; }
 .footer-top {
     display: flex;
     flex-wrap: wrap;
@@ -262,108 +315,44 @@ body {
     border-top: 1px solid var(--color-gray-800);
 }
 
-/* ========================================= */
-/* Login Page Styles                         */
-/* ========================================= */
-.login-page-body {
-    display: grid;
-    place-items: center;
-    min-height: 100vh;
-    padding: 1.25rem;
-}
 
-.login-card {
-    width: 100%;
-    max-width: 420px;
-    padding: 2.5rem;
-    border-radius: 1rem;
-    border: 1px solid var(--color-gray-800);
-    background: linear-gradient(var(--color-gray-800), var(--color-gray-900));
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    animation: fadeIn 0.8s ease-out forwards;
-}
-
-.login-card .logo { justify-content: center; margin-bottom: 0.5rem; }
-.login-header { text-align: center; }
-.login-header h2 { font-size: 2rem; font-weight: 600; color: var(--color-white); }
-.login-header p { margin-top: 0.5rem; color: var(--color-gray-400); }
-
-.login-form { display: flex; flex-direction: column; gap: 1.25rem; }
-.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-group label { font-size: 0.875rem; font-weight: 500; color: var(--color-gray-300); }
-
-.form-group input {
-    font-family: inherit;
-    font-size: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-gray-700);
-    background-color: var(--color-gray-900);
-    color: var(--color-white);
-    outline: none;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-.form-group input:focus {
-    border-color: var(--color-indigo-500);
-    box-shadow: 0 0 0 3px hsla(239, 85%, 68%, 0.2);
-}
-
-.form-options {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: -0.5rem;
-    margin-bottom: 0.5rem;
-}
-.forgot-password {
-    font-size: 0.875rem;
-    color: var(--color-indigo-500);
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-.forgot-password:hover {
-    color: var(--color-white);
-    text-decoration: underline;
-}
-
-.login-form .btn { width: 100%; padding-top: 1rem; padding-bottom: 1rem; }
-
-.signup-link {
-    text-align: center;
-    font-size: 0.875rem;
-    color: var(--color-gray-400);
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--color-gray-800);
-}
-.signup-link a {
-    font-weight: 600;
-    color: var(--color-indigo-500);
-    text-decoration: none;
-    transition: color 0.3s ease;
-}
-.signup-link a:hover {
-    color: var(--color-white);
-    text-decoration: underline;
-}
-
-/* ========================================= */
-/* Responsive Design                         */
-/* ========================================= */
+/* ------------------- */
+/* Responsive Design   */
+/* ------------------- */
 @media (max-width: 768px) {
     body { font-size: 14px; }
     h1 { font-size: 2.5rem !important; }
     h2 { font-size: 2rem !important; }
-
     .header, .footer { padding: 1rem 1.25rem; }
     .header-content { flex-direction: column; }
     .header { position: static; } /* Revert header for mobile */
-    .hero-section { height: auto; min-height: 80vh; }
-
+    .hero-section { height: auto; min-height: 80vh; } /* Adjust for mobile */
     .nav-menu { padding: 0; }
-    .features-container { padding: 0 1.25rem; }
-    .features-grid { flex-direction: column; }
-    .cta-buttons { flex-direction: column; align-items: center; }
+    .features-container, .footer-content { padding: 0 1.25rem; }
+    .features-grid, .cta-buttons { flex-direction: column; }
+    .cta-buttons { align-items: center; }
+}
 
-    .login-card { padding: 2rem; }
+/* Add this to your main stylesheet for the home page */
+
+.user-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.username {
+    color: var(--color-gray-300);
+    font-weight: 500;
+}
+
+.btn-logout {
+    padding: 0.5rem 1rem;
+    border-color: var(--color-gray-700);
+    color: var(--color-gray-300);
+}
+
+.btn-logout:hover {
+    background-color: var(--color-gray-700);
+    color: var(--color-white);
 }

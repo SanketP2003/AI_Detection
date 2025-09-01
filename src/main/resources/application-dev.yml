@@ -5,6 +5,9 @@ spring:
     web-application-type: reactive
 server:
   port: 8080
+  error:
+    whitelabel:
+      enabled: false
 
 gemini:
   api:
@@ -13,3 +16,6 @@ gemini:
   model: gemini-1.5-pro-latest
   temperature: 0.7
   max-tokens: 600
+
+
+

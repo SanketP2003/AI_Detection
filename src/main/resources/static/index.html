@@ -3,50 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIVerify - Quick Access</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Sign In - AI Insight</title>
     <link rel="stylesheet" href="css/sign-up.css">
 </head>
-<body>
-<header class="header">
-    <div class="header-content">
-        <a href="#" class="logo">
-            <img src="img/logo.jpg" alt="AIVerify Logo">
-            <span class="logo-text">AIVerify</span>
-        </a>
-    </div>
-</header>
+<body class="login-page-body">
 
-<div class="auth-container">
-    <div class="auth-card">
-        <div class="auth-header">
-            <h2>Quick Access</h2>
-            <p>Enter your username to continue</p>
+<div class="login-card">
+    <a href="home.html" class="logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <span>AI Insight</span>
+    </a>
+
+    <div class="login-header">
+        <h2>Welcome Back</h2>
+        <p>Sign in to continue to your dashboard.</p>
+    </div>
+
+    <form class="login-form" action="/login" method="post">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="username" placeholder="you@example.com" required>
         </div>
-        <div class="username-input">
-            <i class="fas fa-user"></i>
-            <input type="text" id="usernameInput" placeholder="Enter username" autofocus>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
-        <a href="ai-detection.html" id="continueLink">
-            <button class="continue-btn">
-                Continue <i class="fas fa-arrow-right"></i>
-            </button>
-        </a>
+        <div class="form-options">
+            <a href="#" class="forgot-password">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn btn-primary btn-large">Sign In</button>
+    </form>
+
+    <div class="signup-link">
+        <p>Don't have an account? <a href="register.html">Sign Up</a></p>
     </div>
 </div>
-<script>
-    document.getElementById('continueLink').addEventListener('click', function(event) {
-        event.preventDefault();
-        const username = document.getElementById('usernameInput').value.trim();
-        if (!username) {
-            alert("Please enter your username.");
-            return;
-        }
-        // Save username in localStorage
-        localStorage.setItem('username', username);
-        // Redirect to ai-detection.html
-        window.location.href = 'ai-detection.html';
-    });
-</script>
+
 </body>
 </html>

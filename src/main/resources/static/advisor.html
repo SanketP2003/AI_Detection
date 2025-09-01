@@ -1,119 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta charset="utf-8" />
-  <title>AI Assistant - Dark Theme</title>
-  <link rel="stylesheet" href="css/advisor.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Advisor - Redesigned</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/advisor.css">
 </head>
 <body>
-<div class="frame">
-  <!-- Left Sidebar -->
-  <div class="div-2">
-    <div class="div-3">
-      <div class="div-4">
-        <div class="text-wrapper">AI Assistant</div>
-      </div>
-      <button id="newChatBtn" class="div-wrapper">
-        <div class="text-wrapper-2">New Chat</div>
-      </button>
-    </div>
-    <div class="div-5" id="chatHistory">
-      <!-- Chat history will be populated dynamically -->
-    </div>
-    <div class="div-11">
-      <div class="div-12">
-        <div class="user-avatar">JD</div>
-        <div class="div-13">
-          <div class="div-14"><div class="text-wrapper-8">John Doe</div></div>
-          <div class="div-15"><div class="text-wrapper-9">Free Plan</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Main Content Area -->
-  <div class="div-16">
-    <div class="div-17">
-      <div class="div-18">
-        <div class="div-19">
-          <div class="ai-avatar">AI</div>
-          <div class="div-22">
-            <div class="text-wrapper-10">AI Assistant</div>
-            <div class="div-23">
-              <div class="status-indicator"></div>
-              <div class="text-wrapper-11">Online</div>
+<div class="aurora-background"></div>
+
+<div class="chat-layout">
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <span class="logo-text">AI Advisor</span>
+            </a>
+            <button class="btn btn-primary" id="newChatBtn"><i class="fas fa-plus"></i> New Chat</button>
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            <h4>History</h4>
+            <div class="history-items-list">
+                <div class="history-item active">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="history-title">Quantum Computing Explained</span>
+                    <button class="delete-chat-btn"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <div class="history-item">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="history-title">Python Factorial Function for a Project I am working on</span>
+                    <button class="delete-chat-btn"><i class="fas fa-trash-alt"></i></button>
+                </div>
+                <div class="history-item">
+                    <i class="fas fa-comment-dots"></i>
+                    <span class="history-title">Creative Story Ideas</span>
+                    <button class="delete-chat-btn"><i class="fas fa-trash-alt"></i></button>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Chat Container -->
-    <div class="chat-container" id="chatContainer">
-      <div class="welcome-screen" id="welcomeScreen">
-        <div class="div-29"></div>
-        <div class="text-wrapper-12">Welcome to AI Assistant</div>
-        <p class="text-wrapper-13">How can I help you today?</p>
-        <div class="suggestion-grid">
-          <button class="suggestion-card" data-prompt="Write code for a Python function that calculates factorial">
-            <div class="suggestion-icon"></div>
-            <div class="suggestion-title">Write code</div>
-            <div class="suggestion-desc">Help with programming tasks</div>
-          </button>
-          <button class="suggestion-card" data-prompt="Give me creative ideas for a science fiction story">
-            <div class="suggestion-icon"></div>
-            <div class="suggestion-title">Get ideas</div>
-            <div class="suggestion-desc">Brainstorm and create</div>
-          </button>
-          <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms">
-            <div class="suggestion-icon"></div>
-            <div class="suggestion-title">Learn something</div>
-            <div class="suggestion-desc">Explain complex topics</div>
-          </button>
-          <button class="suggestion-card" data-prompt="Write a professional email to request a meeting">
-            <div class="suggestion-icon"></div>
-            <div class="suggestion-title">Write content</div>
-            <div class="suggestion-desc">Create articles and text</div>
-          </button>
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">JD</div>
+                <div class="user-details">
+                    <div class="user-name">John Doe</div>
+                    <div class="user-plan">Free Plan</div>
+                </div>
+            </div>
         </div>
-      </div>
+    </aside>
 
-      <div class="chat-messages" id="chatMessages" style="display:none;">
-        <!-- Messages will be displayed here -->
-      </div>
-    </div>
+    <main class="main-chat">
+        <header class="chat-header">
+            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="header-title">
+                <div class="ai-avatar">AI</div>
+                <div class="header-status">
+                    <div>AI Assistant</div>
+                    <div class="status-indicator">Online</div>
+                </div>
+            </div>
+        </header>
 
-    <!-- Input Area -->
-    <div class="div-36">
-      <div class="div-37">
-        <div class="input-container">
-            <textarea
-                    id="messageInput"
-                    class="message-input"
-                    placeholder="Type your message here..."
-            ></textarea>
-          <button id="sendButton" class="send-button">
-            <div class="send-icon"></div>
-          </button>
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="logo-large">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </div>
+                <h1>How can I help you today?</h1>
+                <div class="suggestion-grid">
+                    <button class="suggestion-card" data-prompt="Write code for a Python function that calculates factorial"><i class="fas fa-code"></i><h3>Write code</h3><p>Help with programming tasks</p></button>
+                    <button class="suggestion-card" data-prompt="Give me creative ideas for a science fiction story"><i class="fas fa-lightbulb"></i><h3>Get ideas</h3><p>Brainstorm and create</p></button>
+                    <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms"><i class="fas fa-atom"></i><h3>Learn something</h3><p>Explain complex topics</p></button>
+                    <button class="suggestion-card" data-prompt="Write a professional email to request a meeting"><i class="fas fa-pen-alt"></i><h3>Write content</h3><p>Create articles and text</p></button>
+                </div>
+            </div>
         </div>
-        <div class="input-footer">
-          <div class="action-buttons">
-            <button class="action-btn">
-              <div class="action-icon"></div>
-              <div>Attach</div>
-            </button>
-            <button class="action-btn">
-              <div class="action-icon"></div>
-              <div>Voice</div>
-            </button>
-          </div>
-          <div class="footer-info">Press Enter to send</div>
+
+        <div class="chat-input-area">
+            <div class="input-wrapper">
+                <textarea id="messageInput" placeholder="Message AI Assistant..."></textarea>
+                <button id="sendButton" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+            </div>
+            <p class="input-footer">AI can make mistakes. Consider checking important information.</p>
         </div>
-      </div>
-    </div>
-  </div>
+    </main>
 </div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <script src="js/ai_advisor.js"></script>
 </body>
 </html>
