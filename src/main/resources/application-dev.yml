@@ -34,4 +34,4 @@ mistralmodel:
 gemini:
   api:
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-    key: "AIzaSyDQQvrWMuUUe7K4JrDopyGG_M8zZMjywjw"
+    key: "AIzaSyAVY6hyBmE0I4h2nvp9_Xjsr3P1TLalWwI"
