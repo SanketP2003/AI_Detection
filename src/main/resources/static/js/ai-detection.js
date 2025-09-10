@@ -30,6 +30,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        // Disable button and show loading state
+        analyzeBtn.disabled = true;
+        analyzeBtn.innerHTML = '<i class="fas fa-hourglass-start"></i> Analyzing...';
+
         resultsSection.innerHTML = `
             <div class="result-scroll-container">
                 <div class="loader"></div>
@@ -60,6 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             showError(error.message);
+        } finally {
+            // Start cooldown
+            analyzeBtn.innerHTML = '<i class="fas fa-hourglass-start"></i> Cooling down...';
+            setTimeout(() => {
+                analyzeBtn.disabled = false;
+                analyzeBtn.innerHTML = '<i class="fas fa-magnifying-glass"></i> Analyze';
+            }, 60000); // 60-second cooldown
         }
     });
 

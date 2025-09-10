@@ -11,11 +11,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
 @Service
 public class AiAdvisorService {
@@ -94,6 +96,18 @@ public class AiAdvisorService {
                 .bodyValue(payload)
                 .retrieve()
                 .bodyToMono(MistralResponse.class)
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
+                        .jitter(0.5)
+                        .filter(throwable -> {
+                            if (throwable instanceof WebClientResponseException) {
+                                int statusCode = ((WebClientResponseException) throwable).getStatusCode().value();
+                                // Retry on 429 Too Many Requests and 5xx server errors
+                                return statusCode == 429 || (statusCode >= 500 && statusCode < 600);
+                            }
+                            // Also retry on timeout
+                            return throwable instanceof TimeoutException;
+                        })
+                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> retrySignal.failure()))
                 .timeout(Duration.ofSeconds(60))
                 .map(response -> {
                     String text = (response.choices() != null && !response.choices().isEmpty() &&

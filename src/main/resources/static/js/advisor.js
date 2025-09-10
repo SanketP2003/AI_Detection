@@ -273,6 +273,9 @@
             const prompt = elements.messageInput.value.trim();
             if (!prompt) return;
 
+            elements.sendButton.disabled = true;
+            elements.messageInput.disabled = true;
+
             let activeChat = state.chats.find(c => c.id === state.activeChatId);
             if (!activeChat) {
                 chat.startNew();
@@ -300,9 +303,19 @@
                 storage.saveChats();
                 ui.renderChatHistory();
             } catch (error) {
-                ui.addMessage('ai', `Error: ${error.message}`);
+                const errorMessage = `Error: ${error.message || 'An unknown error occurred.'}`;
+                // Add error message to UI
+                ui.addMessage('ai', errorMessage);
+                // CRITICAL FIX: Add error to state to maintain history consistency
+                activeChat.messages.push({ role: 'assistant', text: errorMessage });
+                // Persist the updated history
+                storage.saveChats();
+                ui.renderChatHistory();
             } finally {
                 ui.removeTypingIndicator();
+                elements.sendButton.disabled = false;
+                elements.messageInput.disabled = false;
+                elements.messageInput.focus();
             }
         },
         async runAiDetection() {
@@ -322,11 +335,19 @@
                 return;
             }
 
+            elements.aiDetectionBtn.disabled = true;
+            elements.aiDetectionBtn.innerHTML = '<i class="fas fa-hourglass-start"></i> Cooling down...';
+
             ui.showTypingIndicator();
             const result = await api.detectAiContent(textToAnalyze);
             ui.removeTypingIndicator();
             ui.showAiDetectionResult(result);
             ui.closeContextualPanel();
+
+            setTimeout(() => {
+                elements.aiDetectionBtn.disabled = false;
+                elements.aiDetectionBtn.innerHTML = '<i class="fas fa-microscope"></i> AI Detection';
+            }, 60000); // 60-second cooldown
         },
         handleChatHistoryClick(e) {
             const historyItem = e.target.closest('.history-item');

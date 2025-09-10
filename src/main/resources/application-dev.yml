@@ -30,3 +30,8 @@ mistralmodel:
   model: mistral-large-latest
   temperature: 0.7
   max-tokens: 600
+
+gemini:
+  api:
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
+    key: "AIzaSyDQQvrWMuUUe7K4JrDopyGG_M8zZMjywjw"
