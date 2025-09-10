@@ -3,99 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Advisor - Redesigned</title>
+    <title>Aura - AI Chat Advisor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/advisor.css">
 </head>
 <body>
-
-<div class="aurora-background"></div>
-
-<div class="chat-layout">
-
+<div class="aura-background"></div>
+<div class="app-container">
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a href="#" class="logo">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <span class="logo-text">AI Advisor</span>
-            </a>
-            <button class="btn btn-primary" id="newChatBtn"><i class="fas fa-plus"></i> New Chat</button>
+            <button class="btn btn-primary" id="newChatBtn" aria-label="Start a new chat">
+                <i class="fas fa-plus"></i> New Chat
+            </button>
         </div>
-
         <div class="chat-history" id="chatHistory">
-            <h4>History</h4>
-            <div class="history-items-list">
-                <div class="history-item active">
-                    <i class="fas fa-comment-dots"></i>
-                    <span class="history-title">Quantum Computing Explained</span>
-                    <button class="delete-chat-btn"><i class="fas fa-trash-alt"></i></button>
-                </div>
-                <div class="history-item">
-                    <i class="fas fa-comment-dots"></i>
-                    <span class="history-title">Python Factorial Function for a Project I am working on</span>
-                    <button class="delete-chat-btn"><i class="fas fa-trash-alt"></i></button>
-                </div>
-                <div class="history-item">
-                    <i class="fas fa-comment-dots"></i>
-                    <span class="history-title">Creative Story Ideas</span>
-                    <button class="delete-chat-btn"><i class="fas fa-trash-alt"></i></button>
-                </div>
+            <div class="history-search">
+                <input type="text" placeholder="Search chats..." class="history-search-input" aria-label="Search chat history">
+                <i class="fas fa-search"></i>
+            </div>
+            <h4>Recent Chats</h4>
+            <div class="history-items-grid"></div>
+            <div class="no-chats-message">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 11.5C21 16.1944 17.1944 20 12.5 20C7.80558 20 4 16.1944 4 11.5C4 6.80558 7.80558 3 12.5 3C17.1944 3 21 6.80558 21 11.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 12H22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p>No chats yet. Start exploring!</p>
             </div>
         </div>
-
         <div class="sidebar-footer">
             <div class="user-profile">
-                <div class="user-avatar">JD</div>
+                <div class="user-avatar">U</div>
                 <div class="user-details">
-                    <div class="user-name">John Doe</div>
+                    <div class="user-name">Guest</div>
                     <div class="user-plan">Free Plan</div>
                 </div>
             </div>
+            <button class="btn btn-logout" id="logoutBtn" aria-label="Log out">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
         </div>
     </aside>
-
-    <main class="main-chat">
-        <header class="chat-header">
-            <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
-            <div class="header-title">
-                <div class="ai-avatar">AI</div>
-                <div class="header-status">
-                    <div>AI Assistant</div>
-                    <div class="status-indicator">Online</div>
-                </div>
+    <main class="main-content">
+        <header class="app-header">
+            <div class="header-logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="logo-text">Aura</span>
             </div>
+            <button class="btn btn-nav" id="menuToggle" aria-label="Toggle sidebar">
+                <i class="fas fa-bars"></i>
+            </button>
         </header>
-
         <div class="chat-messages" id="chatMessages">
             <div class="welcome-screen" id="welcomeScreen">
                 <div class="logo-large">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
                 </div>
-                <h1>How can I help you today?</h1>
+                <h1>Welcome to Aura!</h1>
                 <div class="suggestion-grid">
-                    <button class="suggestion-card" data-prompt="Write code for a Python function that calculates factorial"><i class="fas fa-code"></i><h3>Write code</h3><p>Help with programming tasks</p></button>
-                    <button class="suggestion-card" data-prompt="Give me creative ideas for a science fiction story"><i class="fas fa-lightbulb"></i><h3>Get ideas</h3><p>Brainstorm and create</p></button>
-                    <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms"><i class="fas fa-atom"></i><h3>Learn something</h3><p>Explain complex topics</p></button>
-                    <button class="suggestion-card" data-prompt="Write a professional email to request a meeting"><i class="fas fa-pen-alt"></i><h3>Write content</h3><p>Create articles and text</p></button>
+                    <button class="suggestion-card" data-prompt="Write code for a Python function that calculates factorial">
+                        <i class="fas fa-code"></i>
+                        <h3>Code It</h3>
+                        <p>Build apps and scripts</p>
+                    </button>
+                    <button class="suggestion-card" data-prompt="Give me creative ideas for a science fiction story">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Spark Ideas</h3>
+                        <p>Inspire your creativity</p>
+                    </button>
+                    <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms">
+                        <i class="fas fa-atom"></i>
+                        <h3>Learn Easy</h3>
+                        <p>Understand complex topics</p>
+                    </button>
+                    <button class="suggestion-card" data-prompt="Write a professional email to request a meeting">
+                        <i class="fas fa-pen-alt"></i>
+                        <h3>Write Smart</h3>
+                        <p>Craft emails and more</p>
+                    </button>
                 </div>
             </div>
         </div>
-
         <div class="chat-input-area">
             <div class="input-wrapper">
-                <textarea id="messageInput" placeholder="Message AI Assistant..."></textarea>
-                <button id="sendButton" class="btn btn-primary"><i class="fas fa-paper-plane"></i></button>
+                <textarea id="messageInput" placeholder="Ask anything..." aria-label="Message input"></textarea>
+                <button id="clearButton" class="btn btn-clear" aria-label="Clear input">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button id="sendButton" class="btn btn-primary" aria-label="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
             </div>
-            <p class="input-footer">AI can make mistakes. Consider checking important information.</p>
+            <p class="input-footer">AI responses may contain errors. Always verify.</p>
         </div>
     </main>
+    <aside class="contextual-panel" id="contextualPanel">
+        <h4>Tools</h4>
+        <div class="contextual-actions">
+            <button class="btn btn-secondary" aria-label="Pin conversation">
+                <i class="fas fa-thumbtack"></i> Pin Conversation
+            </button>
+            <button class="btn btn-secondary" aria-label="Export chat">
+                <i class="fas fa-download"></i> Export Chat
+            </button>
+            <button class="btn btn-secondary" id="aiDetectionBtn" aria-label="Run AI Detection" >
+                <i class="fas fa-microscope"></i><a href="ai-detection.html">AI Detection</a>
+            </button>
+            <button class="btn btn-secondary" aria-label="Toggle theme">
+                <i class="fas fa-adjust"></i> Toggle Theme
+            </button>
+        </div>
+    </aside>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <nav class="bottom-nav">
+        <button class="btn btn-nav" id="newChatNav" aria-label="Start a new chat">
+            <i class="fas fa-plus"></i>
+        </button>
+        <button class="btn btn-nav" id="historyNav" aria-label="View chat history">
+            <i class="fas fa-history"></i>
+        </button>
+        <button class="btn btn-nav" id="profileNav" aria-label="View profile">
+            <i class="fas fa-user"></i>
+        </button>
+        <button class="btn btn-nav" id="toolsNav" aria-label="View tools">
+            <i class="fas fa-tools"></i>
+        </button>
+    </nav>
 </div>
-
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<script src="js/ai_advisor.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="js/advisor.js"></script>
 </body>
 </html>

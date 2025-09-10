@@ -1,302 +1,462 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // --- DOM Elements ---
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
-    const chatMessages = document.getElementById('chatMessages');
-    const newChatBtn = document.getElementById('newChatBtn');
-    const chatHistoryList = document.getElementById('chatHistory');
-    const menuToggleBtn = document.getElementById('menuToggleBtn');
-    const sidebar = document.querySelector('.chat-sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-
-    // --- State Management ---
-    let chats = [];
-    let activeChatId = null;
-
-    // --- LOCALSTORAGE FUNCTIONS (For browser-side persistence) ---
-    const saveChatsToLocalStorage = () => {
-        localStorage.setItem('ai_advisor_chats', JSON.stringify(chats));
+(function () {
+    // State Management
+    const state = {
+        chats: [],
+        activeChatId: null,
+        currentUser: { username: 'Guest', initials: 'U' },
+        isSidebarOpen: false,
+        isContextualPanelOpen: false
     };
 
-    const loadChatsFromLocalStorage = () => {
-        const storedChats = localStorage.getItem('ai_advisor_chats');
-        if (storedChats) {
-            chats = JSON.parse(storedChats);
+    // DOM Elements
+    const elements = {
+        messageInput: document.getElementById('messageInput'),
+        sendButton: document.getElementById('sendButton'),
+        clearButton: document.getElementById('clearButton'),
+        chatMessages: document.getElementById('chatMessages'),
+        newChatBtn: document.getElementById('newChatBtn'),
+        chatHistory: document.getElementById('chatHistory'),
+        menuToggle: document.getElementById('menuToggle'),
+        sidebar: document.getElementById('sidebar'),
+        sidebarOverlay: document.getElementById('sidebarOverlay'),
+        newChatNav: document.getElementById('newChatNav'),
+        historyNav: document.getElementById('historyNav'),
+        profileNav: document.getElementById('profileNav'),
+        toolsNav: document.getElementById('toolsNav'),
+        contextualPanel: document.getElementById('contextualPanel'),
+        logoutBtn: document.getElementById('logoutBtn'),
+        welcomeScreen: document.getElementById('welcomeScreen'),
+        pinBtn: document.querySelector('button[aria-label*="Pin conversation"]'),
+        exportBtn: document.querySelector('button[aria-label="Export chat"]'),
+        aiDetectionBtn: document.getElementById('aiDetectionBtn'),
+        themeBtn: document.querySelector('button[aria-label="Toggle theme"]')
+    };
+
+    // Storage Utility
+    const storage = {
+        saveChats() {
+            localStorage.setItem('aura_chats', JSON.stringify(state.chats));
+        },
+        loadChats() {
+            const stored = localStorage.getItem('aura_chats');
+            if (stored) state.chats = JSON.parse(stored);
+        },
+        clearChats() {
+            localStorage.removeItem('aura_chats');
+            state.chats = [];
+            state.activeChatId = null;
         }
     };
 
-    // --- CORE CHAT & UI RENDERING ---
-    const renderChatHistory = () => {
-        chatHistoryList.innerHTML = ''; // Clear the list first
-        if (chats.length === 0) {
-            chatHistoryList.innerHTML = `<div class="no-chats-message">No chats yet.</div>`;
-            return;
-        }
+    // UI Rendering
+    const ui = {
+        renderChatHistory() {
+            const grid = elements.chatHistory.querySelector('.history-items-grid');
+            grid.innerHTML = '';
+            elements.chatHistory.querySelector('.no-chats-message').style.display = state.chats.length ? 'none' : 'block';
 
-        chats.forEach(chat => {
-            const item = document.createElement('div');
-            item.className = 'chat-history-item';
-            item.dataset.id = chat.id;
-            if (chat.id === activeChatId) {
-                item.classList.add('active');
-            }
-
-            const title = document.createElement('span');
-            title.className = 'chat-title';
-            title.textContent = chat.title;
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'delete-chat-btn';
-            deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-            deleteBtn.dataset.id = chat.id;
-
-            item.appendChild(title);
-            item.appendChild(deleteBtn);
-            chatHistoryList.appendChild(item);
-        });
-    };
-
-    const renderActiveChatMessages = () => {
-        const activeChat = chats.find(chat => chat.id === activeChatId);
-        chatMessages.innerHTML = '';
-
-        if (!activeChat || activeChat.messages.length === 0) {
-            showWelcomeScreen();
-        } else {
-            activeChat.messages.forEach(message => {
-                addMessageToUI(message.role === 'user' ? 'user' : 'ai', message.text);
+            const sorted = [...state.chats].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || parseInt(b.id) - parseInt(a.id));
+            sorted.forEach(chat => {
+                const item = document.createElement('div');
+                item.className = `history-item ${chat.id === state.activeChatId ? 'active' : ''}`;
+                item.dataset.id = chat.id;
+                item.setAttribute('role', 'button');
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('aria-label', `Select chat: ${chat.title}`);
+                item.innerHTML = `
+                    <div class="history-content">
+                        <i class="fas ${chat.pinned ? 'fa-thumbtack' : 'fa-comment-dots'}" aria-hidden="true"></i>
+                        <div class="history-details">
+                            <span class="history-title" title="${chat.title}">${chat.title}</span>
+                            <span class="history-preview">${chat.messages[0]?.text?.substring(0, 30) || 'No messages'}${chat.messages[0]?.text?.length > 30 ? '...' : ''}</span>
+                            <span class="history-date">${new Date(parseInt(chat.id)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                    </div>
+                    <button class="delete-chat-btn" data-id="${chat.id}" aria-label="Delete chat">
+                        <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                    </button>
+                `;
+                grid.appendChild(item);
             });
-        }
-    };
+        },
+        renderActiveChatMessages() {
+            const activeChat = state.chats.find(chat => chat.id === state.activeChatId);
+            elements.chatMessages.innerHTML = '';
+            elements.welcomeScreen.style.display = activeChat?.messages.length ? 'none' : 'block';
 
-    const startNewChat = () => {
-        const newChat = {
-            id: Date.now().toString(),
-            title: 'New Chat',
-            messages: []
-        };
-        chats.unshift(newChat); // Add to the beginning of the array
-        activeChatId = newChat.id;
-
-        saveChatsToLocalStorage();
-        renderChatHistory();
-        renderActiveChatMessages();
-        closeSidebar();
-    };
-
-    const sendMessage = async () => {
-        const prompt = messageInput.value.trim();
-        if (!prompt) return;
-
-        let activeChat = chats.find(chat => chat.id === activeChatId);
-        if (!activeChat) return;
-
-        if (activeChat.messages.length === 0) {
-            chatMessages.innerHTML = '';
-            activeChat.title = prompt.substring(0, 40) + (prompt.length > 40 ? '...' : '');
-        }
-
-        const userMessage = { role: 'user', text: prompt };
-        activeChat.messages.push(userMessage);
-        addMessageToUI('user', prompt);
-
-        messageInput.value = '';
-        autoResizeTextarea();
-        showTypingIndicator();
-
-        // ===================================================================
-        // MODIFIED SECTION: This now calls your actual Java backend controller
-        // ===================================================================
-        try {
-            // The history sent to the backend excludes the most recent user prompt,
-            // as the prompt is passed separately in the request body.
-            const historyForApi = activeChat.messages.slice(0, -1);
-
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    prompt: prompt,
-                    history: historyForApi
-                }),
-            });
-
-            removeTypingIndicator();
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+            if (activeChat?.messages.length) {
+                activeChat.messages.forEach(message => ui.addMessage(message.role, message.text));
+                elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
             }
-
-            const data = await response.json();
-            const aiResponseText = data.text;
-            const aiMessage = { role: 'model', text: aiResponseText };
-            activeChat.messages.push(aiMessage);
-
-            addMessageToUI('ai', aiResponseText);
-
-            saveChatsToLocalStorage();
-            renderChatHistory(); // Update title if it was the first message
-
-        } catch (error) {
-            console.error('Chat API Error:', error);
-            removeTypingIndicator();
-            addMessageToUI('ai', `Sorry, an error occurred: ${error.message}`);
-        }
-        // ===================================================================
-        // END OF MODIFIED SECTION
-        // ===================================================================
-    };
-
-    // --- UI HELPER FUNCTIONS ---
-    const addMessageToUI = (sender, text) => {
-        const messageWrapper = document.createElement('div');
-        messageWrapper.classList.add('message-wrapper');
-        if (sender === 'ai') messageWrapper.classList.add('ai');
-
-        const messageContainer = document.createElement('div');
-        messageContainer.classList.add('message');
-
-        const avatarClass = sender === 'user' ? 'user' : 'ai';
-        const avatarContent = sender === 'user' ? 'JD' : '<i class="fas fa-robot"></i>';
-        const avatar = `<div class="message-avatar ${avatarClass}">${avatarContent}</div>`;
-
-        const content = document.createElement('div');
-        content.classList.add('message-content');
-        content.innerHTML = marked.parse(text);
-
-        messageContainer.innerHTML = avatar;
-        messageContainer.appendChild(content);
-        messageWrapper.appendChild(messageContainer);
-        chatMessages.appendChild(messageWrapper);
-
-        content.querySelectorAll('pre').forEach(enhanceCodeBlock);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    };
-
-    const showWelcomeScreen = () => {
-        chatMessages.innerHTML = `<div class="welcome-container"> <div class="welcome-logo"> <img src="img/logo.jpg" alt="AIVerify Logo"> </div> <h1>How can I help you today?</h1> <div class="suggestion-grid"> <button class="suggestion-card" data-prompt="Explain quantum computing in simple terms"> <h3>Explain quantum computing</h3> <p>in simple terms</p> </button> <button class="suggestion-card" data-prompt="Give me creative ideas for a science fiction story"> <h3>Get creative ideas</h3> <p>for a science fiction story</p> </button> <button class="suggestion-card" data-prompt="Write a Python script to sort a list of dictionaries"> <h3>Write a Python script</h3> <p>to sort a list of dictionaries</p> </button> <button class="suggestion-card" data-prompt="What are the pros and cons of microservices architecture?"> <h3>Pros and cons</h3> <p>of microservices architecture</p> </button> </div> </div>`;
-        document.querySelectorAll('.suggestion-card').forEach(card => card.addEventListener('click', () => { const prompt = card.dataset.prompt; messageInput.value = prompt; sendMessage(); }));
-    };
-
-    const showTypingIndicator = () => {
-        const typingElement = document.createElement('div'); typingElement.classList.add('message-wrapper', 'ai', 'typing-indicator'); typingElement.innerHTML = `<div class="message"><div class="message-avatar ai"><i class="fas fa-robot"></i></div><div class="message-content"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`; chatMessages.appendChild(typingElement); chatMessages.scrollTop = chatMessages.scrollHeight;
-    };
-
-    const removeTypingIndicator = () => {
-        const indicator = chatMessages.querySelector('.typing-indicator'); if (indicator) indicator.remove();
-    };
-
-    const autoResizeTextarea = () => {
-        messageInput.style.height = 'auto'; const newHeight = Math.min(messageInput.scrollHeight, 200); messageInput.style.height = `${newHeight}px`;
-    };
-
-    const enhanceCodeBlock = (preElement) => {
-        const codeElement = preElement.querySelector('code');
-        if (!codeElement) return;
-        const codeText = codeElement.innerText;
-        const langMatch = codeElement.className.match(/language-(\S+)/);
-        const lang = langMatch ? langMatch[1] : 'text';
-        const header = document.createElement('div');
-        header.className = 'code-header';
-        header.innerHTML = `<span>${lang}</span>`;
-        const copyBtn = document.createElement('button'); copyBtn.className = 'copy-code-btn';
-        copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy code';
-        header.appendChild(copyBtn);
-        preElement.insertBefore(header, preElement.firstChild);
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(codeText).then(() => {
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy code';
-                    copyBtn.classList.remove('copied');
+        },
+        addMessage(sender, text) {
+            const bubble = document.createElement('div');
+            bubble.className = `message-bubble ${sender}`;
+            bubble.innerHTML = `
+                <div class="message-avatar ${sender}">${sender === 'user' ? state.currentUser.initials : '<i class="fas fa-robot"></i>'}</div>
+                <div class="message-content">${marked.parse(text)}</div>
+            `;
+            elements.chatMessages.appendChild(bubble);
+            bubble.querySelectorAll('pre').forEach(ui.enhanceCodeBlock);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        },
+        showTypingIndicator() {
+            const typing = document.createElement('div');
+            typing.className = 'loading-indicator';
+            typing.innerHTML = '<div class="spinner"></div><p>AI is thinking...</p>';
+            elements.chatMessages.appendChild(typing);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        },
+        removeTypingIndicator() {
+            const indicator = elements.chatMessages.querySelector('.loading-indicator');
+            if (indicator) indicator.remove();
+        },
+        enhanceCodeBlock(preElement) {
+            const code = preElement.querySelector('code');
+            if (!code) return;
+            const lang = code.className.match(/language-(\S+)/)?.[1] || 'text';
+            const header = document.createElement('div');
+            header.className = 'code-header';
+            header.innerHTML = `<span>${lang}</span><button class="copy-code-btn"><i class="far fa-copy"></i> Copy code</button>`;
+            preElement.insertBefore(header, code);
+            header.querySelector('.copy-code-btn').addEventListener('click', () => {
+                navigator.clipboard.writeText(code.innerText).then(() => {
+                    header.querySelector('.copy-code-btn').innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        header.querySelector('.copy-code-btn').innerHTML = '<i class="far fa-copy"></i> Copy code';
                     }, 2000);
+                });
             });
-        });
+        },
+        updatePinButtonLabel() {
+            if (!elements.pinBtn) return;
+            const activeChat = state.chats.find(c => c.id === state.activeChatId);
+            const isPinned = activeChat?.pinned;
+            elements.pinBtn.innerHTML = `<i class="fas fa-thumbtack"></i> ${isPinned ? 'Unpin' : 'Pin'} Conversation`;
+            elements.pinBtn.setAttribute('aria-label', `${isPinned ? 'Unpin' : 'Pin'} conversation`);
+        },
+        toggleTheme() {
+            document.body.classList.toggle('light');
+            localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
+        },
+        showAiDetectionResult(result) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'ai-detection-result';
+            if (result.error) {
+                resultDiv.innerHTML = `
+                    <h3>AI Detection Error</h3>
+                    <p>${result.error}</p>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <h3>AI Detection Results</h3>
+                    <p><strong>Probability of AI-generated content:</strong> ${result.probability}%</p>
+                    <div class="metrics">
+                        <div class="metric"><strong>Perplexity:</strong> ${result.metrics.perplexity}</div>
+                        <div class="metric"><strong>Burstiness:</strong> ${result.metrics.burstiness}</div>
+                        <div class="metric"><strong>Consistency:</strong> ${result.metrics.consistency}</div>
+                    </div>
+                    <p><strong>Analysis:</strong> ${result.analysis}</p>
+                    <p class="patterns"><strong>Patterns:</strong> ${result.patterns.join(', ')}</p>
+                `;
+            }
+            elements.chatMessages.innerHTML = '';
+            elements.welcomeScreen.style.display = 'none';
+            elements.chatMessages.appendChild(resultDiv);
+            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+        }
     };
 
-    const openSidebar = () => {
-        sidebar.classList.add('visible'); sidebarOverlay.classList.add('visible');
+    // Chat Management
+    const chat = {
+        startNew() {
+            const newChat = {
+                id: Date.now().toString(),
+                title: 'New Chat',
+                messages: [],
+                pinned: false
+            };
+            state.chats.unshift(newChat);
+            state.activeChatId = newChat.id;
+            storage.saveChats();
+            ui.renderChatHistory();
+            ui.renderActiveChatMessages();
+            ui.updatePinButtonLabel();
+            ui.closeSidebar();
+            ui.closeContextualPanel();
+        },
+        delete(id) {
+            state.chats = state.chats.filter(chat => chat.id !== id);
+            if (state.activeChatId === id) {
+                state.activeChatId = state.chats.length ? state.chats[0].id : null;
+                ui.renderActiveChatMessages();
+            }
+            storage.saveChats();
+            ui.renderChatHistory();
+        },
+        pin(id) {
+            const chat = state.chats.find(c => c.id === id);
+            if (chat) {
+                chat.pinned = !chat.pinned;
+                storage.saveChats();
+                ui.renderChatHistory();
+                ui.updatePinButtonLabel();
+            }
+        },
+        export(id) {
+            const chat = state.chats.find(c => c.id === id);
+            if (!chat) return;
+            const blob = new Blob([JSON.stringify(chat.messages, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aura_chat_${chat.id}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
     };
 
-    const closeSidebar = () => {
-        sidebar.classList.remove('visible'); sidebarOverlay.classList.remove('visible');
+    // API Handler
+    const api = {
+        async sendMessage(prompt, history) {
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt, history })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'The AI service returned an invalid response.' }));
+                    throw new Error(errorData.error || 'The AI service failed to respond.');
+                }
+
+                return response.json();
+            } catch (error) {
+                console.error('Error calling chat API:', error);
+                throw error; // Re-throw to be handled by the caller
+            }
+        },
+        async detectAiContent(text) {
+            try {
+                const response = await fetch('/api/detect/bulk-ai', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ text })
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch AI detection results');
+                }
+                return response.json();
+            } catch (error) {
+                return { error: error.message };
+            }
+        },
+        async fetchUser() {
+            // Mock user fetch
+            return { authenticated: true, username: 'user@example.com' };
+        },
+        async logout() {
+            // Mock logout
+            return true;
+        }
     };
 
-    // --- EVENT LISTENERS ---
-    newChatBtn.addEventListener('click', startNewChat);
-    sendButton.addEventListener('click', sendMessage);
-    menuToggleBtn.addEventListener('click', openSidebar);
-    sidebarOverlay.addEventListener('click', closeSidebar);
+    // Event Handlers
+    const handlers = {
+        async sendMessage() {
+            const prompt = elements.messageInput.value.trim();
+            if (!prompt) return;
 
-    messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-    messageInput.addEventListener('input', autoResizeTextarea);
+            let activeChat = state.chats.find(c => c.id === state.activeChatId);
+            if (!activeChat) {
+                chat.startNew();
+                activeChat = state.chats.find(c => c.id === state.activeChatId);
+            }
 
-    // Event delegation for history items
-    chatHistoryList.addEventListener('click', (e) => {
-        const historyItem = e.target.closest('.chat-history-item');
-        const deleteButton = e.target.closest('.delete-chat-btn');
+            if (!activeChat.messages.length) {
+                activeChat.title = prompt.substring(0, 30) + (prompt.length > 30 ? '...' : '');
+            }
 
-        if (deleteButton) {
-            e.stopPropagation();
-            const chatIdToDelete = deleteButton.dataset.id;
-            chats = chats.filter(chat => chat.id !== chatIdToDelete);
-            saveChatsToLocalStorage();
+            activeChat.messages.push({ role: 'user', text: prompt });
+            ui.addMessage('user', prompt);
+            elements.messageInput.value = '';
+            ui.autoResizeTextarea();
+            ui.showTypingIndicator();
 
-            if (activeChatId === chatIdToDelete) {
-                activeChatId = chats.length > 0 ? chats[0].id : null;
-                if (activeChatId) {
-                    renderActiveChatMessages();
-                } else {
-                    startNewChat();
+            try {
+                const historyForApi = activeChat.messages
+                    .slice(0, -1)
+                    .map(msg => ({ role: msg.role, content: msg.text }))
+                    .filter(msg => msg.content && String(msg.content).trim() !== '');
+                const response = await api.sendMessage(prompt, historyForApi);
+                activeChat.messages.push({ role: 'assistant', text: response.text });
+                ui.addMessage('ai', response.text);
+                storage.saveChats();
+                ui.renderChatHistory();
+            } catch (error) {
+                ui.addMessage('ai', `Error: ${error.message}`);
+            } finally {
+                ui.removeTypingIndicator();
+            }
+        },
+        async runAiDetection() {
+            const activeChat = state.chats.find(c => c.id === state.activeChatId);
+            if (!activeChat || !activeChat.messages.length) {
+                ui.showAiDetectionResult({ error: 'No messages in the current chat to analyze.' });
+                return;
+            }
+
+            const textToAnalyze = activeChat.messages
+                .filter(m => m.role === 'assistant')
+                .map(m => m.text)
+                .join('\n');
+
+            if (textToAnalyze.length < 10) {
+                ui.showAiDetectionResult({ error: 'Text content must be at least 10 characters long.' });
+                return;
+            }
+
+            ui.showTypingIndicator();
+            const result = await api.detectAiContent(textToAnalyze);
+            ui.removeTypingIndicator();
+            ui.showAiDetectionResult(result);
+            ui.closeContextualPanel();
+        },
+        handleChatHistoryClick(e) {
+            const historyItem = e.target.closest('.history-item');
+            const deleteButton = e.target.closest('.delete-chat-btn');
+            if (deleteButton) {
+                e.stopPropagation();
+                chat.delete(deleteButton.dataset.id);
+            } else if (historyItem) {
+                state.activeChatId = historyItem.dataset.id;
+                ui.renderActiveChatMessages();
+                ui.renderChatHistory();
+                ui.closeSidebar();
+            }
+        },
+        handleChatHistoryKeydown(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const historyItem = e.target.closest('.history-item');
+                if (historyItem) {
+                    state.activeChatId = historyItem.dataset.id;
+                    ui.renderActiveChatMessages();
+                    ui.renderChatHistory();
+                    ui.closeSidebar();
                 }
             }
-            renderChatHistory();
-        } else if (historyItem) {
-            const chatIdToLoad = historyItem.dataset.id;
-            activeChatId = chatIdToLoad;
-            renderActiveChatMessages();
-            renderChatHistory();
-            closeSidebar();
         }
-    });
+    };
 
-    // --- INITIALIZATION ---
-    const initialize = () => {
-        loadChatsFromLocalStorage();
-        if (chats.length > 0) {
-            activeChatId = chats[0].id;
+    // UI Utilities
+    ui.autoResizeTextarea = () => {
+        elements.messageInput.style.height = 'auto';
+        elements.messageInput.style.height = `${Math.min(elements.messageInput.scrollHeight, 150)}px`;
+    };
+
+    ui.openSidebar = () => {
+        state.isSidebarOpen = true;
+        elements.sidebar.classList.add('visible');
+        elements.sidebarOverlay.style.display = 'block';
+    };
+
+    ui.closeSidebar = () => {
+        state.isSidebarOpen = false;
+        elements.sidebar.classList.remove('visible');
+        elements.sidebarOverlay.style.display = 'none';
+    };
+
+    ui.openContextualPanel = () => {
+        state.isContextualPanelOpen = true;
+        elements.contextualPanel.classList.add('visible');
+        elements.sidebarOverlay.style.display = 'block';
+    };
+
+    ui.closeContextualPanel = () => {
+        state.isContextualPanelOpen = false;
+        elements.contextualPanel.classList.remove('visible');
+        elements.sidebarOverlay.style.display = 'none';
+    };
+
+    // Initialization
+    async function init() {
+        storage.loadChats();
+        if (state.chats.length) {
+            state.activeChatId = state.chats[0].id;
         } else {
-            startNewChat();
+            chat.startNew();
         }
-        renderChatHistory();
-        renderActiveChatMessages();
-    };
 
-    initialize();
-});
+        try {
+            const user = await api.fetchUser();
+            if (user.authenticated && user.username) {
+                state.currentUser.username = user.username;
+                const parts = user.username.split('@')[0].replace(/[^a-zA-Z0-9 ]/g, ' ').trim().split(/\s+/);
+                state.currentUser.initials = parts.length >= 2 ? (parts[0][0] + parts[1][0]).toUpperCase() : parts[0]?.slice(0, 2).toUpperCase() || 'U';
+                document.querySelector('.user-name').textContent = user.username;
+                document.querySelector('.user-avatar').textContent = state.currentUser.initials;
+            }
+        } catch (e) {
+            console.warn('Failed to fetch user:', e);
+        }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
+        ui.renderChatHistory();
+        ui.renderActiveChatMessages();
+        ui.autoResizeTextarea();
+        ui.updatePinButtonLabel();
 
-    // Function to open the sidebar
-    const openSidebar = () => {
-        sidebar.classList.add('visible');
-        sidebarOverlay.style.display = 'block';
-    };
+        // Load theme
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light');
+        }
 
-    // Function to close the sidebar
-    const closeSidebar = () => {
-        sidebar.classList.remove('visible');
-        sidebarOverlay.style.display = 'none';
-    };
+        // Event Listeners
+        elements.newChatBtn.addEventListener('click', chat.startNew);
+        elements.newChatNav.addEventListener('click', chat.startNew);
+        elements.sendButton.addEventListener('click', handlers.sendMessage);
+        elements.clearButton.addEventListener('click', () => {
+            elements.messageInput.value = '';
+            ui.autoResizeTextarea();
+        });
+        elements.menuToggle.addEventListener('click', ui.openSidebar);
+        elements.historyNav.addEventListener('click', ui.openSidebar);
+        elements.profileNav.addEventListener('click', ui.openSidebar);
+        elements.toolsNav.addEventListener('click', ui.openContextualPanel);
+        elements.sidebarOverlay.addEventListener('click', () => {
+            ui.closeSidebar();
+            ui.closeContextualPanel();
+        });
+        elements.logoutBtn.addEventListener('click', async () => {
+            storage.clearChats();
+            await api.logout();
+            window.location.href = 'index.html';
+        });
+        elements.messageInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handlers.sendMessage();
+            }
+        });
+        elements.messageInput.addEventListener('input', ui.autoResizeTextarea);
+        elements.chatHistory.addEventListener('click', handlers.handleChatHistoryClick);
+        elements.chatHistory.addEventListener('keydown', handlers.handleChatHistoryKeydown);
+        elements.pinBtn?.addEventListener('click', () => chat.pin(state.activeChatId));
+        elements.exportBtn?.addEventListener('click', () => chat.export(state.activeChatId));
+        elements.aiDetectionBtn?.addEventListener('click', handlers.runAiDetection);
+        elements.themeBtn?.addEventListener('click', ui.toggleTheme);
+        elements.welcomeScreen.querySelectorAll('.suggestion-card').forEach(card => {
+            card.addEventListener('click', () => {
+                elements.messageInput.value = card.dataset.prompt;
+                handlers.sendMessage();
+            });
+        });
+    }
 
-    // Event listeners
-    menuToggle.addEventListener('click', openSidebar);
-    sidebarOverlay.addEventListener('click', closeSidebar);
-});
+    document.addEventListener('DOMContentLoaded', init);
+})();

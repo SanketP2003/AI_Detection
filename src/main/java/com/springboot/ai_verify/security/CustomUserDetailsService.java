@@ -21,15 +21,35 @@ public class CustomUserDetailsService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+    public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
+        // First, try to find the user by username
+        User user = userRepository.findByUsername(usernameOrEmail);
+
+        // If not found by username, try to find by email
         if (user == null) {
-            throw new UsernameNotFoundException("User not found");
+            user = userRepository.findByEmail(usernameOrEmail);
         }
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getAuthorities(user.getRoles()));
+
+        // If still not found, throw an exception with a clear message
+        if (user == null) {
+            throw new UsernameNotFoundException("Invalid username or email");
+        }
+        
+        // Check if user has roles assigned
+        if (user.getRoles() == null || user.getRoles().trim().isEmpty()) {
+            throw new UsernameNotFoundException("User account has no roles assigned");
+        }
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                getAuthorities(user.getRoles()));
     }
 
     private Collection<? extends GrantedAuthority> getAuthorities(String roles) {
+        if (roles == null || roles.trim().isEmpty()) {
+            return Arrays.asList();
+        }
         return Arrays.stream(roles.split(","))
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());

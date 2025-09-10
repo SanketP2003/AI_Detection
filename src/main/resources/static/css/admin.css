@@ -1,0 +1,317 @@
+/* Admin Panel Styles */
+.admin-container {
+    max-width: 1400px;
+    margin: 3rem auto;
+    padding: 0 2rem;
+}
+
+.admin-header {
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--color-gray-700);
+}
+
+.admin-header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(45deg, var(--color-white), var(--color-indigo-500));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.admin-header p {
+    color: var(--color-gray-400);
+    font-size: 1.2rem;
+    margin-top: 1rem;
+}
+
+.admin-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, var(--color-gray-800), var(--color-gray-900));
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--color-gray-700);
+    transition: all 0.4s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--color-indigo-500);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.stat-card h3 {
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+    color: var(--color-gray-400);
+}
+
+.stat-card .value {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.stat-card .change {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+}
+
+.change.positive {
+    color: var(--color-green-500);
+}
+
+.change.negative {
+    color: var(--color-red-500);
+}
+
+.admin-content {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    gap: 2.5rem;
+}
+
+.admin-sidebar {
+    background: linear-gradient(135deg, var(--color-gray-800), var(--color-gray-900));
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--color-gray-700);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-sidebar h3 {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-gray-700);
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu li {
+    margin-bottom: 1rem;
+}
+
+.sidebar-menu a {
+    display: block;
+    padding: 1rem 1.5rem;
+    color: var(--color-gray-300);
+    text-decoration: none;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+}
+
+.sidebar-menu a:hover,
+.sidebar-menu a.active {
+    background: var(--color-indigo-800);
+    color: var(--color-white);
+    transform: translateX(5px);
+}
+
+.admin-main {
+    background: linear-gradient(135deg, var(--color-gray-800), var(--color-gray-900));
+    padding: 2rem;
+    border-radius: 1rem;
+    border: 1px solid var(--color-gray-700);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.admin-section {
+    display: none;
+}
+
+.admin-section.active {
+    display: block;
+}
+
+.admin-section h2 {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-gray-700);
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.table-container {
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-gray-700);
+    background: var(--color-gray-900);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 1.25rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-gray-700);
+}
+
+th {
+    background: var(--color-gray-800);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background: var(--color-gray-800);
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: var(--color-green-500);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--color-yellow-500);
+    color: var(--color-gray-900);
+}
+
+.badge-danger {
+    background: var(--color-red-500);
+    color: white;
+}
+
+.form-group {
+    margin-bottom: 2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: var(--color-gray-700);
+    border: 1px solid var(--color-gray-700);
+    border-radius: 0.75rem;
+    color: var(--color-white);
+    font-family: inherit;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-indigo-500);
+    box-shadow: 0 0 10px rgba(102, 107, 226, 0.3);
+}
+
+.back-button {
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--color-indigo-500);
+    text-decoration: none;
+    font-size: 1.1rem;
+}
+
+.back-button:hover {
+    text-decoration: underline;
+}
+
+.access-denied {
+    text-align: center;
+    padding: 5rem 2rem;
+}
+
+.access-denied h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-red-500);
+}
+
+.access-denied p {
+    font-size: 1.2rem;
+    color: var(--color-gray-400);
+    margin-bottom: 2.5rem;
+}
+
+.edit-form {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--color-gray-800);
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-gray-700);
+}
+
+.edit-form h3 {
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.btn-logout {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid var(--color-gray-700);
+    color: var(--color-gray-300);
+    border-radius: 3rem;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: var(--color-gray-700);
+    color: var(--color-white);
+    transform: translateY(-3px);
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .admin-content {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-container {
+        padding: 0 1.5rem;
+    }
+
+    .btn-logout {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-logout {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+}

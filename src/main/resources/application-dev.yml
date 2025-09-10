@@ -1,21 +1,32 @@
 spring:
   application:
     name: ai_verify
-  mail:
-    web-application-type: reactive
+  main:
+    web-application-type: servlet
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_IBjy0zaArkq3
+    hikari:
+      max-lifetime: 1200000
+      idle-timeout: 600000
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
 server:
   port: 8080
   error:
     whitelabel:
       enabled: false
 
-gemini:
+mistralmodel:
   api:
-    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent
-    key: AIzaSyDQQvrWMuUUe7K4JrDopyGG_M8zZMjywjw
-  model: gemini-1.5-pro-latest
+    url: https://api.mistral.ai/v1/chat/completions
+    key: "H5igipAw5boB932VoxjU3dPRnyVCRzB1"
+  model: mistral-large-latest
   temperature: 0.7
   max-tokens: 600
-
-
-
