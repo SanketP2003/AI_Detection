@@ -22,22 +22,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        // First, try to find the user by username
         User user = userRepository.findByUsername(usernameOrEmail);
-
-        // If not found by username, try to find by email
         if (user == null) {
             user = userRepository.findByEmail(usernameOrEmail);
         }
 
-        // If still not found, throw an exception with a clear message
         if (user == null) {
             throw new UsernameNotFoundException("Invalid username or email");
-        }
-        
-        // Check if user has roles assigned
-        if (user.getRoles() == null || user.getRoles().trim().isEmpty()) {
-            throw new UsernameNotFoundException("User account has no roles assigned");
         }
 
         return new org.springframework.security.core.userdetails.User(
@@ -48,10 +39,18 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private Collection<? extends GrantedAuthority> getAuthorities(String roles) {
         if (roles == null || roles.trim().isEmpty()) {
-            return Arrays.asList();
+            return Arrays.asList(); // Return empty list if no roles are assigned
         }
+        // Standardize roles: trim whitespace, convert to uppercase, and add ROLE_ prefix.
         return Arrays.stream(roles.split(","))
-                .map(SimpleGrantedAuthority::new)
+                .map(String::trim)
+                .filter(role -> !role.isEmpty())
+                .map(role -> {
+                    if (role.toUpperCase().contains("ADMIN")) {
+                        return new SimpleGrantedAuthority("ROLE_ADMIN"); // Ensure admin role is standardized
+                    }
+                    return new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
+                })
                 .collect(Collectors.toList());
     }
 }

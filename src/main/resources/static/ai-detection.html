@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/ai-detection.css">
 </head>
 <body>
@@ -16,14 +16,14 @@
 
 <header class="header">
     <div class="header-content">
-        <a href="#" class="logo">
+        <a href="home.html" class="logo">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 12C9 13.3807 10.1193 14.5 11.5 14.5C12.8807 14.5 14 13.3807 14 12C14 10.6193 12.8807 9.5 11.5 9.5C10.1193 9.5 9 10.6193 9 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M21.5 12C21.5 17.2467 17.2467 21.5 12 21.5C6.75329 21.5 2.5 17.2467 2.5 12C2.5 6.75329 6.75329 2.5 12 2.5C17.2467 2.5 21.5 6.75329 21.5 12Z" stroke="currentColor" stroke-width="1.5"/><path d="M12 2.5V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 20V21.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2.5 12L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M20 12L21.5 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="logo-text">AIVerify</span>
         </a>
         <nav class="nav" id="mainNav">
             <a href="home.html"><i class="fas fa-chart-line"></i> Dashboard</a>
             <a href="advisor.html"><i class="fas fa-robot"></i> AI Advisor</a>
-            <a href="#history"><i class="fas fa-history"></i> History</a>
+            <a href="#history" class="nav-history-link"><i class="fas fa-history"></i> History</a>
         </nav>
         <div class="user-section">
             <button class="btn btn-secondary" id="logoutBtn">
@@ -49,15 +49,17 @@
                     <button class="btn btn-primary" id="analyzeBtn"><i class="fas fa-magnifying-glass"></i> Analyze</button>
                     <button class="btn btn-secondary" id="clearBtn"><i class="fas fa-trash"></i> Clear</button>
                 </div>
-                <span id="charCount" class="char-count">10000 characters left</span>
+                <span id="charCount" class="char-count">10000 characters remaining</span>
             </div>
         </section>
 
-        <section class="ui-card results-section" id="resultsSection">
-            <div class="result-placeholder" id="resultPlaceholder">
-                <i class="fas fa-chart-pie"></i>
-                <h3>Analysis Results</h3>
-                <p>Your content analysis will appear here.</p>
+        <section class="ui-card results-section">
+            <div class="result-scroll-container" id="resultsSection">
+                <div class="result-placeholder" id="resultPlaceholder">
+                    <i class="fas fa-chart-pie"></i>
+                    <h3>Analysis Results</h3>
+                    <p>Your content analysis will appear here.</p>
+                </div>
             </div>
         </section>
     </div>
@@ -68,7 +70,7 @@
             <button class="btn btn-link" id="viewAllHistoryBtn">View Full History</button>
         </div>
         <div class="table-container">
-            <table class="checks-table" id="historyTable">
+            <table class="checks-table">
                 <thead>
                 <tr>
                     <th>Date</th>
@@ -78,27 +80,7 @@
                     <th>Actions</th>
                 </tr>
                 </thead>
-                <tbody>
-                <tr data-id="1">
-                    <td>Aug 31, 2025</td>
-                    <td>The quick brown fox jumps over...</td>
-                    <td><span class="status-badge human">Human</span></td>
-                    <td>98%</td>
-                    <td>
-                        <button class="btn-icon view-analysis-btn"><i class="fas fa-eye"></i></button>
-                        <button class="btn-icon delete-btn"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
-                <tr data-id="2">
-                    <td>Aug 30, 2025</td>
-                    <td>As a large language model, I...</td>
-                    <td><span class="status-badge ai">AI</span></td>
-                    <td>99%</td>
-                    <td>
-                        <button class="btn-icon view-analysis-btn"><i class="fas fa-eye"></i></button>
-                        <button class="btn-icon delete-btn"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>
+                <tbody id="historyTableBody">
                 </tbody>
             </table>
         </div>
@@ -122,6 +104,8 @@
         </nav>
     </div>
 </footer>
+
+<div class="modal" id="modalContainer"></div>
 
 <script src="js/ai-detection.js"></script>
 </body>

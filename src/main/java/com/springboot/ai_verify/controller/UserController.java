@@ -1,67 +1,36 @@
 package com.springboot.ai_verify.controller;
 
-import com.springboot.ai_verify.model.User;
-import com.springboot.ai_verify.repository.UserRepository;
-import com.springboot.ai_verify.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@CrossOrigin
+@RequestMapping("/api/user")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @PostMapping("/register")
-    public String registerUser(@RequestBody User user) {
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            return "Username already exists";
-        }
-        if (userRepository.findByEmail(user.getEmail()) != null) {
-            return "Email already in use";
-        }
-        userService.saveUser(user);
-        return "Registration successful";
-    }
-
-    @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
-    }
-
-    @PutMapping("/users/{id}")
-    public User updateUser(@PathVariable Long id, @RequestBody User user) {
-        return userService.updateUser(id, user);
-    }
-
-    @DeleteMapping("/users/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-    }
-
     @GetMapping("/me")
-    public Map<String, Object> me(Authentication authentication) {
-        if (authentication == null) {
-            return Map.of("authenticated", false);
-        }
-        String username = authentication.getName();
-        List<String> roles = authentication.getAuthorities().stream()
+    public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails != null) {
+            // With roles standardized in CustomUserDetailsService, we can now do a simple, exact check.
+            boolean isAdmin = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-        return Map.of(
-                "authenticated", true,
-                "username", username,
-                "roles", roles
-        );
+                .anyMatch(role -> role.equals("ROLE_ADMIN"));
+
+            Map<String, Object> userInfo = Map.of(
+                "username", userDetails.getUsername(),
+                "isAdmin", isAdmin,
+                "authenticated", true
+            );
+            return ResponseEntity.ok(userInfo);
+        }
+        // If no user is authenticated, return a clear unauthenticated status.
+        return ResponseEntity.ok(Map.of("authenticated", false));
     }
 }

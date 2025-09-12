@@ -4,6 +4,10 @@ spring:
   main:
     web-application-type: servlet
     allow-bean-definition-overriding: true
+  # Increase the async request timeout to prevent server-side timeouts with slow AI APIs
+  mvc:
+    async:
+      request-timeout: 60000 # 60 seconds
   datasource:
     url: jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
     username: neondb_owner
@@ -34,4 +38,4 @@ mistralmodel:
 gemini:
   api:
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent
-    key: "AIzaSyAVY6hyBmE0I4h2nvp9_Xjsr3P1TLalWwI"
+    key: "AIzaSyDQQvrWMuUUe7K4JrDopyGG_M8zZMjywjw"
