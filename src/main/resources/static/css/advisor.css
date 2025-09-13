@@ -1,6 +1,5 @@
-/* --- CSS Reset & Base Styles --- */
 :root {
-    --primary-color: #8A2BE2; /* A vibrant purple */
+    --primary-color: #8A2BE2;
     --primary-light: #9932CC;
     --primary-gradient: linear-gradient(135deg, #8A2BE2 0%, #4B0082 100%);
     --bg-dark-primary: #121212;
@@ -43,7 +42,6 @@ a {
     color: inherit;
 }
 
-/* --- Layout --- */
 .app-container {
     display: flex;
     height: 100vh;
@@ -73,7 +71,6 @@ a {
     display: none;
 }
 
-/* --- Components --- */
 .btn {
     padding: 0.65rem var(--spacing-md);
     border-radius: var(--border-radius);
@@ -131,7 +128,6 @@ a {
     color: var(--text-primary);
 }
 
-/* Sidebar */
 .sidebar-header {
     padding-bottom: var(--spacing-md);
     margin-bottom: var(--spacing-md);
@@ -230,7 +226,6 @@ a {
     text-overflow: ellipsis;
 }
 
-/* Main Content Header */
 .app-header {
     display: flex;
     align-items: center;
@@ -259,7 +254,6 @@ a {
     display: none;
 }
 
-/* Chat Messages Area */
 .chat-messages {
     flex-grow: 1;
     overflow-y: auto;
@@ -355,7 +349,6 @@ a {
     border: 1px solid var(--border-color);
 }
 
-/* Markdown Styles */
 .message-content pre {
     background-color: #0d1117;
     color: #c9d1d9;
@@ -414,7 +407,6 @@ a {
     animation-delay: -0.16s;
 }
 
-/* Chat Input Area */
 .chat-input-area {
     padding: var(--spacing-md) var(--spacing-lg);
     background: transparent;
@@ -480,7 +472,6 @@ a {
     cursor: not-allowed;
 }
 
-/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -501,7 +492,6 @@ a {
     }
 }
 
-/* --- Responsive Design --- */
 @media (max-width: 768px) {
     .sidebar {
         position: fixed;

@@ -18,11 +18,9 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails != null) {
-            // With roles standardized in CustomUserDetailsService, we can now do a simple, exact check.
             boolean isAdmin = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> role.equals("ROLE_ADMIN"));
-
             Map<String, Object> userInfo = Map.of(
                 "username", userDetails.getUsername(),
                 "isAdmin", isAdmin,
@@ -30,7 +28,6 @@ public class UserController {
             );
             return ResponseEntity.ok(userInfo);
         }
-        // If no user is authenticated, return a clear unauthenticated status.
         return ResponseEntity.ok(Map.of("authenticated", false));
     }
 }

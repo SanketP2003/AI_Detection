@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Add a small delay to allow the browser to process the session cookie after login
     setTimeout(async () => {
         const nameSpan = document.getElementById('nav-username');
         const signinBtn = document.getElementById('signinBtn');
@@ -9,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
         const navMenu = document.getElementById('main-nav');
 
-        // --- UI Enhancements (can be set up immediately) ---
         if (mobileMenuToggle) {
             mobileMenuToggle.addEventListener('click', () => {
                 navMenu.classList.toggle('active');
@@ -34,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // --- Authentication Check and UI Update ---
         const fetchUser = async () => {
             try {
                 const response = await fetch('/api/user/me');
@@ -51,12 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const user = await fetchUser();
 
         if (user && user.authenticated) {
-            // --- User is LOGGED IN ---
             if (signinBtn) signinBtn.style.display = 'none';
             if (logoutBtn) logoutBtn.style.display = 'block';
             if (nameSpan) nameSpan.textContent = `Welcome, ${user.username}`;
-
-            // Use the definitive isAdmin flag from the server
             if (user.isAdmin) {
                 if (adminLink) adminLink.style.display = 'block';
                 if (getStartedBtn) {
@@ -69,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } else {
-            // --- User is NOT LOGGED IN ---
             if (signinBtn) signinBtn.style.display = 'block';
             if (logoutBtn) logoutBtn.style.display = 'none';
             if (nameSpan) nameSpan.textContent = '';
@@ -78,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Event Listeners ---
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
                 try {
@@ -94,5 +86,5 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = 'index.html';
             });
         }
-    }, 250); // A 250ms delay to prevent race conditions on login
+    }, 250);
 });

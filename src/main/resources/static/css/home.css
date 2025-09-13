@@ -38,7 +38,6 @@ body.menu-open {
     overflow-x: hidden;
 }
 
-/* Animations */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -62,7 +61,6 @@ body.menu-open {
     }
 }
 
-/* Common Components */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -149,7 +147,6 @@ body.menu-open {
     color: var(--color-indigo-500);
 }
 
-/* Header */
 .header {
     width: 100%;
     padding: 1rem 5rem;
@@ -232,7 +229,6 @@ body.menu-open {
     display: flex;
 }
 
-/* Hero Section */
 .hero-section {
     position: relative;
     width: 100%;
@@ -271,29 +267,28 @@ body.menu-open {
     max-width: 700px;
 }
 
-/* --- FEATURES SECTION --- */
 .features-section {
     padding: 6rem 0;
-    background-color: var(--color-gray-900); /* A solid background color for consistency */
+    background-color: var(--color-gray-900);
 }
 
 .features-container {
-    max-width: 1280px; /* Constrain width for larger screens */
-    margin: 0 auto; /* Center the container */
-    padding: 0 2rem; /* Responsive padding */
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 2rem;
     width: 100%;
 }
 
 .features-header {
     text-align: center;
-    max-width: 650px; /* Slightly increased width */
+    max-width: 650px;
     margin: 0 auto;
 }
 
 .features-header h2 {
     font-size: 3rem;
     line-height: 1.2;
-    font-weight: 700; /* Bolder font weight for heading */
+    font-weight: 700;
 }
 
 .features-header p {
@@ -309,32 +304,28 @@ body.menu-open {
     margin-top: 4rem;
 }
 
-/* This is the key change to remove the underlines */
 .feature-link {
     text-decoration: none;
     color: inherit;
-    display: flex; /* Ensures the card inside takes up the full space */
+    display: flex;
     flex: 1;
 }
 
 .feature-card {
-    width: 100%; /* Make card fill the anchor tag */
+    width: 100%;
     padding: 2.5rem;
     border-radius: 1rem;
     border: 1px solid var(--color-gray-800);
-    /* A more subtle, refined gradient */
     background: linear-gradient(145deg, var(--color-gray-800), #161e2b);
     transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* --- IMPROVED HOVER EFFECT --- */
 .feature-link:hover .feature-card {
     transform: translateY(-8px);
     border-top-color: var(--color-indigo-600);
     border-right-color: var(--color-indigo-600);
     border-left-color: var(--color-indigo-600);
     border-bottom-color: var(--color-indigo-600);
-    /* Added a subtle glow effect */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
@@ -349,21 +340,21 @@ body.menu-open {
 .feature-card h3 {
     margin-top: 2rem;
     font-size: 1.5rem;
-    color: #ffffff; /* Brighter color for heading */
+    color: #ffffff;
 }
 
 .feature-description {
     margin-top: 1rem;
     color: var(--color-gray-400);
     font-size: 1rem;
-    line-height: 1.6; /* Slightly increased line-height for readability */
+    line-height: 1.6;
 }
 
 .feature-list {
     margin-top: 1.5rem;
     color: var(--color-gray-300);
-    padding-left: 0; /* Remove default list padding */
-    list-style: none; /* Remove default list bullets */
+    padding-left: 0;
+    list-style: none;
 }
 
 .feature-list li {
@@ -373,15 +364,14 @@ body.menu-open {
 }
 
 .feature-list li + li {
-    margin-top: 0.75rem; /* Better way to add space between list items */
+    margin-top: 0.75rem;
 }
 
 .feature-list svg {
     color: var(--color-indigo-500);
-    flex-shrink: 0; /* Prevents icon from shrinking */
+    flex-shrink: 0;
 }
 
-/* About Section */
 .about-section {
     padding: 8rem 0;
     background: transparent;
@@ -450,7 +440,6 @@ body.menu-open {
     display: block;
 }
 
-/* Contact Section */
 .contact-section {
     padding: 8rem 0;
     background: transparent;
@@ -538,7 +527,6 @@ textarea.form-control {
     margin-bottom: 1.5rem;
 }
 
-/* Call to Action */
 .cta-section {
     text-align: center;
     padding: 8rem 2rem;
@@ -571,7 +559,6 @@ textarea.form-control {
     flex-wrap: wrap;
 }
 
-/* Footer */
 .footer {
     padding: 5rem 7rem;
     background: var(--color-gray-900);
@@ -718,7 +705,7 @@ textarea.form-control {
     .btn-large {
         padding: 1rem 2rem;
         font-size: 1rem;
-        width: 100%; /* Make buttons full-width on mobile */
+        width: 100%;
     }
 
     .features-container, .about-container, .contact-container {

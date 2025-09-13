@@ -22,14 +22,10 @@ public class AiDetection {
     @PostMapping("/bulk-ai")
     public Mono<ResponseEntity<String>> detectContent(@RequestBody Map<String, String> request) {
         String textToAnalyze = request.get("text");
-
         if (textToAnalyze == null || textToAnalyze.trim().isEmpty() || textToAnalyze.length() < 10) {
             String errorJson = "{\"error\": \"Text content must be at least 10 characters long\"}";
             return Mono.just(ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(errorJson));
         }
-
-        // The service already returns a Mono<String> containing the JSON body.
-        // We just need to map it into the ResponseEntity.
         return aiDetectionService.detectAiContent(textToAnalyze)
                 .map(jsonBody -> ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(jsonBody));
     }

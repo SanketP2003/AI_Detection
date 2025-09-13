@@ -20,7 +20,6 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        // You can add logging here to confirm successful authentication
         System.out.println("Successfully authenticated user: " + authentication.getName());
         super.onAuthenticationSuccess(request, response, authentication);
     }

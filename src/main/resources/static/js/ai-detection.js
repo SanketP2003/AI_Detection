@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // --- Element References ---
     const inputText = document.getElementById("inputText");
     const charCount = document.getElementById("charCount");
     const analyzeBtn = document.getElementById("analyzeBtn");
@@ -15,9 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     const MAX_CHARS = 10000;
-    const COOLDOWN_SECONDS = 5; // Reduced for easier testing
-
-    // --- Cooldown Management ---
+    const COOLDOWN_SECONDS = 5;
     const updateCooldownState = () => {
         const lastRequestTime = localStorage.getItem('lastAiDetectionRequest');
         if (!lastRequestTime) {
@@ -39,11 +36,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // Start the cooldown timer check
     setInterval(updateCooldownState, 1000);
     updateCooldownState();
 
-    // --- Event Listeners ---
     inputText.addEventListener("input", () => {
         const remaining = MAX_CHARS - inputText.value.length;
         charCount.textContent = `${remaining} characters remaining`;
@@ -91,17 +86,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ text: content })
             });
 
-            // *** FIX: The 'data' variable IS the parsed JavaScript OBJECT. Do NOT parse it again. ***
             const data = await response.json();
 
             if (!response.ok) {
-                // If the server returns an error response, use its message
                 throw new Error(data.message || 'An unknown error occurred during analysis.');
             }
 
             displayResults(data);
             await addHistoryItem(content, data);
-            await loadRecentHistory(); // Refresh history list
+            await loadRecentHistory();
 
         } catch (error) {
             console.error("Analysis failed:", error);
@@ -109,9 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // --- Display & Data Functions ---
     function displayResults(data) {
-        // Directly use the properties of the 'data' object
         const resultHTML = `
             <div class="result-card ui-card animate-slide-in">
                 <h3 class="result-title">AI Detection Report</h3>
@@ -170,16 +161,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadRecentHistory() {
         try {
-            // Your backend uses the user's session to filter this query
             const res = await fetch('/api/detections/recent');
             if (!res.ok) return;
             const items = await res.json();
 
-            historyTableBody.innerHTML = ''; // Clear existing rows
+            historyTableBody.innerHTML = '';
             items.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.dataset.id = item.id;
-                // Store the full JSON result to allow re-displaying it without another API call
                 tr.dataset.fullResultJson = item.fullResultJson || JSON.stringify({
                     probability: item.confidence,
                     metrics: { perplexity: 'N/A', burstiness: 'N/A', consistency: 'N/A' },
@@ -204,7 +193,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- Modal and History Actions ---
     function showModal(content) {
         modalContainer.innerHTML = `<div class="modal-content">${content}</div>`;
         modalContainer.style.display = 'flex';
@@ -220,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function showFullHistory() {
         try {
-            const res = await fetch('/api/detections/recent?limit=50'); // Fetch more for "full" view
+            const res = await fetch('/api/detections/recent?limit=50');
             if (!res.ok) throw new Error('Failed to load history.');
             const items = await res.json();
 
@@ -262,9 +250,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const row = viewBtn.closest('tr');
             try {
                 const analysisData = JSON.parse(row.dataset.fullResultJson);
-                resultsSection.innerHTML = ''; // Clear current results
+                resultsSection.innerHTML = '';
                 displayResults(analysisData);
-                // Scroll to results
                 resultsSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } catch (err) {
                 alert('Could not display analysis for this historical item. The data may be malformed.');
@@ -282,7 +269,6 @@ document.addEventListener("DOMContentLoaded", () => {
     async function deleteHistoryItem(id, rowElement) {
         if (!confirm('Are you sure you want to delete this entry?')) return;
         try {
-            // Ensure your backend controller supports DELETE requests on /api/detections/{id}
             const res = await fetch(`/api/detections/${id}`, { method: 'DELETE' });
             if (res.ok) {
                 rowElement.remove();
@@ -295,7 +281,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // --- Initial Load ---
     viewAllHistoryBtn.addEventListener('click', showFullHistory);
     loadRecentHistory();
 });

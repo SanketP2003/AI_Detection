@@ -39,15 +39,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     private Collection<? extends GrantedAuthority> getAuthorities(String roles) {
         if (roles == null || roles.trim().isEmpty()) {
-            return Arrays.asList(); // Return empty list if no roles are assigned
+            return Arrays.asList();
         }
-        // Standardize roles: trim whitespace, convert to uppercase, and add ROLE_ prefix.
         return Arrays.stream(roles.split(","))
                 .map(String::trim)
                 .filter(role -> !role.isEmpty())
                 .map(role -> {
                     if (role.toUpperCase().contains("ADMIN")) {
-                        return new SimpleGrantedAuthority("ROLE_ADMIN"); // Ensure admin role is standardized
+                        return new SimpleGrantedAuthority("ROLE_ADMIN");
                     }
                     return new SimpleGrantedAuthority("ROLE_" + role.toUpperCase());
                 })

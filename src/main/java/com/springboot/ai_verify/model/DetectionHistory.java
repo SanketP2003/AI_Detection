@@ -12,14 +12,14 @@ public class DetectionHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username; // store username of the authenticated user
+    private String username;
 
     @Column(length = 255)
     private String contentPreview;
 
-    private String result; // AI or Human or label
+    private String result;
 
-    private int confidence; // 0-100
+    private int confidence;
 
     private Instant createdAt = Instant.now();
 }

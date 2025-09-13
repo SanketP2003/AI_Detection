@@ -94,23 +94,16 @@ public class AiDetectionService {
         if (apiResponse == null || apiResponse.choices() == null || apiResponse.choices().isEmpty()) {
             return "{\"error\": \"The AI model returned an empty response.\"}";
         }
-        
         Choice firstChoice = apiResponse.choices().get(0);
         if (firstChoice.message() == null || firstChoice.message().content() == null || firstChoice.message().content().isBlank()) {
             return "{\"error\": \"The AI model returned a message with no content.\"}";
         }
-
         String content = firstChoice.message().content().trim();
-        
         int jsonStart = content.indexOf('{');
         int jsonEnd = content.lastIndexOf('}');
-
         if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart) {
             String extractedJson = content.substring(jsonStart, jsonEnd + 1);
-            
-            // Use a robust state machine to sanitize newlines only within string literals.
             String sanitizedJson = sanitizeJsonString(extractedJson);
-
             try {
                 objectMapper.readTree(sanitizedJson);
                 return sanitizedJson;
@@ -134,13 +127,12 @@ public class AiDetectionService {
                 if (!isEscaped) {
                     inString = !inString;
                 }
-                isEscaped = false; // Reset escaped state after processing quote
+                isEscaped = false;
             } else if (c == '\\') {
-                isEscaped = !isEscaped; // Toggle escaped state
+                isEscaped = !isEscaped;
             } else {
-                isEscaped = false; // Reset escaped state for other characters
+                isEscaped = false;
             }
-
             if (inString && (c == '\n' || c == '\r')) {
                 sanitized.append("\\n");
             } else {

@@ -101,10 +101,8 @@ public class AiAdvisorService {
                         .filter(throwable -> {
                             if (throwable instanceof WebClientResponseException) {
                                 int statusCode = ((WebClientResponseException) throwable).getStatusCode().value();
-                                // Retry on 429 Too Many Requests and 5xx server errors
                                 return statusCode == 429 || (statusCode >= 500 && statusCode < 600);
                             }
-                            // Also retry on timeout
                             return throwable instanceof TimeoutException;
                         })
                         .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> retrySignal.failure()))

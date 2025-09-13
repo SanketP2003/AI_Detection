@@ -19,11 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
                 if (response.ok) {
-                    // Success! The server has authenticated the user and set the session cookie.
-                    // Now, we can safely redirect to the home page.
                     window.location.href = '/home.html';
                 } else {
-                    // Failure. Display an error message.
                     errorMessage.textContent = 'Invalid username or password. Please try again.';
                     errorMessage.style.display = 'block';
                 }

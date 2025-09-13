@@ -252,23 +252,16 @@ body {
     font-size: 0.9rem;
 }
 
-/* --- MODIFICATION START --- */
 .results-section .result-scroll-container {
     max-height: 350px;
     overflow-y: auto;
-    /* The padding-right was removed to avoid extra space */
-
-    /* Hides scrollbar for IE, Edge and Firefox */
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
 
-/* Hides scrollbar for Chrome, Safari and Opera */
 .results-section .result-scroll-container::-webkit-scrollbar {
     display: none;
 }
-
-/* --- MODIFICATION END --- */
 
 .result-placeholder {
     text-align: center;
@@ -474,7 +467,6 @@ body {
     margin-bottom: var(--spacing-md);
 }
 
-/* Modal Styles */
 .modal {
     position: fixed;
     top: 0;

@@ -1,6 +1,6 @@
 package com.springboot.ai_verify.dto;
 
-public record GeminiResponse(
+public record MistralResponse (
         Candidate[] candidates
 ) {
     public record Candidate(Content content) {}

@@ -21,28 +21,21 @@ public class IndexController {
         byte[] bytes = resource.getInputStream().readAllBytes();
         String html = new String(bytes, StandardCharsets.UTF_8);
 
-        // Replace visible labels and input type to make it username/password based
         html = html.replace("<label for=\"email\">Email</label>", "<label for=\"email\">Username</label>");
         html = html.replace("type=\"email\"", "type=\"text\"");
         html = html.replace("placeholder=\"you@example.com\"", "placeholder=\"Your username\"");
-        // disable native validation to avoid any leftover browser checks
         html = html.replace("<form class=\"login-form\" action=\"/login\" method=\"post\">",
                 "<form class=\"login-form\" action=\"/login\" method=\"post\" novalidate>");
-        
-        // Add error message if login failed
         if (error != null) {
             String errorMessage = "<div class=\"error-message\" style=\"color: red; margin-bottom: 15px;\">Invalid username or password</div>";
             html = html.replace("<form class=\"login-form\" action=\"/login\" method=\"post\" novalidate>", 
                               "<form class=\"login-form\" action=\"/login\" method=\"post\" novalidate>" + errorMessage);
         }
-        
-        // Add logout message
         if (logout != null) {
             String logoutMessage = "<div class=\"logout-message\" style=\"color: green; margin-bottom: 15px;\">You have been successfully logged out</div>";
             html = html.replace("<form class=\"login-form\" action=\"/login\" method=\"post\" novalidate>", 
                               "<form class=\"login-form\" action=\"/login\" method=\"post\" novalidate>" + logoutMessage);
         }
-        
         return html;
     }
 }

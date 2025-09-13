@@ -7,12 +7,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const saveEditBtn = document.getElementById('saveEditBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-    // Simulate user authentication with ROLE_ADMIN by default
     const simulateAuthCheck = async () => {
         return {
             username: "admin_user",
             authorities: [{authority: "ROLE_ADMIN"}]
-            // For testing ROLE_USER, use: authorities: [{ authority: "ROLE_USER" }]
         };
     };
 
@@ -21,8 +19,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (user && user.username && user.authorities && user.authorities.some(auth => auth.authority === 'ROLE_ADMIN')) {
         logoutBtn.style.display = 'block';
         nameSpan.textContent = 'Welcome, ' + user.username;
-
-        // Tab navigation functionality for admin panel
         const tabLinks = document.querySelectorAll('.sidebar-menu a');
         const tabSections = document.querySelectorAll('.admin-section');
 
@@ -39,7 +35,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Fetch and populate users
         async function fetchUsers() {
             try {
                 const response = await fetch('http://localhost:8080/users');
@@ -61,7 +56,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     userTableBody.appendChild(row);
                 });
 
-                // Add event listeners for edit and delete buttons
                 document.querySelectorAll('.edit-btn').forEach(button => {
                     button.addEventListener('click', () => editUser(button.dataset.id));
                 });
@@ -73,7 +67,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Edit user function
         function editUser(id) {
             fetch(`http://localhost:8080/users/${id}`)
                 .then(response => response.json())
@@ -88,7 +81,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .catch(error => console.error('Error fetching user:', error));
         }
 
-        // Save edited user
         saveEditBtn.addEventListener('click', () => {
             const id = editUserForm.dataset.id;
             const updatedUser = {
@@ -110,12 +102,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .catch(error => console.error('Error updating user:', error));
         });
 
-        // Cancel edit
         cancelEditBtn.addEventListener('click', () => {
             editUserForm.style.display = 'none';
         });
 
-        // Delete user function
         function deleteUser(id) {
             if (confirm('Are you sure you want to delete this user?')) {
                 fetch(`http://localhost:8080/users/${id}`, {
@@ -126,10 +116,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
 
-        // Initial fetch of users
         fetchUsers();
     } else {
-        // Hide admin content and show access denied message
         adminContainer.innerHTML = `
             <div class="access-denied">
                 <h2>Access Denied</h2>
@@ -140,11 +128,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert('Access Denied: Admin privileges required.');
         setTimeout(() => {
             window.location.href = 'home.html';
-        }, 3000); // Redirect after 3 seconds
+        }, 3000);
     }
 
     logoutBtn.addEventListener('click', () => {
-        // Simulate logout by redirecting to home and resetting session
         window.location.href = 'home.html';
     });
 });
