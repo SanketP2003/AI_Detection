@@ -88,3 +88,4 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 250);
 });
+

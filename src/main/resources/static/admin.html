@@ -6,6 +6,7 @@
     <title>AI Insight - Admin Dashboard</title>
     <link rel="stylesheet" href="css/home.css">
     <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -14,14 +15,12 @@
     <header class="header">
         <div class="header-content">
             <a href="home.html" class="logo">
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span>AI Insight</span>
             </a>
             <nav class="nav-menu" id="main-nav">
                 <span id="nav-username" class="username"></span>
-                <button class="btn btn-logout" id="logoutBtn" style="display: none;">Logout</button>
+                <button class="btn btn-logout" id="logoutBtn" style="display: none;"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </nav>
         </div>
     </header>
@@ -31,51 +30,46 @@
             <a href="home.html" class="back-button">&larr; Back to Home</a>
             <div class="admin-header">
                 <h1>Admin Dashboard</h1>
-                <p>Manage your AI Insight platform and monitor system performance</p>
+                <p>Manage your AI Insight platform and monitor system performance.</p>
             </div>
 
             <div class="admin-stats">
                 <div class="stat-card">
-                    <h3>Total Users</h3>
-                    <div class="value">2,548</div>
-                    <div class="change positive">+12% from last week</div>
+                    <h3><i class="fas fa-users"></i> Total Users</h3>
+                    <div class="value" id="total-users-stat">...</div>
                 </div>
                 <div class="stat-card">
-                    <h3>AI Detections</h3>
+                    <h3><i class="fas fa-user-check"></i> Active Users</h3>
+                    <div class="value" id="active-users-stat">...</div>
+                </div>
+                <div class="stat-card">
+                    <h3><i class="fas fa-tasks"></i> AI Detections Today</h3>
                     <div class="value">14,729</div>
-                    <div class="change positive">+23% from last week</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Advisor Sessions</h3>
-                    <div class="value">8,362</div>
-                    <div class="change positive">+8% from last week</div>
-                </div>
-                <div class="stat-card">
-                    <h3>System Uptime</h3>
+                    <h3><i class="fas fa-server"></i> System Uptime</h3>
                     <div class="value">99.98%</div>
-                    <div class="change positive">Stable</div>
                 </div>
             </div>
 
             <div class="admin-content">
-                <div class="admin-sidebar">
+                <aside class="admin-sidebar">
                     <h3>Admin Menu</h3>
                     <ul class="sidebar-menu">
-                        <li><a href="#users" class="active" data-tab="users">User Management</a></li>
-                        <li><a href="#detections" data-tab="detections">Detection Logs</a></li>
-                        <li><a href="#advisor" data-tab="advisor">Advisor Analytics</a></li>
-                        <li><a href="#system" data-tab="system">System Settings</a></li>
+                        <li><a href="#users" class="active" data-tab="users"><i class="fas fa-users-cog"></i> User Management</a></li>
+                        <li><a href="#detections" data-tab="detections"><i class="fas fa-search"></i> Detection Logs</a></li>
+                        <li><a href="#system" data-tab="system"><i class="fas fa-cogs"></i> System Settings</a></li>
                     </ul>
-                </div>
+                </aside>
 
-                <div class="admin-main">
-                    <div id="users-section" class="admin-section active">
+                <main class="admin-main">
+                    <section id="users-section" class="admin-section active">
                         <h2>User Management</h2>
-                        <div class="table-container" id="userTableContainer">
-                            <table id="userTable">
+                        <div class="table-container">
+                            <table>
                                 <thead>
                                 <tr>
-                                    <th>User ID</th>
+                                    <th>ID</th>
                                     <th>Username</th>
                                     <th>Email</th>
                                     <th>Role</th>
@@ -84,12 +78,12 @@
                                 </tr>
                                 </thead>
                                 <tbody id="userTableBody">
-                                <!-- Users will be populated dynamically -->
+                                <!-- Users populated by JS -->
                                 </tbody>
                             </table>
                         </div>
                         <div id="editUserForm" class="edit-form" style="display: none;">
-                            <h3>Edit User</h3>
+                            <h3><i class="fas fa-edit"></i> Edit User</h3>
                             <div class="form-group">
                                 <label for="editUsername">Username</label>
                                 <input type="text" id="editUsername" class="form-control">
@@ -101,8 +95,8 @@
                             <div class="form-group">
                                 <label for="editRole">Role</label>
                                 <select id="editRole" class="form-control">
-                                    <option value="ROLE_USER">User</option>
-                                    <option value="ROLE_ADMIN">Admin</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="User">User</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -112,12 +106,14 @@
                                     <option value="Inactive">Inactive</option>
                                 </select>
                             </div>
-                            <button class="btn btn-primary" id="saveEditBtn">Save</button>
-                            <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="saveEditBtn"><i class="fas fa-save"></i> Save</button>
+                                <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+                            </div>
                         </div>
-                    </div>
+                    </section>
 
-                    <div id="detections-section" class="admin-section">
+                    <section id="detections-section" class="admin-section">
                         <h2>AI Detection Logs</h2>
                         <div class="table-container">
                             <table>
@@ -125,99 +121,51 @@
                                 <tr>
                                     <th>Request ID</th>
                                     <th>User</th>
-                                    <th>Content Type</th>
                                     <th>Date</th>
-                                    <th>AI Probability</th>
                                     <th>Result</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr>
                                     <td>#D-5842</td>
-                                    <td>johndoe</td>
-                                    <td>Text</td>
-                                    <td>2023-10-15 14:32</td>
-                                    <td>98.7%</td>
-                                    <td><span class="badge badge-success">AI Detected</span></td>
+                                    <td>admin</td>
+                                    <td>2025-09-13 10:21</td>
+                                    <td><span class="badge badge-success">AI Detected (98%)</span></td>
                                 </tr>
                                 <tr>
                                     <td>#D-5841</td>
-                                    <td>janedoe</td>
-                                    <td>Text</td>
-                                    <td>2023-10-15 13:45</td>
-                                    <td>12.3%</td>
-                                    <td><span class="badge badge-warning">Human Content</span></td>
+                                    <td>user</td>
+                                    <td>2025-09-13 09:45</td>
+                                    <td><span class="badge badge-warning">Human Content (12%)</span></td>
                                 </tr>
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </section>
 
-                    <div id="advisor-section" class="admin-section">
-                        <h2>Advisor Analytics</h2>
-                        <div class="form-group">
-                            <label for="date-range">Select Date Range:</label>
-                            <select id="date-range" class="form-control">
-                                <option>Last 7 days</option>
-                                <option>Last 30 days</option>
-                                <option>Last 90 days</option>
-                            </select>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                <tr>
-                                    <th>Session ID</th>
-                                    <th>User</th>
-                                    <th>Topic</th>
-                                    <th>Duration</th>
-                                    <th>Date</th>
-                                    <th>Rating</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td>#A-3241</td>
-                                    <td>johndoe</td>
-                                    <td>Career Advice</td>
-                                    <td>12m 34s</td>
-                                    <td>2023-10-15</td>
-                                    <td>★★★★★</td>
-                                </tr>
-                                <tr>
-                                    <td>#A-3240</td>
-                                    <td>janedoe</td>
-                                    <td>Learning Path</td>
-                                    <td>8m 12s</td>
-                                    <td>2023-10-14</td>
-                                    <td>★★★★☆</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div id="system-section" class="admin-section">
+                    <section id="system-section" class="admin-section">
                         <h2>System Settings</h2>
                         <div class="form-group">
-                            <label for="system-mode">System Mode:</label>
+                            <label for="system-mode">System Mode</label>
                             <select id="system-mode" class="form-control">
                                 <option>Normal</option>
                                 <option>Maintenance</option>
-                                <option>Debug</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="detection-threshold">AI Detection Threshold:</label>
+                            <label for="detection-threshold">AI Detection Threshold</label>
                             <input type="range" id="detection-threshold" class="form-control" min="50" max="100" value="85">
-                            <div style="text-align: center; margin-top: 0.5rem;">Current: 85%</div>
+                            <div style="text-align: center; margin-top: 0.5rem; color: var(--text-secondary);">Current: 85%</div>
                         </div>
-                        <button class="btn btn-primary">Save Settings</button>
-                    </div>
-                </div>
+                        <button class="btn btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+                    </section>
+                </main>
             </div>
         </div>
     </main>
 </div>
 
 <script src="js/admin.js"></script>
+</body>
+</html>
+

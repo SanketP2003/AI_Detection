@@ -7,18 +7,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     const saveEditBtn = document.getElementById('saveEditBtn');
     const cancelEditBtn = document.getElementById('cancelEditBtn');
 
-    const simulateAuthCheck = async () => {
-        return {
-            username: "admin_user",
-            authorities: [{authority: "ROLE_ADMIN"}]
-        };
+    /**
+     * Checks the user's authentication and authorization status by calling the backend API.
+     * @returns {Promise<object>} A promise that resolves to the user object.
+     */
+    const checkAuthStatus = async () => {
+        try {
+            const response = await fetch('/api/user/me'); // Use relative path
+            if (!response.ok) {
+                console.error("Auth check failed:", response.status);
+                return { authenticated: false };
+            }
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching auth status:", error);
+            return { authenticated: false };
+        }
     };
 
-    const user = await simulateAuthCheck();
+    const user = await checkAuthStatus();
 
-    if (user && user.username && user.authorities && user.authorities.some(auth => auth.authority === 'ROLE_ADMIN')) {
-        logoutBtn.style.display = 'block';
-        nameSpan.textContent = 'Welcome, ' + user.username;
+    // Check if the user is authenticated and is an admin
+    if (user && user.authenticated && user.isAdmin) {
+        if(logoutBtn) logoutBtn.style.display = 'block';
+        if(nameSpan) nameSpan.textContent = 'Welcome, ' + user.username;
+
         const tabLinks = document.querySelectorAll('.sidebar-menu a');
         const tabSections = document.querySelectorAll('.admin-section');
 
@@ -37,7 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         async function fetchUsers() {
             try {
-                const response = await fetch('http://localhost:8080/users');
+                const response = await fetch('/api/user'); // Corrected path
                 const users = await response.json();
                 userTableBody.innerHTML = '';
                 users.forEach(user => {
@@ -68,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         function editUser(id) {
-            fetch(`http://localhost:8080/users/${id}`)
+            fetch(`/api/user/${id}`)
                 .then(response => response.json())
                 .then(user => {
                     document.getElementById('editUsername').value = user.username;
@@ -89,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 role: document.getElementById('editRole').value,
                 status: document.getElementById('editStatus').value
             };
-            fetch(`http://localhost:8080/users/${id}`, {
+            fetch(`/api/user/${id}`, {
                 method: 'PUT',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(updatedUser)
@@ -107,8 +120,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         function deleteUser(id) {
+            // In a real app, a custom modal is better than confirm().
             if (confirm('Are you sure you want to delete this user?')) {
-                fetch(`http://localhost:8080/users/${id}`, {
+                fetch(`/api/user/${id}`, {
                     method: 'DELETE'
                 })
                     .then(() => fetchUsers()) // Refresh user list
@@ -118,6 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         fetchUsers();
     } else {
+        // Display access denied message if user is not an authorized admin
         adminContainer.innerHTML = `
             <div class="access-denied">
                 <h2>Access Denied</h2>
@@ -125,13 +140,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <a href="home.html" class="btn btn-primary">Return to Home</a>
             </div>
         `;
-        alert('Access Denied: Admin privileges required.');
-        setTimeout(() => {
-            window.location.href = 'home.html';
-        }, 3000);
     }
 
-    logoutBtn.addEventListener('click', () => {
-        window.location.href = 'home.html';
-    });
+    if(logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            // Should ideally call a backend logout endpoint
+            window.location.href = 'home.html';
+        });
+    }
 });
