@@ -14,6 +14,8 @@ import reactor.util.retry.Retry;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AiDetectionService {
@@ -73,7 +75,7 @@ public class AiDetectionService {
                 .bodyValue(payload)
                 .retrieve()
                 .bodyToMono(MistralResponse.class)
-                .timeout(Duration.ofSeconds(12)) // Adjust timeout to be safer
+                .timeout(Duration.ofSeconds(15))
                 .retryWhen(Retry.backoff(2, Duration.ofSeconds(2))
                         .jitter(0.5)
                         .filter(throwable -> throwable instanceof WebClientResponseException || throwable instanceof TimeoutException)
@@ -92,46 +94,59 @@ public class AiDetectionService {
         if (apiResponse == null || apiResponse.choices() == null || apiResponse.choices().isEmpty()) {
             return "{\"error\": \"The AI model returned an empty response.\"}";
         }
-
+        
         Choice firstChoice = apiResponse.choices().get(0);
         if (firstChoice.message() == null || firstChoice.message().content() == null || firstChoice.message().content().isBlank()) {
             return "{\"error\": \"The AI model returned a message with no content.\"}";
         }
 
-        String content = firstChoice.message().content();
-
-        // --- START: MODIFIED LOGIC ---
-
-        // Trim the entire string first to remove leading/trailing whitespace from the AI.
-        String trimmedContent = content.trim();
-
-        int jsonStart = trimmedContent.indexOf('{');
-        int jsonEnd = trimmedContent.lastIndexOf('}');
+        String content = firstChoice.message().content().trim();
+        
+        int jsonStart = content.indexOf('{');
+        int jsonEnd = content.lastIndexOf('}');
 
         if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart) {
-            String extractedJson = trimmedContent.substring(jsonStart, jsonEnd + 1);
-
-            // **THE FIX**: Sanitize the string to remove common non-standard characters
-            // that AI models sometimes generate, which are invisible but break JSON parsers.
-            String sanitizedJson = extractedJson
-                    // 1. Replace non-breaking spaces (U+00A0) and other problematic whitespace with a standard space.
-                    .replaceAll("\\u00A0", " ")
-                    // 2. Then, replace all standard newlines with escaped newlines for JSON compatibility.
-                    .replaceAll("\\r\\n|\\n|\\r", "\\\\n");
+            String extractedJson = content.substring(jsonStart, jsonEnd + 1);
+            
+            // Use a robust state machine to sanitize newlines only within string literals.
+            String sanitizedJson = sanitizeJsonString(extractedJson);
 
             try {
-                // Attempt to parse the fully sanitized JSON.
                 objectMapper.readTree(sanitizedJson);
-                return sanitizedJson; // Return the valid, sanitized JSON string.
+                return sanitizedJson;
             } catch (JsonProcessingException e) {
                 System.err.println("Failed to parse JSON even after robust sanitizing. Raw content: " + content);
-                return "{\"error\": \"The AI model returned a malformed JSON response that could not be repaired.\"}";
+                return "{\"error\": \"The AI model returned a malformed JSON response.\"}";
             }
         }
-
-        // --- END: MODIFIED LOGIC ---
-
+        
         System.err.println("Failed to find any JSON in raw content: " + content);
         return "{\"error\": \"Could not find a valid JSON object in the AI's response.\"}";
+    }
+
+    private String sanitizeJsonString(String json) {
+        StringBuilder sanitized = new StringBuilder();
+        boolean inString = false;
+        boolean isEscaped = false;
+
+        for (char c : json.toCharArray()) {
+            if (c == '\"') {
+                if (!isEscaped) {
+                    inString = !inString;
+                }
+                isEscaped = false; // Reset escaped state after processing quote
+            } else if (c == '\\') {
+                isEscaped = !isEscaped; // Toggle escaped state
+            } else {
+                isEscaped = false; // Reset escaped state for other characters
+            }
+
+            if (inString && (c == '\n' || c == '\r')) {
+                sanitized.append("\\n");
+            } else {
+                sanitized.append(c);
+            }
+        }
+        return sanitized.toString();
     }
 }
