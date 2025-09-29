@@ -1,0 +1,97 @@
+/* Global Theme System: Cosmic Indigo (dark) only */
+/* Contract: All components must use these tokens for colors, radii, and shadows */
+
+/* Base tokens (Cosmic Indigo dark) */
+:root {
+  /* Semantic colors */
+  --bg-primary: #0b0f19;
+  --bg-secondary: #12182a;
+  --bg-tertiary: #1e2741;
+  --card-bg: #141b2e;
+
+  --text-primary: #eef2f8;
+  --text-secondary: #a8b0c3;
+  --text-placeholder: #8b94ab;
+  --link-color: #9a8cff;
+
+  /* Accent: Cosmic Indigo */
+  --accent-primary: #7c6ef6;
+  --accent-hover: #6a5df0;
+  --accent-contrast: #ffffff;
+  --accent-gradient: linear-gradient(135deg, #7c6ef6 0%, #a675ff 100%);
+  --accent-overlay-1: rgba(124, 110, 246, 0.27);
+  --accent-overlay-2: rgba(166, 117, 255, 0.27);
+
+  /* Status */
+  --success: #22c55e;
+  --success-translucent: rgba(34, 197, 94, 0.15);
+  --error: #ef4444;
+  --error-translucent: rgba(239, 68, 68, 0.15);
+  --warning: #f59e0b;
+  --warning-translucent: rgba(245, 158, 11, 0.15);
+  --info: #38bdf8;
+
+  /* Borders and outlines */
+  --border-color: rgba(255, 255, 255, 0.08);
+  --focus-ring-color: rgba(124, 110, 246, 0.35);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-round: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 15px rgba(124, 110, 246, 0.5);
+
+  /* Code blocks */
+  --code-bg: #0d1117;
+  --code-fg: #c9d1d9;
+  --code-inline-bg: #333843;
+
+  /* Overlays */
+  --overlay-scrim: rgba(0, 0, 0, 0.6);
+}
+
+/* Global base styles */
+html, body { color: var(--text-primary); background: var(--bg-primary); }
+
+= /* Fluid, responsive type scale on the root */
+html { font-size: clamp(14px, 1.1vw, 16px); }
+
+/* Box-sizing reset to avoid overflow issues */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Generic elements */
+input, textarea, select {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+input::placeholder, textarea::placeholder { color: var(--text-placeholder); }
+input:focus, textarea:focus, select:focus {
+  outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--focus-ring-color);
+}
+
+/* Links */
+a { color: var(--link-color); }
+
+/* Ensure media scales with containers */
+img, video { max-width: 100%; height: auto; display: block; }
+
+/* Buttons baseline */
+.btn { border-radius: var(--radius-round); box-shadow: var(--shadow-sm); }
+.btn-primary { background: var(--accent-gradient); color: var(--accent-contrast); }
+.btn-primary:hover { filter: brightness(1.03); box-shadow: var(--shadow-glow); }
+.btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
+.btn-secondary:hover { background: var(--bg-secondary); }
+
+/* Accessibility utilities */
+.sr-only {
+  position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important;
+  margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important;
+}

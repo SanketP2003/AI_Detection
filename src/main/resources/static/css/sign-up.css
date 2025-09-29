@@ -1,12 +1,13 @@
+/* Centralized theme mapping for Auth (Sign-in/Sign-up) pages */
 :root {
-    --color-gray-900: hsl(222, 24%, 9%);
-    --color-gray-800: hsl(223, 23%, 14%);
-    --color-gray-700: hsl(223, 16%, 24%);
-    --color-gray-400: hsl(220, 9%, 64%);
-    --color-gray-300: hsl(210, 14%, 83%);
-    --color-white: #ffffff;
-    --color-indigo-800: hsl(242, 53%, 49%);
-    --color-indigo-500: hsl(239, 85%, 68%);
+    --color-gray-900: var(--bg-primary);
+    --color-gray-800: var(--bg-secondary);
+    --color-gray-700: var(--bg-tertiary);
+    --color-gray-400: var(--text-secondary);
+    --color-gray-300: color-mix(in oklab, var(--text-secondary) 80%, var(--text-primary));
+    --color-white: var(--text-primary);
+    --color-indigo-800: var(--accent-primary);
+    --color-indigo-500: var(--accent-hover);
 }
 
 * {
@@ -17,9 +18,9 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-    background-color: var(--color-gray-900);
-    background-image: radial-gradient(circle at 50% 0%, hsl(242, 53%, 12%), var(--color-gray-900) 40%);
-    color: var(--color-white);
+    background-color: var(--bg-primary);
+    background-image: radial-gradient(circle at 50% 0%, var(--accent-overlay-1), transparent 40%);
+    color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
@@ -51,38 +52,39 @@ body {
 
 .btn:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
 }
 
 .btn-primary {
-    background-color: var(--color-indigo-800);
-    color: var(--color-white);
+    background: var(--accent-gradient);
+    color: var(--accent-contrast);
 }
 
 .btn-primary:hover {
-    background-color: var(--color-indigo-500);
+    filter: brightness(1.03);
+    box-shadow: var(--shadow-glow);
 }
 
 .btn-secondary {
-    color: var(--color-indigo-500);
-    background-color: transparent;
-    border: 2px solid var(--color-indigo-800);
+    color: var(--text-primary);
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
 }
 
 .btn-secondary:hover {
-    background-color: var(--color-indigo-800);
-    color: var(--color-white);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .btn-signin {
     padding: 0.625rem 1.75rem 1rem;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-md);
 }
 
 .btn-large {
     padding: 1.25rem 2.75rem;
     font-size: 1.125rem;
-    border-radius: 0.75rem;
+    border-radius: var(--radius-md);
 }
 
 .logo {
@@ -92,11 +94,11 @@ body {
     font-size: 1.25rem;
     font-weight: 600;
     text-decoration: none;
-    color: var(--color-white);
+    color: var(--text-primary);
 }
 
 .logo svg {
-    color: var(--color-indigo-500);
+    color: var(--accent-primary);
 }
 
 .page-container {
@@ -107,13 +109,13 @@ body {
 .header {
     width: 100%;
     padding: 0.5rem 5rem;
-    background-color: hsla(222, 24%, 9%, 0.8);
+    background-color: color-mix(in oklab, var(--bg-primary) 80%, transparent);
     backdrop-filter: blur(8px);
     position: absolute;
     top: 0;
     left: 0;
     z-index: 50;
-    border-bottom: 1px solid var(--color-gray-800);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .header-content {
@@ -129,19 +131,19 @@ body {
     display: flex;
     align-items: center;
     gap: 2rem;
-    color: var(--color-gray-300);
+    color: var(--text-secondary);
     font-size: 1rem;
 }
 
 .nav-menu a {
     text-decoration: none;
-    color: var(--color-gray-300);
+    color: var(--text-secondary);
     padding: 1rem 0;
     transition: color 0.3s ease;
 }
 
 .nav-menu a:hover {
-    color: var(--color-white);
+    color: var(--text-primary);
 }
 
 .hero-section {
@@ -175,7 +177,7 @@ body {
     margin-top: 2rem;
     font-size: clamp(1rem, 2.5vw, 1.25rem);
     line-height: 1.7;
-    color: var(--color-gray-300);
+    color: var(--text-secondary);
     max-width: 650px;
 }
 
@@ -207,7 +209,7 @@ body {
     margin-top: 1.5rem;
     font-size: 1.25rem;
     line-height: 1.7;
-    color: var(--color-gray-400);
+    color: var(--text-secondary);
 }
 
 .features-grid {
@@ -219,23 +221,23 @@ body {
 .feature-card {
     flex: 1;
     padding: 2.5rem;
-    border-radius: 1rem;
-    border: 1px solid var(--color-gray-800);
-    background: linear-gradient(var(--color-gray-800), var(--color-gray-900));
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: linear-gradient(var(--bg-secondary), var(--bg-primary));
     transition: all 0.3s ease;
 }
 
 .feature-card:hover {
     transform: translateY(-8px);
-    border-color: var(--color-indigo-800);
+    border-color: var(--accent-primary);
 }
 
 .feature-icon-wrapper {
     display: inline-flex;
     padding: 1rem;
-    border-radius: 0.75rem;
-    background-color: var(--color-gray-900);
-    color: var(--color-indigo-500);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-primary);
+    color: var(--accent-primary);
 }
 
 .feature-card h3 {
@@ -245,14 +247,14 @@ body {
 
 .feature-description {
     margin-top: 1rem;
-    color: var(--color-gray-400);
+    color: var(--text-secondary);
     font-size: 1rem;
     line-height: 1.5;
 }
 
 .feature-list {
     margin-top: 1.5rem;
-    color: var(--color-gray-300);
+    color: var(--text-secondary);
     list-style: none;
 }
 
@@ -264,7 +266,7 @@ body {
 }
 
 .feature-list svg {
-    color: var(--color-indigo-500);
+    color: var(--accent-primary);
 }
 
 .cta-section {
@@ -286,7 +288,7 @@ body {
     margin-top: 1.75rem;
     font-size: 1.25rem;
     line-height: 1.7;
-    color: var(--color-gray-300);
+    color: var(--text-secondary);
 }
 
 .cta-buttons {
@@ -299,8 +301,8 @@ body {
 
 .footer {
     padding: 4rem 5rem;
-    background-color: var(--color-gray-900);
-    border-top: 1px solid var(--color-gray-800);
+    background-color: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
 }
 
 .footer-content {
@@ -325,12 +327,12 @@ body {
 .social-icons a svg {
     width: 1.5rem;
     height: 1.5rem;
-    fill: var(--color-gray-400);
+    fill: var(--text-secondary);
     transition: fill 0.3s ease, transform 0.3s ease;
 }
 
 .social-icons a:hover svg {
-    fill: var(--color-white);
+    fill: var(--text-primary);
     transform: scale(1.1);
 }
 
@@ -338,9 +340,9 @@ body {
     padding-top: 2rem;
     margin-top: 2rem;
     text-align: center;
-    color: var(--color-gray-400);
+    color: var(--text-secondary);
     font-size: 1rem;
-    border-top: 1px solid var(--color-gray-800);
+    border-top: 1px solid var(--border-color);
 }
 
 .login-page-body {
@@ -354,9 +356,9 @@ body {
     width: 100%;
     max-width: 420px;
     padding: 2.5rem;
-    border-radius: 1rem;
-    border: 1px solid var(--color-gray-800);
-    background: linear-gradient(var(--color-gray-800), var(--color-gray-900));
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    background: linear-gradient(var(--bg-secondary), var(--bg-primary));
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
@@ -375,12 +377,12 @@ body {
 .login-header h2 {
     font-size: 2rem;
     font-weight: 600;
-    color: var(--color-white);
+    color: var(--text-primary);
 }
 
 .login-header p {
     margin-top: 0.5rem;
-    color: var(--color-gray-400);
+    color: var(--text-secondary);
 }
 
 .login-form {
@@ -398,24 +400,24 @@ body {
 .form-group label {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-gray-300);
+    color: var(--text-secondary);
 }
 
 .form-group input {
     font-family: inherit;
     font-size: 1rem;
     padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--color-gray-700);
-    background-color: var(--color-gray-900);
-    color: var(--color-white);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     outline: none;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-group input:focus {
-    border-color: var(--color-indigo-500);
-    box-shadow: 0 0 0 3px hsla(239, 85%, 68%, 0.2);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--focus-ring-color);
 }
 
 .form-options {
@@ -427,13 +429,13 @@ body {
 
 .forgot-password {
     font-size: 0.875rem;
-    color: var(--color-indigo-500);
+    color: var(--accent-primary);
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .forgot-password:hover {
-    color: var(--color-white);
+    color: var(--text-primary);
     text-decoration: underline;
 }
 
@@ -446,20 +448,20 @@ body {
 .signup-link {
     text-align: center;
     font-size: 0.875rem;
-    color: var(--color-gray-400);
+    color: var(--text-secondary);
     padding-top: 1.5rem;
-    border-top: 1px solid var(--color-gray-800);
+    border-top: 1px solid var(--border-color);
 }
 
 .signup-link a {
     font-weight: 600;
-    color: var(--color-indigo-500);
+    color: var(--accent-primary);
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .signup-link a:hover {
-    color: var(--color-white);
+    color: var(--text-primary);
     text-decoration: underline;
 }
 

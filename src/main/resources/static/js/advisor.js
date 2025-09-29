@@ -301,7 +301,9 @@
     }
 
     function toggleSidebar() {
-        elements.sidebar.classList.toggle('visible');
+        // Use the CSS class 'open' on sidebar to slide it in/out on mobile
+        elements.sidebar.classList.toggle('open');
+        // Overlay visibility handled with 'visible'
         elements.sidebarOverlay.classList.toggle('visible');
     }
 
