@@ -57,9 +57,11 @@
 }
 
 /* Global base styles */
-html, body { color: var(--text-primary); background: var(--bg-primary); }
+html, body {
+    color: var(--text-primary);
+    background: var(--bg-primary);
+}
 
-= /* Fluid, responsive type scale on the root */
 html { font-size: clamp(14px, 1.1vw, 16px); }
 
 /* Box-sizing reset to avoid overflow issues */
