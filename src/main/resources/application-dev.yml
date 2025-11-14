@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: ai_verify
+  main:
+    web-application-type: servlet
+    allow-bean-definition-overriding: true
+  mvc:
+    async:
+      request-timeout: 60000 # 60 seconds
+  datasource:
+    url: jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
+    username: neondb_owner
+    password: npg_IBjy0zaArkq3
+    hikari:
+      max-lifetime: 1200000
+      idle-timeout: 600000
+      connection-timeout: 30000
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8080
+  error:
+    whitelabel:
+      enabled: false
+
+mistralmodel:
+  api:
+    url: https://api.mistral.ai/v1/chat/completions
+    key: "9FDwOFPeXg4iIvBQRi4fvC5YjAS93OZB"
+  model: mistral-large-latest
+  temperature: 0.7
+  max-tokens: 600
