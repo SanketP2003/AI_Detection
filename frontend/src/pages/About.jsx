@@ -6,252 +6,182 @@ import { Shield, Bot, Users, Target, Award, Zap } from 'lucide-react';
 
 const About = () => {
   const values = [
-    {
-      icon: Shield,
-      title: 'Trust & Transparency',
-      description: 'We believe in providing clear, honest insights about AI detection with full transparency in our methods.'
-    },
-    {
-      icon: Bot,
-      title: 'Innovation',
-      description: 'Continuously advancing our AI technology to stay ahead of evolving content generation techniques.'
-    },
-    {
-      icon: Users,
-      title: 'Community First',
-      description: 'Building tools that serve educators, content creators, and professionals in maintaining content integrity.'
-    }
+    { icon: Shield, title: 'Trust & transparency', desc: 'Clear signals and honest methods—no black boxes.' },
+    { icon: Bot, title: 'Iterate & improve', desc: 'We ship small, verify often, and keep the UI calm.' },
+    { icon: Users, title: 'People first', desc: 'Built for educators, editors, and review teams.' },
   ];
 
   const stats = [
-    { icon: Target, number: '99.2%', label: 'Detection Accuracy' },
-    { icon: Users, number: '10K+', label: 'Active Users' },
-    { icon: Award, number: '50M+', label: 'Content Analyzed' },
-    { icon: Zap, number: '24/7', label: 'Support Available' }
+    { icon: Target, number: '99.2%', label: 'detection accuracy' },
+    { icon: Users, number: '10K+', label: 'active reviewers' },
+    { icon: Award, number: '50M+', label: 'tokens analyzed' },
+    { icon: Zap, number: '24/7', label: 'availability' },
   ];
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-night text-gray-text">
       <Header />
-      
-      <main className="pt-20">
-        {/* Hero Section */}
-        <section className="py-20 bg-black">
+
+      <main className="pt-24 pb-20">
+        {/* Hero */}
+        <section className="py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
-              className="text-center mb-16"
-              initial={{ opacity: 0, y: 30 }}
+              className="text-center max-w-4xl mx-auto"
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              transition={{ duration: 0.6 }}
             >
-              <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6">
-                About AI Guardian
-              </h1>
-              <p className="text-xl text-gray-400 max-w-4xl mx-auto leading-relaxed">
-                We're on a mission to help people navigate the evolving landscape of AI-generated content 
-                with confidence, transparency, and intelligent tools that empower informed decision-making.
+              <h1 className="text-4xl sm:text-6xl font-space text-white">Why AI Guardian</h1>
+              <p className="text-lg sm:text-xl text-mist/80 mt-4">
+                Minimal tools for evaluating synthetic content—built for clarity, trust, and speed.
               </p>
             </motion.div>
           </div>
         </section>
 
-        {/* Mission Section */}
-        <section className="py-20 bg-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-4xl font-bold text-white mb-6">Our Mission</h2>
-                <p className="text-gray-400 text-lg leading-relaxed mb-6">
-                  As artificial intelligence becomes increasingly sophisticated in content generation, 
-                  the need for reliable detection and advisory services has never been more critical. 
-                  We bridge this gap by providing cutting-edge tools that help maintain content authenticity 
-                  and integrity across digital platforms.
-                </p>
-                <p className="text-gray-400 text-lg leading-relaxed">
-                  Our platform serves educators verifying student work, content creators ensuring originality, 
-                  and professionals maintaining quality standards in an AI-driven world.
-                </p>
-              </motion.div>
-
-              <motion.div
-                className="relative"
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-              >
-                <div className="bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
-                  <div className="grid grid-cols-2 gap-6">
-                    {stats.map((stat, index) => (
-                      <motion.div
-                        key={index}
-                        className="text-center"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                        viewport={{ once: true }}
-                      >
-                        <stat.icon className="h-8 w-8 text-white mx-auto mb-3" />
-                        <div className="text-2xl font-bold text-white mb-1">{stat.number}</div>
-                        <div className="text-gray-400 text-sm">{stat.label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* Values Section */}
-        <section className="py-20 bg-black">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Mission + Stats */}
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-10 lg:grid-cols-2 items-start">
             <motion.div
-              className="text-center mb-16"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              className="section-shell"
+              initial={{ opacity: 0, x: -18 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl font-bold text-white mb-6">Our Values</h2>
-              <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-                The principles that guide everything we do and every decision we make.
+              <h2 className="text-3xl sm:text-4xl font-space text-white">Our mission</h2>
+              <p className="text-mist/80 mt-4">
+                As AI writing models evolve, reviewers need quiet interfaces and reliable heuristics to measure authenticity.
+                We provide a small toolkit that surfaces just the right metrics, so you can make confident calls without noise.
+              </p>
+              <p className="text-mist/80 mt-3">
+                From classroom submissions to editorial review, we help teams keep standards high with explainable signals.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {values.map((value, index) => (
+            <motion.div
+              className="rounded-3xl border border-white/10 bg-white/5 p-8"
+              initial={{ opacity: 0, x: 18 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="grid grid-cols-2 gap-5">
+                {stats.map((s, i) => (
+                  <motion.div
+                    key={s.label}
+                    className="glass-panel border-white/10 p-5 text-center"
+                    initial={{ opacity: 0, y: 14 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: i * 0.05 }}
+                    viewport={{ once: true }}
+                  >
+                    <s.icon className="h-6 w-6 text-white mx-auto mb-3" />
+                    <div className="text-2xl font-space font-semibold text-white">{s.number}</div>
+                    <div className="text-xs uppercase tracking-[0.3em] text-mist/70 mt-1">{s.label}</div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Values */}
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              className="text-center max-w-3xl mx-auto mb-10"
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl sm:text-4xl font-space text-white">Principles</h2>
+              <p className="text-mist/80 mt-3">The design and engineering choices that shape every release.</p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+              {values.map((v, i) => (
                 <motion.div
-                  key={index}
-                  className="bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 p-8 text-center hover:bg-white/10 transition-all duration-300"
-                  initial={{ opacity: 0, y: 30 }}
+                  key={v.title}
+                  className="glass-panel border-white/10 p-6 text-center"
+                  initial={{ opacity: 0, y: 14 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  transition={{ duration: 0.4, delay: i * 0.05 }}
                   viewport={{ once: true }}
-                  whileHover={{ scale: 1.02 }}
                 >
-                  <value.icon className="h-12 w-12 text-white mx-auto mb-6" />
-                  <h3 className="text-xl font-bold text-white mb-4">{value.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{value.description}</p>
+                  <v.icon className="h-6 w-6 text-white mx-auto mb-4" />
+                  <p className="text-white font-space text-lg">{v.title}</p>
+                  <p className="text-sm text-mist/80 mt-2">{v.desc}</p>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Technology Section */}
-        <section className="py-20 bg-white/5">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-              >
-                <h2 className="text-4xl font-bold text-white mb-6">Advanced Technology</h2>
-                <p className="text-gray-400 text-lg leading-relaxed mb-6">
-                  Our AI detection system combines multiple advanced techniques including natural language processing, 
-                  pattern recognition, and machine learning algorithms trained on diverse datasets to provide 
-                  accurate and reliable results.
-                </p>
-                <div className="space-y-4">
-                  {[
-                    'Multi-layered neural network analysis',
-                    'Real-time pattern recognition',
-                    'Continuous model improvement',
-                    'Privacy-first processing'
-                  ].map((feature, index) => (
-                    <motion.div
-                      key={index}
-                      className="flex items-center"
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                    >
-                      <div className="w-2 h-2 bg-white rounded-full mr-3"></div>
-                      <span className="text-gray-300">{feature}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
+        {/* Technology */}
+        <section className="py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-10 lg:grid-cols-2 items-center">
+            <motion.div
+              className="section-shell"
+              initial={{ opacity: 0, x: -18 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <h2 className="text-3xl sm:text-4xl font-space text-white">Technology choices</h2>
+              <ul className="mt-4 space-y-3 text-mist/80">
+                {['Ensemble modeling for robust signals', 'Adaptive thresholds per domain', 'Continuous evaluation sets', 'Privacy-first architecture'].map((item) => (
+                  <li key={item} className="flex items-center gap-3">
+                    <span className="h-1.5 w-1.5 rounded-full bg-white/70" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
 
-              <motion.div
-                className="relative"
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8 }}
-                viewport={{ once: true }}
-              >
-                <div className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-white/10 p-8">
-                  <div className="text-center">
-                    <div className="text-6xl font-bold text-white mb-4">AI</div>
-                    <div className="text-xl text-gray-400 mb-6">Powered Detection</div>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="bg-white/10 rounded-lg p-3">
-                        <div className="text-white font-semibold">Accuracy</div>
-                        <div className="text-gray-400">99.2%</div>
-                      </div>
-                      <div className="bg-white/10 rounded-lg p-3">
-                        <div className="text-white font-semibold">Speed</div>
-                        <div className="text-gray-400">&lt;2s</div>
-                      </div>
-                      <div className="bg-white/10 rounded-lg p-3">
-                        <div className="text-white font-semibold">Languages</div>
-                        <div className="text-gray-400">25+</div>
-                      </div>
-                      <div className="bg-white/10 rounded-lg p-3">
-                        <div className="text-white font-semibold">Uptime</div>
-                        <div className="text-gray-400">99.9%</div>
-                      </div>
-                    </div>
+            <motion.div
+              className="rounded-3xl border border-white/10 bg-white/5 p-8"
+              initial={{ opacity: 0, x: 18 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {[{ k: 'Accuracy', v: '99.2%' }, { k: 'Latency', v: '<2s' }, { k: 'Languages', v: '25+' }, { k: 'Uptime', v: '99.9%' }].map(({ k, v }) => (
+                  <div key={k} className="rounded-xl border border-white/10 bg-black/30 p-4">
+                    <div className="text-white font-semibold">{k}</div>
+                    <div className="text-mist/80">{v}</div>
                   </div>
-                </div>
-              </motion.div>
-            </div>
+                ))}
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section className="py-20 bg-black">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-4xl font-bold text-white mb-6">
-                Ready to Experience AI Guardian?
-              </h2>
-              <p className="text-xl text-gray-400 mb-8">
-                Join thousands of users who trust our platform for reliable AI content detection and advisory services.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <motion.a
-                  href="/detector"
-                  className="inline-flex items-center px-8 py-4 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-all duration-300"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Try AI Detector
-                </motion.a>
-                <motion.a
-                  href="/chat"
-                  className="inline-flex items-center px-8 py-4 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-black transition-all duration-300"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Chat with AI
-                </motion.a>
-              </div>
-            </motion.div>
+        {/* CTA */}
+        <section className="py-16">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="section-shell text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="text-3xl sm:text-4xl font-space text-white">See it in practice</h3>
+                <p className="text-mist/80 mt-3">Run a detection or try the advisor—your content never persists.</p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+                  <motion.a href="/detector" className="px-6 py-3 rounded-xl bg-white text-black font-space text-sm uppercase tracking-[0.35em]" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    Try detector
+                  </motion.a>
+                  <motion.a href="/chat" className="px-6 py-3 rounded-xl border border-white/15 text-white font-space text-sm uppercase tracking-[0.35em] hover:bg-white/5" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                    Open advisor
+                  </motion.a>
+                </div>
+              </motion.div>
+            </div>
           </div>
         </section>
       </main>
@@ -262,4 +192,3 @@ const About = () => {
 };
 
 export default About;
-

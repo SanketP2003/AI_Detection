@@ -1,11 +1,11 @@
 import React from 'react';
-import { Github, Twitter, Linkedin } from 'lucide-react';
+import {Github, Linkedin, Mail} from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Footer = () => {
   const socialLinks = [
     { icon: Github, href: '#', label: 'GitHub' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
+    { icon: Mail, href: 'mailto:1002sanketpatil@gmail.com', label: 'Email' },
     { icon: Linkedin, href: '#', label: 'LinkedIn' },
   ];
 
@@ -67,9 +67,9 @@ const Footer = () => {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors duration-300">
+                  <button type="button" className="hover:text-white transition-colors duration-300 text-left">
                     API Access
-                  </a>
+                  </button>
                 </li>
               </ul>
             </motion.div>
@@ -85,19 +85,19 @@ const Footer = () => {
               <h4 className="text-base md:text-lg font-space font-semibold text-white mb-3 md:mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-mist/80">
                 <li>
-                  <a href="#" className="hover:text-white transition-colors duration-300">
+                  <button type="button" className="hover:text-white transition-colors duration-300 text-left">
                     Privacy Policy
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors duration-300">
+                  <button type="button" className="hover:text-white transition-colors duration-300 text-left">
                     Terms of Service
-                  </a>
+                  </button>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition-colors duration-300">
+                  <button type="button" className="hover:text-white transition-colors duration-300 text-left">
                     Cookie Policy
-                  </a>
+                  </button>
                 </li>
               </ul>
             </motion.div>
@@ -115,7 +115,7 @@ const Footer = () => {
             © 2025 AI Guardian. All rights reserved.
           </p>
           <p className="font-inter text-center sm:text-right">
-            Built with <span className="text-accent">care</span> by <a rel="nofollow" target="_blank" href="https://meku.dev" className="text-white hover:text-accent transition-colors duration-300 font-semibold">Sanket Patil</a>
+            Built with <span className="text-accent">care</span> for authenticity and trust.
           </p>
         </motion.div>
       </div>

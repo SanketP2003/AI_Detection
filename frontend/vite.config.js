@@ -13,6 +13,7 @@ export default defineConfig({
   },
   logLevel: 'info', 
   build: {
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       onwarn(warning, warn) {
         // ignore certain harmless warnings
@@ -36,6 +37,27 @@ export default defineConfig({
 
         // other warnings: log normally
         warn(warning);
+      },
+      output: {
+        manualChunks(id) {
+          if (!id || !id.includes('node_modules')) return;
+          // React core
+          if (id.includes('react-dom')) return 'vendor_react-dom';
+          if (id.includes('react-router')) return 'vendor_react-router';
+          if (id.includes('react')) return 'vendor_react';
+
+          // Three.js ecosystem
+          if (id.includes('three')) return 'vendor_three';
+          if (id.includes('@react-three/fiber')) return 'vendor_r3f';
+          if (id.includes('@react-three/drei')) return 'vendor_drei';
+
+          // Animation and charts
+          if (id.includes('framer-motion')) return 'vendor_motion';
+          if (id.includes('recharts')) return 'vendor_charts';
+
+          // Icons
+          if (id.includes('lucide-react')) return 'vendor_icons';
+        },
       },
     },
   },

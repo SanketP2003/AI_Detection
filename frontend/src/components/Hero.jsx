@@ -1,8 +1,8 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { ArrowRight, Shield, Bot, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Hero3D from './Hero3D';
+const Hero3D = lazy(() => import('./Hero3D'));
 
 const Hero = () => {
   const features = [
