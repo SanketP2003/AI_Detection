@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy Maven files and download dependencies (for better build caching)
 COPY pom.xml .
-COPY mvnw .
+COPY --chmod=0755 mvnw .
 COPY .mvn .mvn
 RUN ./mvnw dependency:go-offline
 
