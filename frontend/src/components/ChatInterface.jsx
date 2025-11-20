@@ -411,80 +411,83 @@ const ChatInterface = () => {
         {/* Messages */}
         <div className="relative flex-1">
           <div ref={messagesContainerRef} className="h-full overflow-y-auto p-6 space-y-4 bg-onyx/70">
-             <AnimatePresence>
-               {messages.map((message, index) => (
-                 <motion.div
-                   key={message.id}
-                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                   initial={{ opacity: 0, y: 20, scale: 0.98 }}
-                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                   transition={{ duration: 0.3, delay: index * 0.03 }}
-                 >
-                   <div className={`flex max-w-[85%] gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
-                     <div className="w-10 h-10 rounded-2xl bg-carbon border border-white/5 flex items-center justify-center">
-                       {message.sender === 'user' ? <User className="h-4 w-4 text-white" /> : <Bot className="h-4 w-4 text-accent" />}
-                     </div>
-                     <div className={`rounded-2xl px-4 py-3 border border-white/5 text-sm leading-relaxed ${
-                       message.sender === 'user'
-                         ? 'bg-white text-black'
-                         : message.isError
-                           ? 'bg-red-500/10 text-red-200'
-                           : 'bg-carbon/70 text-white'
-                     }`}>
-                       {message.sender === 'ai' && message.formattedSegments
-                         ? (
-                           <div className="space-y-3">
-                             {message.formattedSegments.map((segment, idx) => {
-                               if (segment.type === 'list') {
-                                 return (
-                                   <ul key={idx} className="list-disc pl-5 space-y-1 text-sm">
-                                     {segment.items.map((item, itemIdx) => (
-                                       <li key={itemIdx} className="text-white/90">{item}</li>
-                                     ))}
-                                   </ul>
-                                 );
-                               }
-                               return (
-                                 <p key={idx} className="text-white/90">
-                                   {segment.content}
-                                 </p>
-                               );
-                             })}
-                           </div>
-                         ) : (
-                           <p className={message.sender === 'user' ? 'text-black' : 'text-white/90'}>
-                             {message.content}
-                           </p>
-                         )}
-                     <p className={`text-[11px] mt-2 ${message.sender === 'user' ? 'text-black/60' : 'text-mist/70'}`}>
-                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                     </p>
-                   </div>
-                 </div>
-               ))}
-             </AnimatePresence>
+            <>
+              <AnimatePresence>
+                {messages.map((message, index) => (
+                  <motion.div
+                    key={message.id}
+                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    initial={{ opacity: 0, y: 20, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.03 }}
+                  >
+                    <div className={`flex max-w-[85%] gap-3 ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <div className="w-10 h-10 rounded-2xl bg-carbon border border-white/5 flex items-center justify-center">
+                        {message.sender === 'user' ? <User className="h-4 w-4 text-white" /> : <Bot className="h-4 w-4 text-accent" />}
+                      </div>
+                      <div className={`rounded-2xl px-4 py-3 border border-white/5 text-sm leading-relaxed ${
+                        message.sender === 'user'
+                          ? 'bg-white text-black'
+                          : message.isError
+                            ? 'bg-red-500/10 text-red-200'
+                            : 'bg-carbon/70 text-white'
+                      }`}>
+                        {message.sender === 'ai' && message.formattedSegments
+                          ? (
+                            <div className="space-y-3">
+                              {message.formattedSegments.map((segment, idx) => {
+                                if (segment.type === 'list') {
+                                  return (
+                                    <ul key={idx} className="list-disc pl-5 space-y-1 text-sm">
+                                      {segment.items.map((item, itemIdx) => (
+                                        <li key={itemIdx} className="text-white/90">{item}</li>
+                                      ))}
+                                    </ul>
+                                  );
+                                }
+                                return (
+                                  <p key={idx} className="text-white/90">
+                                    {segment.content}
+                                  </p>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className={message.sender === 'user' ? 'text-black' : 'text-white/90'}>
+                              {message.content}
+                            </p>
+                          )}
+                        <p className={`text-[11px] mt-2 ${message.sender === 'user' ? 'text-black/60' : 'text-mist/70'}`}>
+                          {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
 
-             <AnimatePresence>
-               {isTyping && (
-                 <motion.div
-                   className="flex justify-start"
-                   initial={{ opacity: 0, y: 20 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   exit={{ opacity: 0, y: -20 }}
-                 >
-                   <div className="flex gap-3">
-                     <div className="w-10 h-10 rounded-2xl bg-carbon border border-white/5 flex items-center justify-center">
-                       <Bot className="h-4 w-4 text-accent" />
-                     </div>
-                     <div className="rounded-2xl px-4 py-3 border border-white/5 text-sm text-mist flex items-center gap-2">
-                       <Loader className="h-4 w-4 animate-spin" />
-                       thinking
-                     </div>
-                   </div>
-                 </motion.div>
-               )}
-             </AnimatePresence>
-          </div>
+              <AnimatePresence>
+                {isTyping && (
+                  <motion.div
+                    className="flex justify-start"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                  >
+                    <div className="flex gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-carbon border border-white/5 flex items-center justify-center">
+                        <Bot className="h-4 w-4 text-accent" />
+                      </div>
+                      <div className="rounded-2xl px-4 py-3 border border-white/5 text-sm text-mist flex items-center gap-2">
+                        <Loader className="h-4 w-4 animate-spin" />
+                        thinking
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+           </div>
           {showJumpButton && (
             <button
               onClick={() => {
