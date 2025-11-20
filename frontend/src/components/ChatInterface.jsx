@@ -411,7 +411,7 @@ const ChatInterface = () => {
         {/* Messages */}
         <div className="relative flex-1">
           <div ref={messagesContainerRef} className="h-full overflow-y-auto p-6 space-y-4 bg-onyx/70">
-            <>
+            <React.Fragment>
               <AnimatePresence>
                 {messages.map((message, index) => (
                   <motion.div
@@ -486,7 +486,7 @@ const ChatInterface = () => {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </>
+            </React.Fragment>
            </div>
           {showJumpButton && (
             <button
