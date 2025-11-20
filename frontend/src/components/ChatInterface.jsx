@@ -4,13 +4,58 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
+const parseAiResponse = (text) => {
+  if (!text) return null;
+  const lines = text.split(/\r?\n/);
+  const segments = [];
+  let paragraphBuffer = [];
+  let listBuffer = [];
+
+  const flushParagraph = () => {
+    if (!paragraphBuffer.length) return;
+    segments.push({ type: 'paragraph', content: paragraphBuffer.join(' ') });
+    paragraphBuffer = [];
+  };
+
+  const flushList = () => {
+    if (!listBuffer.length) return;
+    segments.push({ type: 'list', items: listBuffer });
+    listBuffer = [];
+  };
+
+  lines.forEach((rawLine) => {
+    const line = rawLine.trim();
+    if (!line) {
+      flushParagraph();
+      flushList();
+      return;
+    }
+
+    const bulletMatch = line.match(/^([-*•]|\d+[.).])\s+(.*)$/);
+    if (bulletMatch) {
+      flushParagraph();
+      listBuffer.push(bulletMatch[2] || bulletMatch[0].replace(/^[-*•]\s+/, ''));
+      return;
+    }
+
+    flushList();
+    paragraphBuffer.push(line);
+  });
+
+  flushParagraph();
+  flushList();
+
+  return segments.length ? segments : null;
+};
+
 const ChatInterface = () => {
   const [messages, setMessages] = useState([
     {
       id: '1',
       content: "Hello! I'm your AI Chat Advisor. I can help you with content analysis, writing tips, AI detection insights, and general questions. How can I assist you today?",
       sender: 'ai',
-      timestamp: new Date()
+      timestamp: new Date(),
+      formattedSegments: parseAiResponse("Hello! I'm your AI Chat Advisor. I can help you with content analysis, writing tips, AI detection insights, and general questions. How can I assist you today?")
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
@@ -102,7 +147,8 @@ const ChatInterface = () => {
       id: `history-ai-${chat.id}`,
       content: chat.response,
       sender: 'ai',
-      timestamp: new Date(chat.createdAt)
+      timestamp: new Date(chat.createdAt),
+      formattedSegments: parseAiResponse(chat.response)
     };
     setMessages([messages[0], userMsg, aiMsg]);
     setShowHistory(false);
@@ -179,7 +225,8 @@ const ChatInterface = () => {
         id: (Date.now() + 1).toString(),
         content: data.text || "I apologize, but I couldn't generate a response. Please try again.",
         sender: 'ai',
-        timestamp: new Date()
+        timestamp: new Date(),
+        formattedSegments: parseAiResponse(data.text || "I apologize, but I couldn't generate a response. Please try again.")
       };
 
       setMessages(prev => [...prev, aiMessage]);
@@ -362,7 +409,31 @@ const ChatInterface = () => {
                         ? 'bg-red-500/10 text-red-200'
                         : 'bg-carbon/70 text-white'
                   }`}>
-                    {message.content}
+                    {message.sender === 'ai' && message.formattedSegments
+                      ? (
+                        <div className="space-y-3">
+                          {message.formattedSegments.map((segment, idx) => {
+                            if (segment.type === 'list') {
+                              return (
+                                <ul key={idx} className="list-disc pl-5 space-y-1 text-sm">
+                                  {segment.items.map((item, itemIdx) => (
+                                    <li key={itemIdx} className="text-white/90">{item}</li>
+                                  ))}
+                                </ul>
+                              );
+                            }
+                            return (
+                              <p key={idx} className="text-white/90">
+                                {segment.content}
+                              </p>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <p className={message.sender === 'user' ? 'text-black' : 'text-white/90'}>
+                          {message.content}
+                        </p>
+                      )}
                     <p className={`text-[11px] mt-2 ${message.sender === 'user' ? 'text-black/60' : 'text-mist/70'}`}>
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
