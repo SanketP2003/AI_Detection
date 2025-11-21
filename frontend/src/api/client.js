@@ -1,8 +1,8 @@
-// Minimal API client for backend auth endpoints
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export async function login({ username, password }) {
-  // Spring Security formLogin expects application/x-www-form-urlencoded to /login
+  
   const params = new URLSearchParams({ username, password });
   const res = await fetch(`${API_BASE}/login`, {
     method: 'POST',
@@ -16,7 +16,7 @@ export async function login({ username, password }) {
     throw new Error('Invalid username or password');
   }
 
-  // After successful login, fetch user info
+  
   return getMe();
 }
 
@@ -37,7 +37,7 @@ export async function registerUser({ username, password, email }) {
 }
 
 export async function getMe() {
-  const res = await fetch(`${API_BASE}/api/user/me`, { // corrected path (was /api/users/me)
+  const res = await fetch(`${API_BASE}/api/user/me`, { 
     credentials: 'include',
   });
   if (!res.ok) return { authenticated: false };

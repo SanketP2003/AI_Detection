@@ -26,11 +26,11 @@ export default defineConfig([
       },
     },
     rules: {
-      // Let JSX references mark variables as used
+      
       'react/jsx-uses-vars': 'error',
-      // Not needed since React 17+
+      
       'react/react-in-jsx-scope': 'off',
-      // Don't flag the React import if present
+      
       'no-unused-vars': ['warn', { varsIgnorePattern: '^React$' }],
     },
     settings: {

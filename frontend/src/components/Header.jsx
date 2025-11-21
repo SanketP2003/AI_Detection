@@ -9,7 +9,7 @@ function Header() {
   const [user, setUser] = useState({ authenticated: false, isAdmin: false, username: '' });
   const location = useLocation();
 
-  // Check if user is logged in
+  
   useEffect(() => {
     let cancelled = false;
 
@@ -44,7 +44,7 @@ function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 bg-carbon/90 backdrop-blur-2xl border-b border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)]">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 md:h-20">
-          {/* Logo */}
+          {}
           <motion.div
             className="flex items-center space-x-2 md:space-x-3"
             initial={{ opacity: 0, x: -20 }}
@@ -60,7 +60,7 @@ function Header() {
             </Link>
           </motion.div>
 
-          {/* Desktop nav */}
+          {}
           <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
             {navLinks.map((link, i) => (
               <motion.div
@@ -82,7 +82,7 @@ function Header() {
               </motion.div>
             ))}
 
-            {/* Admin link for admin users */}
+            {}
             {user?.authenticated && user?.isAdmin && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -102,7 +102,7 @@ function Header() {
               </motion.div>
             )}
 
-            {/* Auth section */}
+            {}
             <div className="flex items-center gap-2 lg:gap-3 ml-4 border-l border-purple-primary/20 pl-4">
               {user?.authenticated ? (
                 <>
@@ -145,7 +145,7 @@ function Header() {
             </div>
           </div>
 
-          {/* Mobile menu button */}
+          {}
           <div className="md:hidden">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
@@ -157,7 +157,7 @@ function Header() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {}
         <AnimatePresence>
           {menuOpen && (
             <motion.div

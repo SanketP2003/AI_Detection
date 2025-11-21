@@ -16,7 +16,7 @@ function Login() {
 
     try {
       const userInfo = await login({ username, password });
-      // Redirect based on role
+      
       if (userInfo?.isAdmin) {
         window.location.href = '/admin';
       } else {

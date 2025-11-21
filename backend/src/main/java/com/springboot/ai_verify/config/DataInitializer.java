@@ -7,16 +7,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/**
- * Initialize default test users on application startup.
- */
+
 @Configuration
 public class DataInitializer {
 
     @Bean
     public CommandLineRunner initializeData(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            // Create test user if it doesn't exist
+            
             if (userRepository.findByUsername("testuser") == null) {
                 User testUser = new User();
                 testUser.setUsername("testuser");
@@ -27,7 +25,7 @@ public class DataInitializer {
                 System.out.println("✓ Test user 'testuser' created (password: password123)");
             }
 
-            // Create admin user if it doesn't exist
+            
             if (userRepository.findByUsername("admin") == null) {
                 User adminUser = new User();
                 adminUser.setUsername("admin");

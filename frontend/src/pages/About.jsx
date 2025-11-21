@@ -23,7 +23,7 @@ const About = () => {
       <Header />
 
       <main className="pt-24 pb-20">
-        {/* Hero */}
+        {}
         <section className="py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -40,7 +40,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* Mission + Stats */}
+        {}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-10 lg:grid-cols-2 items-start">
             <motion.div
@@ -87,7 +87,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* Values */}
+        {}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
@@ -120,7 +120,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* Technology */}
+        {}
         <section className="py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-10 lg:grid-cols-2 items-center">
             <motion.div
@@ -160,7 +160,7 @@ const About = () => {
           </div>
         </section>
 
-        {/* CTA */}
+        {}
         <section className="py-16">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="section-shell text-center">

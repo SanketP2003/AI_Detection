@@ -37,7 +37,7 @@ const DetectorForm = () => {
         return;
       }
 
-      // Transform API response to component format
+      
       setResult({
         isAiGenerated: data.probability >= 50,
         probability: data.probability,

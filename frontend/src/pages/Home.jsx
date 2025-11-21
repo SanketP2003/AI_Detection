@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Shield, Bot, Zap, Users, Globe, Lock } from 'lucide-react';
 
 function Home() {
-  // Main features to showcase
+  
   const features = [
     { icon: Shield, title: 'Advanced detection', desc: 'Multi-model scoring to spot synthetic patterns with clarity.' },
     { icon: Bot, title: 'Chat advisor', desc: 'A focused assistant for tone, authenticity, and submission prep.' },
@@ -16,7 +16,7 @@ function Home() {
     { icon: Lock, title: 'Privacy-first', desc: 'Stateless requests, no content retained.' },
   ];
 
-  // Some stats to display
+  
   const stats = [
     { number: '99.2%', label: 'avg. detection accuracy' },
     { number: '50M+', label: 'tokens analyzed' },
@@ -29,7 +29,7 @@ function Home() {
       <Header />
       <Hero />
 
-      {/* Features section */}
+      {}
       <section className="py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="section-shell grid-overlay">
@@ -65,7 +65,7 @@ function Home() {
         </div>
       </section>
 
-      {/* Stats section */}
+      {}
       <section className="py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -86,7 +86,7 @@ function Home() {
         </div>
       </section>
 
-      {/* CTA section */}
+      {}
       <section className="py-16 md:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="section-shell">

@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { Float, MeshDistortMaterial } from '@react-three/drei';
 
-// Floating Cube
+
 const FloatingCube = ({ position, color, speed = 1 }) => {
   const meshRef = useRef();
 
@@ -29,7 +29,7 @@ const FloatingCube = ({ position, color, speed = 1 }) => {
   );
 };
 
-// Floating Torus
+
 const FloatingTorus = ({ position, color, speed = 1 }) => {
   const meshRef = useRef();
 
@@ -56,7 +56,7 @@ const FloatingTorus = ({ position, color, speed = 1 }) => {
   );
 };
 
-// Floating Octahedron
+
 const FloatingOctahedron = ({ position, color, speed = 1 }) => {
   const meshRef = useRef();
 
@@ -83,7 +83,7 @@ const FloatingOctahedron = ({ position, color, speed = 1 }) => {
   );
 };
 
-// Main Component
+
 const FloatingShapes3D = () => {
   return (
     <div className="absolute inset-0 -z-10 opacity-40">

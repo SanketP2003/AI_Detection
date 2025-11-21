@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+
 export default {
   content: [
     "./index.html",
@@ -8,7 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Legacy palette
+        
         'pure-black': '#000000',
         'purple-primary': '#9333ea',
         'purple-light': '#A855F7',
@@ -16,7 +16,7 @@ export default {
         'purple-accent': '#8B5CF6',
         'gray-text': '#e5e7eb',
         'gray-secondary': '#9ca3af',
-        // Minimal black theme palette
+        
         night: '#050505',
         onyx: '#0c0c0f',
         carbon: '#111114',

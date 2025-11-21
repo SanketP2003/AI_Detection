@@ -1,16 +1,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-// Simple loading screen - spent way too much time on the animations lol
+
 function LoadingScreen() {
   const dots = [0, 1, 2, 3, 4, 5];
 
   return (
     <div className="min-h-screen bg-[#030711] text-white relative overflow-hidden">
-      {/* Background gradient effect */}
+      {}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,233,0.15),_transparent_50%)]" />
 
-      {/* Rotating blobs in background */}
+      {}
       <motion.div
         className="absolute -top-32 -right-16 w-[420px] h-[420px] bg-sky-500/20 blur-[180px]"
         animate={{ rotate: 360 }}
@@ -24,22 +24,22 @@ function LoadingScreen() {
 
       <div className="relative z-10 flex flex-col items-center justify-center gap-10 px-6 text-center min-h-screen">
         <div className="space-y-6">
-          {/* Main spinner */}
+          {}
           <div className="relative w-32 h-32 mx-auto">
-            {/* Outer ring */}
+            {}
             <motion.div
               className="absolute inset-0 rounded-full border border-white/10"
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 14, ease: 'linear' }}
             />
-            {/* Inner ring */}
+            {}
             <motion.div
               className="absolute inset-3 rounded-full border border-white/5"
               animate={{ rotate: -360 }}
               transition={{ repeat: Infinity, duration: 10, ease: 'linear' }}
             />
 
-            {/* Orbiting dots - each one goes at slightly different speed */}
+            {}
             {dots.map((i) => (
               <motion.span
                 key={i}
@@ -55,7 +55,7 @@ function LoadingScreen() {
               />
             ))}
 
-            {/* Pulsing center glow */}
+            {}
             <motion.div
               className="absolute inset-6 rounded-full bg-gradient-to-br from-white/15 to-transparent"
               animate={{
@@ -65,7 +65,7 @@ function LoadingScreen() {
               transition={{ repeat: Infinity, duration: 3.2, ease: 'easeInOut' }}
             />
 
-            {/* Center dot */}
+            {}
             <div className="absolute inset-[38%] rounded-full bg-white/90" />
           </div>
 
@@ -78,7 +78,7 @@ function LoadingScreen() {
           </div>
         </div>
 
-        {/* Progress bar */}
+        {}
         <div className="w-full max-w-md space-y-4">
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
             <motion.div

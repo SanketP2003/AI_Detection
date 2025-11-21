@@ -1,8 +1,10 @@
 package com.springboot.ai_verify.config;
 
 import com.springboot.ai_verify.security.CustomUserDetailsService;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -17,6 +19,7 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
 
@@ -44,24 +47,32 @@ public class SecurityConfig {
         return authProvider;
     }
 
-    // CORS config for frontend
+    
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        
+        
         config.setAllowedOrigins(List.of(
-                "http://localhost:5173",  // Local development
-                "https://ai-detection-a0vr.onrender.com",  // Production frontend
-                "https://*.onrender.com"  // Allow any Render subdomain
+                "http://localhost:5173",                 
+                "https://ai-detection-frontend.onrender.com" 
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));  // Allow all headers
+        config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
-        config.setAllowCredentials(true);  // MUST be true for cookies to work
-        config.setMaxAge(3600L);  // Cache preflight requests for 1 hour
+        config.setAllowCredentials(true); 
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilterRegistration() {
+        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>(new CorsFilter(corsConfigurationSource()));
+        registrationBean.setOrder(-102); 
+        return registrationBean;
     }
 
     @Bean
@@ -71,7 +82,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints
+                        
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        
                         .requestMatchers(
                                 "/", "/index.html", "/register.html",
                                 "/css/**", "/js/**", "/img/**",
@@ -80,9 +93,9 @@ public class SecurityConfig {
                                 "/api/user/register",
                                 "/api/mistral/health"
                         ).permitAll()
-                        // Admin only endpoints
+                        
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        // Everything else requires auth
+                        
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

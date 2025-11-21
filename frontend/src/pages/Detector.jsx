@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { Shield, CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 function Detector() {
-  // Tips to show users
+  
   const helpTips = [
     {
       icon: CheckCircle,
@@ -46,7 +46,7 @@ function Detector() {
       <Header />
 
       <main className="pt-28 pb-24">
-        {/* Hero Section */}
+        {}
         <section className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="section-shell grid-overlay grain">
             <Suspense fallback={null}>
@@ -94,7 +94,7 @@ function Detector() {
           </div>
         </section>
 
-        {/* How it works section */}
+        {}
         <section className="mt-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="section-shell grid-overlay">
             <div className="relative z-10 space-y-12">

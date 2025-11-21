@@ -2,7 +2,7 @@ import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, MeshDistortMaterial, Sphere, Float, Stars } from '@react-three/drei';
 
-// Animated Purple Sphere
+
 const AnimatedSphere = () => {
   const meshRef = useRef();
 
@@ -29,7 +29,7 @@ const AnimatedSphere = () => {
   );
 };
 
-// Particle Field
+
 const ParticleField = () => {
   const pointsRef = useRef();
   const particleCount = 1000;
@@ -43,11 +43,11 @@ const ParticleField = () => {
       positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
 
-      // Purple gradient colors
+      
       const purpleIntensity = Math.random();
-      colors[i * 3] = 0.58 + purpleIntensity * 0.4; // R
-      colors[i * 3 + 1] = 0.2 + purpleIntensity * 0.2; // G
-      colors[i * 3 + 2] = 0.92; // B
+      colors[i * 3] = 0.58 + purpleIntensity * 0.4; 
+      colors[i * 3 + 1] = 0.2 + purpleIntensity * 0.2; 
+      colors[i * 3 + 2] = 0.92; 
     }
 
     return { positions, colors };
@@ -87,7 +87,7 @@ const ParticleField = () => {
   );
 };
 
-// Rotating Rings
+
 const RotatingRings = () => {
   const group = useRef();
 
@@ -116,7 +116,7 @@ const RotatingRings = () => {
   );
 };
 
-// Main 3D Scene Component
+
 const Hero3D = () => {
   return (
     <div className="absolute inset-0 -z-10">

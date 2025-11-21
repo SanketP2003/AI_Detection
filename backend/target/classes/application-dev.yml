@@ -6,7 +6,7 @@ spring:
     allow-bean-definition-overriding: true
   mvc:
     async:
-      request-timeout: 60000 # 60 seconds
+      request-timeout: 60000
   datasource:
     url: jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
     username: neondb_owner
@@ -20,8 +20,8 @@ spring:
       ddl-auto: update
     show-sql: true
   session:
-    store-type: none  # Use servlet container sessions
-    timeout: 1800  # 30 minutes
+    store-type: none
+    timeout: 1800
 
 server:
   address: 0.0.0.0
@@ -32,8 +32,8 @@ server:
   servlet:
     session:
       cookie:
-        same-site: none  # Allow cross-site cookies
-        secure: false  # Allow HTTP for development
+        same-site: none
+        secure: false
         http-only: true
         path: /
 

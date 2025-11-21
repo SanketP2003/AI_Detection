@@ -206,7 +206,7 @@ const Admin = () => {
       <Header />
       <main className="pt-28 pb-24">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          {/* Hero */}
+          {}
           <div className="section-shell grid-overlay grain">
             <div className="relative z-10 flex flex-col gap-6">
               <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -242,7 +242,7 @@ const Admin = () => {
 
           {error && <div className="glass-panel border-red-500/30 text-red-300 p-4 text-sm">{error}</div>}
 
-          {/* Tabs */}
+          {}
           <nav className="flex flex-wrap gap-2">
             {sections.map(tab => (
               <button
@@ -257,7 +257,7 @@ const Admin = () => {
             ))}
           </nav>
 
-          {/* Dashboard */}
+          {}
           {activeTab === 'dashboard' && (
             <div className="grid gap-6">
               <div className="glass-panel border-white/5 p-6">
@@ -316,7 +316,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Users */}
+          {}
           {activeTab === 'users' && (
             <div className="grid gap-6">
               <div className="glass-panel border-white/5 p-6">
@@ -409,7 +409,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Detections */}
+          {}
           {activeTab === 'detections' && (
             <div className="glass-panel border-white/5 p-6 space-y-4">
               <div className="flex items-center justify-between">
@@ -445,7 +445,7 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Chats */}
+          {}
           {activeTab === 'chats' && (
             <div className="glass-panel border-white/5 p-6 space-y-4">
               <div className="flex items-center justify-between">

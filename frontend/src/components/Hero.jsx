@@ -14,15 +14,15 @@ function Hero() {
 
   return (
     <section className="relative min-h-screen bg-pure-black flex items-center justify-center overflow-hidden">
-      {/* 3D background (lazy loaded) */}
+      {}
       <Suspense fallback={null}>
         <Hero3D />
       </Suspense>
 
-      {/* Dark overlay gradient */}
+      {}
       <div className="absolute inset-0 bg-gradient-to-b from-pure-black/20 via-transparent to-pure-black/80"></div>
 
-      {/* Animated glow effects */}
+      {}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 md:w-96 md:h-96 bg-purple-primary/20 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 md:w-[500px] md:h-[500px] bg-purple-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -53,7 +53,7 @@ function Hero() {
           services powered by cutting-edge artificial intelligence.
         </motion.p>
 
-        {/* CTA buttons */}
+        {}
         <motion.div
           className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center mb-10 md:mb-12 px-4"
           initial={{ opacity: 0, y: 20 }}
@@ -76,7 +76,7 @@ function Hero() {
           </Link>
         </motion.div>
 
-        {/* Feature cards */}
+        {}
         <motion.div
           className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-8 max-w-4xl mx-auto px-4"
           initial={{ opacity: 0, y: 30 }}
@@ -101,7 +101,7 @@ function Hero() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
+      {}
       <motion.div
         className="absolute bottom-6 md:bottom-8 left-1/2 transform -translate-x-1/2"
         animate={{ y: [0, 10, 0] }}

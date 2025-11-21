@@ -18,10 +18,10 @@ public class User {
     private String password;
     private String roles;
 
-    // No-args constructor required by JPA
+    
     public User() {}
 
-    // Explicit getters/setters to ensure compilation even without Lombok processing
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

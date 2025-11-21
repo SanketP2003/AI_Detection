@@ -97,7 +97,7 @@ const ChatInterface = () => {
 
 
   useEffect(() => {
-    // On mount, check backend Mistral health and load history if user is logged in
+    
     const checkHealth = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/mistral/health`, { credentials: 'include' });
@@ -111,13 +111,13 @@ const ChatInterface = () => {
           setError('The configured Mistral API key format looks wrong (should start with sk-).');
         }
       } catch {
-        // ignore; backend may be starting
+        
       }
     };
 
     const init = async () => {
       await checkHealth();
-      // Try to load chat history (will silently fail if not authenticated)
+      
       await loadChatHistory();
     };
 
@@ -132,11 +132,11 @@ const ChatInterface = () => {
         const data = await res.json();
         setChatHistory(data);
       } else if (res.status === 401) {
-        // User not authenticated - this is fine, just don't show history
+        
         setChatHistory([]);
       }
     } catch (err) {
-      // Network error or other issue - silently ignore
+      
       console.log('Chat history not available:', err.message);
     } finally {
       setIsLoadingHistory(false);
@@ -176,7 +176,7 @@ const ChatInterface = () => {
   };
 
   const buildHistory = () => {
-    // Convert messages to Mistral format, excluding the initial greeting
+    
     return messages
       .filter(msg => msg.id !== '1')
       .map(msg => ({
@@ -188,7 +188,7 @@ const ChatInterface = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
     if (mistralStatus?.status === 'CONFIG_MISSING' || mistralStatus?.status === 'UNAUTHORIZED' || mistralStatus?.status === 'INVALID_FORMAT') {
-      // Prevent spamming the backend when we know it cannot serve
+      
       setError('AI service is unavailable due to configuration/authorization. Please try again later.');
       return;
     }
@@ -251,13 +251,13 @@ const ChatInterface = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
-      // Refresh history after successful chat (only if authenticated)
+      
       loadChatHistory();
     } catch (err) {
       console.error('Chat error:', err);
       setError('Failed to connect to the AI advisor. Please check your connection and try again.');
 
-      // Add error message to chat
+      
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         content: 'Sorry, I encountered an error. Please check your connection and try again.',
@@ -285,7 +285,7 @@ const ChatInterface = () => {
 
   return (
     <div className="max-w-7xl mx-auto h-[680px] flex gap-4">
-      {/* Chat History Sidebar - Desktop */}
+      {}
       <AnimatePresence>
         {showHistory && (
           <>
@@ -358,14 +358,14 @@ const ChatInterface = () => {
         )}
       </AnimatePresence>
 
-      {/* Main Chat Interface */}
+      {}
       <motion.div
         className="flex-1 glass-panel border-white/5 flex flex-col overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Chat Header */}
+        {}
         <div className="p-5 border-b border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
@@ -408,7 +408,7 @@ const ChatInterface = () => {
           </motion.div>
         )}
 
-        {/* Messages */}
+        {}
         <div className="relative flex-1">
           <div ref={messagesContainerRef} className="h-full overflow-y-auto p-6 space-y-4 bg-onyx/70">
             <React.Fragment>
@@ -502,7 +502,7 @@ const ChatInterface = () => {
           )}
         </div>
 
-        {/* Input */}
+        {}
         <div className="p-5 border-t border-white/5 bg-carbon/80">
           <div className="flex gap-3">
             <textarea

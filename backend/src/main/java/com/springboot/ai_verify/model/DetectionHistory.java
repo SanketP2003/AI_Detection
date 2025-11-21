@@ -21,10 +21,10 @@ public class DetectionHistory {
 
     private Instant createdAt = Instant.now();
 
-    // No-args constructor required by JPA
+    
     public DetectionHistory() {}
 
-    // Explicit getters and setters to avoid reliance on Lombok
+    
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

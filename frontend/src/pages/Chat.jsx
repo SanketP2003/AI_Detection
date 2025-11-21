@@ -54,7 +54,7 @@ const Chat = () => {
       <Header />
 
       <main className="pt-28 pb-24">
-        {/* Hero Section */}
+        {}
         <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="section-shell grid-overlay grain">
             <div className="relative z-10 flex flex-col gap-12">

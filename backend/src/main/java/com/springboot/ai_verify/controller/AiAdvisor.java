@@ -31,7 +31,7 @@ public class AiAdvisor {
 
         return aiAdvisorService.chatWithMistral(request)
                 .doOnSuccess(response -> {
-                    // Save chat to history if user is authenticated
+                    
                     if (auth != null && response.getStatusCode().is2xxSuccessful()) {
                         String username = auth.getName();
                         Map<String, String> body = response.getBody();
