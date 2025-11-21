@@ -20,7 +20,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserService userService;
@@ -34,17 +33,39 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, String>> healthCheck() {
+        return ResponseEntity.ok(Map.of(
+            "status", "ok",
+            "timestamp", java.time.Instant.now().toString()
+        ));
+    }
+
     @GetMapping("/me")
     public ResponseEntity<AuthUserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
+        try {
+            if (userDetails == null) {
+                return ResponseEntity.ok(new AuthUserDto(null, false, false));
+            }
+            // Safely handle potential null authorities from custom UserDetails implementation
+            boolean isAdmin = false;
+            try {
+                if (userDetails.getAuthorities() != null) {
+                    isAdmin = userDetails.getAuthorities().stream()
+                            .map(GrantedAuthority::getAuthority)
+                            .anyMatch(role -> role.equals("ROLE_ADMIN"));
+                }
+            } catch (Exception e) {
+                // If anything goes wrong determining roles, default to non-admin
+                System.err.println("Error determining roles: " + e.getMessage());
+            }
+            return ResponseEntity.ok(new AuthUserDto(userDetails.getUsername(), isAdmin, true));
+        } catch (Exception e) {
+            // Log the error but return unauthenticated response instead of throwing
+            System.err.println("Error in /me endpoint: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.ok(new AuthUserDto(null, false, false));
         }
-
-        boolean isAdmin = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(role -> role.equals("ROLE_ADMIN"));
-
-        return ResponseEntity.ok(new AuthUserDto(userDetails.getUsername(), isAdmin, true));
     }
 
     @GetMapping("/profile")

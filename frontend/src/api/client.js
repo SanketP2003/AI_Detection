@@ -37,11 +37,20 @@ export async function registerUser({ username, password, email }) {
 }
 
 export async function getMe() {
-  const res = await fetch(`${API_BASE}/api/user/me`, { 
-    credentials: 'include',
-  });
-  if (!res.ok) return { authenticated: false };
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}/api/user/me`, {
+      credentials: 'include',
+    });
+    if (!res.ok) {
+      console.warn('Failed to fetch user info:', res.status, res.statusText);
+      return { authenticated: false };
+    }
+    const data = await res.json();
+    return data || { authenticated: false };
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+    return { authenticated: false };
+  }
 }
 
 export async function logout() {

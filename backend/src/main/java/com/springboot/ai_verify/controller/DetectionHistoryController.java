@@ -13,7 +13,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/detections")
-@CrossOrigin(origins = "*")
 public class DetectionHistoryController {
 
     private final DetectionHistoryService service;

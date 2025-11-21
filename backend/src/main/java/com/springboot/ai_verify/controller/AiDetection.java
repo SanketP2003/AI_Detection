@@ -10,7 +10,6 @@ import reactor.core.publisher.Mono;
 import java.util.Map;
 
 @RestController
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/detect")
 public class AiDetection {
 

@@ -10,7 +10,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api")
 public class AiAdvisor {
@@ -46,4 +45,3 @@ public class AiAdvisor {
                 });
     }
 }
-

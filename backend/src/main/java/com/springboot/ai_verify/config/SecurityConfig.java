@@ -90,6 +90,7 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/img/**",
                                 "/login",
                                 "/api/user/me",
+                                "/api/user/health",
                                 "/api/user/register",
                                 "/api/mistral/health"
                         ).permitAll()

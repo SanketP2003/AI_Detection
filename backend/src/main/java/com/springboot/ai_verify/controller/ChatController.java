@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chats")
-@CrossOrigin(origins = "*")
 public class ChatController {
 
     private final List<ChatMessage> chatHistory = new ArrayList<>();
@@ -103,4 +102,3 @@ public class ChatController {
         chatHistory.add(chat);
     }
 }
-
