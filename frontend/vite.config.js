@@ -15,6 +15,10 @@ export default defineConfig({
   server: {
     allowedHosts: true,
   },
+  preview: {
+    port: 4173,
+    strictPort: false,
+  },
   esbuild: {
     logOverride: {
       'ignored-directive': 'silent', 
@@ -23,6 +27,7 @@ export default defineConfig({
   logLevel: 'info', 
   build: {
     chunkSizeWarningLimit: 1600,
+    outDir: 'dist',
     rollupOptions: {
       onwarn(warning, warn) {
         if (
