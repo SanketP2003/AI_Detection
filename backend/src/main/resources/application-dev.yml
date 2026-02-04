@@ -8,13 +8,15 @@ spring:
     async:
       request-timeout: 60000
   datasource:
-    url: jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channelBinding=require
-    username: neondb_owner
-    password: npg_IBjy0zaArkq3
+    url: ${DB_URL:jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
+    username: ${DB_USER:neondb_owner}
+    password: ${DB_PASSWORD:npg_IBjy0zaArkq3}
     hikari:
       max-lifetime: 1200000
       idle-timeout: 600000
       connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 2
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,6 +24,25 @@ spring:
   session:
     store-type: none
     timeout: 1800
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    urls-primary-name: "AI Verify API"
+    display-request-duration: true
+    show-extensions: true
+    doc-expansion: list
+    deep-linking: true
+    layout: "StandaloneLayout"
+  paths-to-match:
+    - /api/**
+  show-actuator: true
 
 server:
   address: 0.0.0.0
@@ -32,7 +53,7 @@ server:
   servlet:
     session:
       cookie:
-        same-site: none
+        same-site: lax
         secure: false
         http-only: true
         path: /
@@ -40,7 +61,14 @@ server:
 mistralmodel:
   api:
     url: https://api.mistral.ai/v1/chat/completions
-    key: "9FDwOFPeXg4iIvBQRi4fvC5YjAS93OZB"
+    key: ${MISTRAL_API_KEY:hJA6cDSdNp5jkD1zxtaWJLJMUZyYoAxq}
   model: mistral-large-latest
   temperature: 0.7
   max-tokens: 600
+
+# Security settings
+security:
+  jwt:
+    secret: ${JWT_SECRET:f3d16d502dd044ad3b3cce651cbb2ad9de8b0a8e74cc0f6a0dd5fcce1f9ffb10a24df69a3bb3fdd95f3b7205f7b22b119b093039af6e461b983d6bc529be42fe}
+    access-token-expiration: 900000
+    refresh-token-expiration: 604800000

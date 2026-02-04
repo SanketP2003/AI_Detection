@@ -3,24 +3,30 @@ package com.springboot.ai_verify.controller;
 import com.springboot.ai_verify.dto.ApiResponse;
 import com.springboot.ai_verify.dto.AuthUserDto;
 import com.springboot.ai_verify.dto.UserProfileDto;
+import com.springboot.ai_verify.dto.UserRegistrationDto;
 import com.springboot.ai_verify.exception.InvalidRequestException;
 import com.springboot.ai_verify.exception.ResourceNotFoundException;
 import com.springboot.ai_verify.model.User;
 import com.springboot.ai_verify.service.UserService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
     private final UserService userService;
 
@@ -28,10 +34,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
-    }
+    // SECURITY FIX: Removed getAllUsers endpoint - this should be admin-only
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, String>> healthCheck() {
@@ -47,7 +50,7 @@ public class UserController {
             if (userDetails == null) {
                 return ResponseEntity.ok(new AuthUserDto(null, false, false));
             }
-            // Safely handle potential null authorities from custom UserDetails implementation
+
             boolean isAdmin = false;
             try {
                 if (userDetails.getAuthorities() != null) {
@@ -56,14 +59,11 @@ public class UserController {
                             .anyMatch(role -> role.equals("ROLE_ADMIN"));
                 }
             } catch (Exception e) {
-                // If anything goes wrong determining roles, default to non-admin
-                System.err.println("Error determining roles: " + e.getMessage());
+                log.error("Error determining roles for user {}: {}", userDetails.getUsername(), e.getMessage());
             }
             return ResponseEntity.ok(new AuthUserDto(userDetails.getUsername(), isAdmin, true));
         } catch (Exception e) {
-            // Log the error but return unauthenticated response instead of throwing
-            System.err.println("Error in /me endpoint: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error in /me endpoint: {}", e.getMessage());
             return ResponseEntity.ok(new AuthUserDto(null, false, false));
         }
     }
@@ -101,7 +101,18 @@ public class UserController {
             throw new InvalidRequestException("Username cannot be empty");
         }
 
+        // Validate username format
+        if (!newUsername.matches("^[a-zA-Z0-9_-]+$")) {
+            throw new InvalidRequestException("Username can only contain letters, numbers, underscores, and hyphens");
+        }
+
+        if (newUsername.length() < 3 || newUsername.length() > 50) {
+            throw new InvalidRequestException("Username must be between 3 and 50 characters");
+        }
+
         User updated = userService.updateUsername(auth.getName(), newUsername.trim());
+        log.info("User {} updated username to {}", auth.getName(), newUsername);
+
         return ResponseEntity.ok(ApiResponse.success(
                 "Username updated successfully",
                 Map.of("username", updated.getUsername())
@@ -120,11 +131,23 @@ public class UserController {
         String currentPass = data.get("currentPassword");
         String newPass = data.get("newPassword");
 
-        if (newPass == null || newPass.length() < 6) {
-            throw new InvalidRequestException("Password must be at least 6 characters");
+        if (currentPass == null || currentPass.isEmpty()) {
+            throw new InvalidRequestException("Current password is required");
+        }
+
+        // SECURITY FIX: Enforce stronger password requirements
+        if (newPass == null || newPass.length() < 8) {
+            throw new InvalidRequestException("Password must be at least 8 characters");
+        }
+
+        // Check for password complexity
+        if (!newPass.matches(".*[A-Z].*") || !newPass.matches(".*[a-z].*") || !newPass.matches(".*[0-9].*")) {
+            throw new InvalidRequestException("Password must contain at least one uppercase letter, one lowercase letter, and one number");
         }
 
         userService.updatePassword(auth.getName(), currentPass, newPass);
+        log.info("User {} updated their password", auth.getName());
+
         return ResponseEntity.ok(ApiResponse.success("Password updated successfully", null));
     }
 
@@ -138,11 +161,13 @@ public class UserController {
         }
 
         String newEmail = data.get("email");
-        if (newEmail == null || !newEmail.contains("@")) {
+        if (newEmail == null || !newEmail.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new InvalidRequestException("Invalid email address");
         }
 
         User updated = userService.updateEmail(auth.getName(), newEmail.trim());
+        log.info("User {} updated email to {}", auth.getName(), newEmail);
+
         return ResponseEntity.ok(ApiResponse.success(
                 "Email updated successfully",
                 Map.of("email", updated.getEmail())
@@ -150,8 +175,23 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Map<String, String>>> registerUser(@RequestBody User user) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> registerUser(
+            @Valid @RequestBody UserRegistrationDto registrationDto) {
+
+        // Validate password strength
+        String password = registrationDto.password();
+        if (password == null || password.length() < 8) {
+            throw new InvalidRequestException("Password must be at least 8 characters");
+        }
+
+        User user = new User();
+        user.setUsername(registrationDto.username());
+        user.setEmail(registrationDto.email());
+        user.setPassword(password);
+
         User created = userService.saveUser(user);
+        log.info("New user registered: {}", created.getUsername());
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
                         "User registered successfully",
@@ -159,14 +199,8 @@ public class UserController {
                 ));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        return ResponseEntity.ok(userService.updateUser(id, user));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
+    // SECURITY FIX: Removed @PutMapping("/{id}") and @DeleteMapping("/{id}")
+    // These endpoints allowed ANY authenticated user to modify ANY user
+    // User modification should only be allowed via /profile/* endpoints (self)
+    // or via /api/admin/* endpoints (admin only)
 }

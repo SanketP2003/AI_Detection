@@ -1,147 +1,137 @@
 import React, { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, MeshDistortMaterial, Sphere, Float, Stars } from '@react-three/drei';
+import { Float, MeshDistortMaterial, Sphere } from '@react-three/drei';
 
-
-const AnimatedSphere = () => {
+const FloatingSphere = ({ position, color, size = 1, speed = 1, distort = 0.3 }) => {
   const meshRef = useRef();
 
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.getElapsedTime() * 0.2;
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.3;
+      meshRef.current.rotation.x = state.clock.getElapsedTime() * speed * 0.2;
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * speed * 0.3;
     }
   });
 
   return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-      <Sphere ref={meshRef} args={[1, 64, 64]} scale={2.5}>
+    <Float speed={speed} rotationIntensity={0.3} floatIntensity={0.5}>
+      <mesh ref={meshRef} position={position}>
+        <sphereGeometry args={[size, 32, 32]} />
         <MeshDistortMaterial
-          color="#9333ea"
-          attach="material"
-          distort={0.4}
-          speed={2}
+          color={color}
+          distort={distort}
+          speed={speed * 2}
           roughness={0.2}
           metalness={0.8}
+          emissive={color}
+          emissiveIntensity={0.15}
         />
-      </Sphere>
+      </mesh>
     </Float>
   );
 };
 
-
-const ParticleField = () => {
-  const pointsRef = useRef();
-  const particleCount = 1000;
-
-  const particles = useMemo(() => {
-    const positions = new Float32Array(particleCount * 3);
-    const colors = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-
-      
-      const purpleIntensity = Math.random();
-      colors[i * 3] = 0.58 + purpleIntensity * 0.4; 
-      colors[i * 3 + 1] = 0.2 + purpleIntensity * 0.2; 
-      colors[i * 3 + 2] = 0.92; 
-    }
-
-    return { positions, colors };
-  }, []);
+const FloatingRing = ({ position, color, speed = 1 }) => {
+  const meshRef = useRef();
 
   useFrame((state) => {
-    if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
-      pointsRef.current.rotation.x = state.clock.getElapsedTime() * 0.03;
+    if (meshRef.current) {
+      meshRef.current.rotation.x = state.clock.getElapsedTime() * speed * 0.3;
+      meshRef.current.rotation.z = state.clock.getElapsedTime() * speed * 0.4;
     }
   });
 
   return (
-    <points ref={pointsRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={particleCount}
-          array={particles.positions}
-          itemSize={3}
+    <Float speed={speed} rotationIntensity={0.4} floatIntensity={0.6}>
+      <mesh ref={meshRef} position={position}>
+        <torusGeometry args={[1.2, 0.15, 16, 64]} />
+        <meshStandardMaterial
+          color={color}
+          metalness={0.9}
+          roughness={0.1}
+          emissive={color}
+          emissiveIntensity={0.3}
         />
-        <bufferAttribute
-          attach="attributes-color"
-          count={particleCount}
-          array={particles.colors}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.05}
-        vertexColors
-        transparent
-        opacity={0.6}
-        sizeAttenuation
-      />
-    </points>
+      </mesh>
+    </Float>
   );
 };
 
-
-const RotatingRings = () => {
-  const group = useRef();
+const FloatingIcosahedron = ({ position, color, speed = 1 }) => {
+  const meshRef = useRef();
 
   useFrame((state) => {
-    if (group.current) {
-      group.current.rotation.x = state.clock.getElapsedTime() * 0.1;
-      group.current.rotation.y = state.clock.getElapsedTime() * 0.15;
+    if (meshRef.current) {
+      meshRef.current.rotation.x = state.clock.getElapsedTime() * speed * 0.25;
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * speed * 0.35;
     }
   });
 
   return (
-    <group ref={group}>
-      <mesh rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[3, 0.05, 16, 100]} />
-        <meshStandardMaterial color="#9333ea" emissive="#9333ea" emissiveIntensity={0.5} />
+    <Float speed={speed} rotationIntensity={0.5} floatIntensity={0.7}>
+      <mesh ref={meshRef} position={position}>
+        <icosahedronGeometry args={[0.7, 0]} />
+        <MeshDistortMaterial
+          color={color}
+          distort={0.25}
+          speed={speed}
+          roughness={0.15}
+          metalness={0.85}
+        />
       </mesh>
-      <mesh rotation={[0, Math.PI / 2, 0]}>
-        <torusGeometry args={[3.3, 0.05, 16, 100]} />
-        <meshStandardMaterial color="#8B5CF6" emissive="#8B5CF6" emissiveIntensity={0.3} />
-      </mesh>
-      <mesh rotation={[Math.PI / 4, Math.PI / 4, 0]}>
-        <torusGeometry args={[3.6, 0.05, 16, 100]} />
-        <meshStandardMaterial color="#A855F7" emissive="#A855F7" emissiveIntensity={0.2} />
-      </mesh>
-    </group>
+    </Float>
   );
 };
-
 
 const Hero3D = () => {
   return (
-    <div className="absolute inset-0 -z-10">
+    <div className="absolute inset-0 -z-10 opacity-50">
       <Canvas
-        camera={{ position: [0, 0, 8], fov: 50 }}
+        camera={{ position: [0, 0, 6], fov: 50 }}
         gl={{ alpha: true, antialias: true }}
         style={{ background: 'transparent' }}
       >
-        <ambientLight intensity={0.3} />
-        <pointLight position={[10, 10, 10]} intensity={1} color="#9333ea" />
-        <pointLight position={[-10, -10, -10]} intensity={0.5} color="#8B5CF6" />
-        <spotLight position={[0, 10, 0]} angle={0.3} penumbra={1} intensity={0.5} color="#A855F7" />
+        <ambientLight intensity={0.4} />
+        <pointLight position={[10, 10, 10]} intensity={0.8} color="#a855f7" />
+        <pointLight position={[-10, -10, -5]} intensity={0.5} color="#6366f1" />
+        <pointLight position={[0, 5, 5]} intensity={0.3} color="#c084fc" />
 
-        <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
-        <ParticleField />
-        <AnimatedSphere />
-        <RotatingRings />
+        {/* Main central sphere */}
+        <FloatingSphere
+          position={[0, 0, -2]}
+          color="#a855f7"
+          size={1.5}
+          speed={0.5}
+          distort={0.4}
+        />
 
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          autoRotate
-          autoRotateSpeed={0.5}
-          maxPolarAngle={Math.PI / 2}
-          minPolarAngle={Math.PI / 2}
+        {/* Surrounding elements */}
+        <FloatingRing position={[-3, 1.5, -1]} color="#6366f1" speed={0.7} />
+        <FloatingRing position={[3, -1, -1.5]} color="#c084fc" speed={0.6} />
+
+        <FloatingIcosahedron position={[-2.5, -1.5, 0]} color="#8b5cf6" speed={0.8} />
+        <FloatingIcosahedron position={[2.5, 2, 0]} color="#a855f7" speed={0.9} />
+
+        {/* Smaller accent spheres */}
+        <FloatingSphere
+          position={[-4, 0, -1]}
+          color="#c084fc"
+          size={0.5}
+          speed={1.2}
+          distort={0.2}
+        />
+        <FloatingSphere
+          position={[4, 1, -2]}
+          color="#6366f1"
+          size={0.6}
+          speed={1}
+          distort={0.25}
+        />
+        <FloatingSphere
+          position={[1, -2.5, 0]}
+          color="#8b5cf6"
+          size={0.4}
+          speed={1.3}
+          distort={0.15}
         />
       </Canvas>
     </div>

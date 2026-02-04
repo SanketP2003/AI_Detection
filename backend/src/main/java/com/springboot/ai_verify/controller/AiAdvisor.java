@@ -2,7 +2,8 @@ package com.springboot.ai_verify.controller;
 
 import com.springboot.ai_verify.service.AiAdvisorService;
 import com.springboot.ai_verify.service.AiAdvisorService.ChatRequest;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +15,15 @@ import java.util.Map;
 @RequestMapping("/api")
 public class AiAdvisor {
 
+    private static final Logger log = LoggerFactory.getLogger(AiAdvisor.class);
+
     private final AiAdvisorService aiAdvisorService;
+    private final ChatController chatController;
 
-    @Autowired
-    private ChatController chatController;
-
-    public AiAdvisor(AiAdvisorService aiAdvisorService) {
+    // BEST PRACTICE: Use constructor injection for all dependencies
+    public AiAdvisor(AiAdvisorService aiAdvisorService, ChatController chatController) {
         this.aiAdvisorService = aiAdvisorService;
+        this.chatController = chatController;
     }
 
     @PostMapping("/chat")
@@ -30,7 +33,7 @@ public class AiAdvisor {
 
         return aiAdvisorService.chatWithMistral(request)
                 .doOnSuccess(response -> {
-                    
+                    // Log successful chat exchange
                     if (auth != null && response.getStatusCode().is2xxSuccessful()) {
                         String username = auth.getName();
                         Map<String, String> body = response.getBody();
@@ -40,8 +43,13 @@ public class AiAdvisor {
                                 request.prompt(),
                                 body.get("text")
                             );
+                            log.debug("Chat logged for user: {}", username);
                         }
                     }
+                })
+                .doOnError(error -> {
+                    String username = auth != null ? auth.getName() : "anonymous";
+                    log.error("Chat error for user {}: {}", username, error.getMessage());
                 });
     }
 }

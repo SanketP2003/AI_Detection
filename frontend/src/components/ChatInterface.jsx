@@ -284,7 +284,7 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto h-[680px] flex gap-4">
+    <div className="w-full h-[680px] flex gap-4">
       {}
       <AnimatePresence>
         {showHistory && (
@@ -409,8 +409,8 @@ const ChatInterface = () => {
         )}
 
         {}
-        <div className="relative flex-1">
-          <div ref={messagesContainerRef} className="h-full overflow-y-auto p-6 space-y-4 bg-onyx/70">
+        <div className="relative flex-1 min-h-0 overflow-hidden">
+          <div ref={messagesContainerRef} className="absolute inset-0 overflow-y-auto p-6 space-y-4 bg-onyx/70 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             <React.Fragment>
               <AnimatePresence>
                 {messages.map((message, index) => (

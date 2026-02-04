@@ -1,8 +1,11 @@
 package com.springboot.ai_verify.controller;
 
+import com.springboot.ai_verify.dto.ApiResponse;
+import com.springboot.ai_verify.exception.InvalidRequestException;
 import com.springboot.ai_verify.model.DetectionHistory;
 import com.springboot.ai_verify.service.DetectionHistoryService;
-import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +18,9 @@ import java.util.Map;
 @RequestMapping("/api/detections")
 public class DetectionHistoryController {
 
+    private static final Logger log = LoggerFactory.getLogger(DetectionHistoryController.class);
+    private static final int MAX_PREVIEW_LENGTH = 255;
+
     private final DetectionHistoryService service;
 
     public DetectionHistoryController(DetectionHistoryService service) {
@@ -22,14 +28,24 @@ public class DetectionHistoryController {
     }
 
     @PostMapping
-    public Map<String, Object> save(@RequestBody Map<String, Object> payload, Authentication auth) {
+    public ResponseEntity<Map<String, Object>> save(@RequestBody Map<String, Object> payload, Authentication auth) {
         if (auth == null) {
-            throw new RuntimeException("Unauthorized");
+            throw new InvalidRequestException("Authentication required");
         }
+
         String username = auth.getName();
-        String contentPreview = String.valueOf(payload.getOrDefault("contentPreview", ""));
+        String contentPreview = truncate(String.valueOf(payload.getOrDefault("contentPreview", "")), MAX_PREVIEW_LENGTH);
         String result = String.valueOf(payload.getOrDefault("result", ""));
-        int confidence = Integer.parseInt(String.valueOf(payload.getOrDefault("confidence", 0)));
+
+        int confidence;
+        try {
+            confidence = Integer.parseInt(String.valueOf(payload.getOrDefault("confidence", 0)));
+            if (confidence < 0 || confidence > 100) {
+                throw new InvalidRequestException("Confidence must be between 0 and 100");
+            }
+        } catch (NumberFormatException e) {
+            throw new InvalidRequestException("Invalid confidence value");
+        }
 
         DetectionHistory dh = new DetectionHistory();
         dh.setUsername(username);
@@ -37,39 +53,42 @@ public class DetectionHistoryController {
         dh.setResult(result);
         dh.setConfidence(confidence);
         dh.setCreatedAt(Instant.now());
+
         DetectionHistory saved = service.save(dh);
-        return Map.of("id", saved.getId());
+        log.debug("Detection history saved for user {} with id {}", username, saved.getId());
+
+        return ResponseEntity.ok(Map.of("id", saved.getId()));
     }
 
     @GetMapping("/recent")
-    public List<DetectionHistory> recent(Authentication auth) {
+    public ResponseEntity<List<DetectionHistory>> recent(Authentication auth) {
         if (auth == null) {
-            throw new RuntimeException("Unauthorized");
+            throw new InvalidRequestException("Authentication required");
         }
-        return service.recentForUser(auth.getName());
+        return ResponseEntity.ok(service.recentForUser(auth.getName()));
     }
 
     @GetMapping("/all")
-    public List<DetectionHistory> all(Authentication auth) {
+    public ResponseEntity<List<DetectionHistory>> all(Authentication auth) {
         if (auth == null) {
-            throw new RuntimeException("Unauthorized");
+            throw new InvalidRequestException("Authentication required");
         }
-        return service.allForUser(auth.getName());
+        return ResponseEntity.ok(service.allForUser(auth.getName()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id, Authentication auth) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Long id, Authentication auth) {
         if (auth == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized access"));
+            throw new InvalidRequestException("Authentication required");
         }
-        String username = auth.getName();
-        try {
-            service.deleteById(id, username);
-            return ResponseEntity.ok(Map.of("message", "Detection history entry deleted successfully"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "History entry not found or you lack permission to delete it"));
-        }
+
+        service.deleteById(id, auth.getName());
+        return ResponseEntity.ok(ApiResponse.success("Detection history entry deleted successfully", null));
+    }
+
+    private String truncate(String text, int maxLength) {
+        if (text == null) return "";
+        if (text.length() <= maxLength) return text;
+        return text.substring(0, maxLength - 3) + "...";
     }
 }

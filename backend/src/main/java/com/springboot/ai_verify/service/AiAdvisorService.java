@@ -1,9 +1,8 @@
 package com.springboot.ai_verify.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +21,9 @@ import java.util.concurrent.TimeoutException;
 @Service
 public class AiAdvisorService {
 
+    private static final Logger log = LoggerFactory.getLogger(AiAdvisorService.class);
+
     private final WebClient webClient;
-    private final ObjectMapper objectMapper;
 
     @Value("${mistralmodel.api.url}")
     private String mistralApiUrl;
@@ -38,37 +38,31 @@ public class AiAdvisorService {
             You are a professional chat advisor with a specialization in offering clear,
             concise, and helpful advice. Respond in a friendly, conversational tone that builds trust and ease,
             while maintaining a sense of professionalism and respect. Always keep your answers focused on the
-            user’s question, avoiding unnecessary information. Adapt your language to suit the user’s level of
-            understanding—whether they’re a beginner or an expert. Your goal is to make the user feel supported,
+            user's question, avoiding unnecessary information. Adapt your language to suit the user's level of
+            understanding—whether they're a beginner or an expert. Your goal is to make the user feel supported,
             informed, and confident moving forward.""";
 
     public AiAdvisorService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
-        this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     }
 
-    public record MistralMessage(String role, String content) {
-    }
+    public record MistralMessage(String role, String content) {}
 
-    public record ChatRequest(String prompt, List<MistralMessage> history) {
-    }
+    public record ChatRequest(String prompt, List<MistralMessage> history) {}
 
-    public record MistralRequest(String model, List<MistralMessage> messages, boolean stream) {
-    }
+    public record MistralRequest(String model, List<MistralMessage> messages, boolean stream) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record MistralResponse(List<Choice> choices) {
-    }
+    public record MistralResponse(List<Choice> choices) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Choice(MistralMessage message) {
-    }
+    public record Choice(MistralMessage message) {}
 
     public Mono<ResponseEntity<Map<String, String>>> chatWithMistral(ChatRequest request) {
         if (request == null || request.prompt() == null || request.prompt().trim().isEmpty()) {
             return Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Prompt is required.")));
         }
-        if (mistralApiKey == null || mistralApiKey.trim().isEmpty() || mistralApiKey.equals("YOUR_MISTRAL_API_KEY_HERE")) {
+        if (mistralApiKey == null || mistralApiKey.trim().isEmpty()) {
             return Mono.just(ResponseEntity.status(503)
                     .body(Map.of("error", "AI service is not configured on the server.")));
         }
@@ -83,12 +77,6 @@ public class AiAdvisorService {
 
         MistralRequest payload = new MistralRequest(mistralModel, messages, false);
 
-        try {
-            String jsonPayload = objectMapper.writeValueAsString(payload);
-        } catch (JsonProcessingException e) {
-            System.err.println("Error serializing payload for logging: " + e.getMessage());
-        }
-
         return webClient.post()
                 .uri(mistralApiUrl)
                 .header("Authorization", "Bearer " + mistralApiKey)
@@ -99,8 +87,8 @@ public class AiAdvisorService {
                 .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
                         .jitter(0.5)
                         .filter(throwable -> {
-                            if (throwable instanceof WebClientResponseException) {
-                                int statusCode = ((WebClientResponseException) throwable).getStatusCode().value();
+                            if (throwable instanceof WebClientResponseException wcre) {
+                                int statusCode = wcre.getStatusCode().value();
                                 return statusCode == 429 || (statusCode >= 500 && statusCode < 600);
                             }
                             return throwable instanceof TimeoutException;
@@ -115,13 +103,13 @@ public class AiAdvisorService {
                     return ResponseEntity.ok(Map.of("text", text));
                 })
                 .onErrorResume(e -> {
-                    System.err.println("Error calling Mistral API: " + e.getMessage());
+                    log.error("Error calling Mistral API: {}", e.getMessage());
                     if (e instanceof WebClientResponseException wcre) {
-                        System.err.println("Error Status Code: " + wcre.getStatusCode());
-                        System.err.println("Error Response Body: " + wcre.getResponseBodyAsString());
+                        log.error("Error Status Code: {}", wcre.getStatusCode());
+                        log.debug("Error Response Body: {}", wcre.getResponseBodyAsString());
                     }
-                    String friendlyError = "The AI service could not be reached or failed to process the request. Please try again later.";
-                    return Mono.just(ResponseEntity.status(503).body(Map.of("text", friendlyError, "error", e.getMessage())));
+                    String friendlyError = "The AI service could not be reached. Please try again later.";
+                    return Mono.just(ResponseEntity.status(503).body(Map.of("error", friendlyError)));
                 });
     }
 }
