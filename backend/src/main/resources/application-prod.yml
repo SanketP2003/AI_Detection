@@ -93,7 +93,7 @@ security:
 
 # CORS Configuration
 cors:
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:https://ai-detection-frontend.onrender.com}
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,https://ai-detection-frontend.onrender.com}
 
 # Actuator (for health checks only)
 management:
