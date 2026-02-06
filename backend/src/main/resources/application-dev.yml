@@ -11,6 +11,7 @@ spring:
     url: ${DB_URL:jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
     username: ${DB_USER:neondb_owner}
     password: ${DB_PASSWORD:npg_IBjy0zaArkq3}
+    driver-class-name: org.postgresql.Driver
     hikari:
       max-lifetime: 1200000
       idle-timeout: 600000

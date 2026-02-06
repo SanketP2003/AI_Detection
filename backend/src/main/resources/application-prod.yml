@@ -4,9 +4,10 @@ spring:
   main:
     web-application-type: servlet
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: ${DB_URL:${DATABASE_URL:jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}}
+    username: ${DB_USER:${DATABASE_USERNAME:neondb_owner}}
+    password: ${DB_PASSWORD:${DATABASE_PASSWORD:npg_IBjy0zaArkq3}}
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
