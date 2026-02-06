@@ -8,9 +8,9 @@ spring:
     async:
       request-timeout: 60000
   datasource:
-    url: ${DB_URL:jdbc:postgresql://ep-hidden-mouse-a1n9zyci-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require}
-    username: ${DB_USER:neondb_owner}
-    password: ${DB_PASSWORD:npg_IBjy0zaArkq3}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       max-lifetime: 1200000
@@ -62,7 +62,7 @@ server:
 mistralmodel:
   api:
     url: https://api.mistral.ai/v1/chat/completions
-    key: ${MISTRAL_API_KEY:hJA6cDSdNp5jkD1zxtaWJLJMUZyYoAxq}
+    key: ${MISTRAL_API_KEY}
   model: mistral-large-latest
   temperature: 0.7
   max-tokens: 600
@@ -70,6 +70,6 @@ mistralmodel:
 # Security settings
 security:
   jwt:
-    secret: ${JWT_SECRET:f3d16d502dd044ad3b3cce651cbb2ad9de8b0a8e74cc0f6a0dd5fcce1f9ffb10a24df69a3bb3fdd95f3b7205f7b22b119b093039af6e461b983d6bc529be42fe}
+    secret: ${JWT_SECRET}
     access-token-expiration: 900000
     refresh-token-expiration: 604800000
