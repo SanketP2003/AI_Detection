@@ -36,7 +36,7 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
 
-    @Value("${cors.allowed-origins:http://localhost:5173,https://ai-detection-frontend.onrender.com}")
+    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:4173,https://ai-detection-frontend.onrender.com,https://ai-detection-sjtr.onrender.com}")
     private String allowedOrigins;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService) {
