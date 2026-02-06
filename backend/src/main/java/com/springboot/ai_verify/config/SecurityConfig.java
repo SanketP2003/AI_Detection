@@ -108,6 +108,8 @@ public class SecurityConfig {
                         // Allow these endpoints without CSRF (API endpoints use session-based auth with CORS protection)
                         .ignoringRequestMatchers(
                             "/api/**",
+                            "/login",
+                            "/logout",
                             "/v3/api-docs/**",
                             "/swagger-ui/**",
                             "/swagger-ui.html"

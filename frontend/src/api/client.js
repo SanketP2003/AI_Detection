@@ -36,16 +36,8 @@ async function ensureCsrfToken() {
 }
 
 export async function login({ username, password }) {
-  // Ensure CSRF token is available
-  await ensureCsrfToken();
-
   const params = new URLSearchParams({ username, password });
   const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-
-  const csrfToken = getCsrfToken();
-  if (csrfToken) {
-    headers['X-XSRF-TOKEN'] = csrfToken;
-  }
 
   const res = await fetch(`${API_BASE}/login`, {
     method: 'POST',
@@ -64,13 +56,16 @@ export async function login({ username, password }) {
 }
 
 export async function registerUser({ username, password, email }) {
-  // Ensure CSRF token is available
-  await ensureCsrfToken();
+  // Build request body - only include email if it's provided and non-empty
+  const body = { username, password };
+  if (email && email.trim()) {
+    body.email = email.trim();
+  }
 
   const res = await fetch(`${API_BASE}/api/user/register`, {
     method: 'POST',
-    headers: buildHeaders(),
-    body: JSON.stringify({ username, password, email }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
     credentials: 'include',
   });
   const data = await res.json().catch(() => ({}));

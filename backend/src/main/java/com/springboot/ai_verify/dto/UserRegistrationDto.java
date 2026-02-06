@@ -22,4 +22,12 @@ public record UserRegistrationDto(
     @Email(message = "Invalid email format")
     @Size(max = 100, message = "Email must not exceed 100 characters")
     String email
-) {}
+) {
+    // Custom constructor to handle null/empty email properly
+    public UserRegistrationDto {
+        // Normalize empty string to null for optional email
+        if (email != null && email.isBlank()) {
+            email = null;
+        }
+    }
+}
