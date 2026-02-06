@@ -75,7 +75,12 @@ export async function registerUser({ username, password, email }) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data?.error || data?.message || 'Registration failed');
+    // Backend returns { success: false, error: "..." } or validation errors
+    const errorMsg = data?.error || data?.message ||
+      (data?.errors ? Object.values(data.errors).join(', ') : null) ||
+      'Registration failed';
+    console.error('Registration failed:', res.status, errorMsg);
+    throw new Error(errorMsg);
   }
   return data;
 }

@@ -11,13 +11,48 @@ const Register = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  // Client-side validation
+  function validateForm() {
+    // Username validation: 3-50 chars, alphanumeric/underscore/hyphen only
+    if (!username || username.length < 3 || username.length > 50) {
+      return 'Username must be between 3 and 50 characters';
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      return 'Username can only contain letters, numbers, underscores, and hyphens';
+    }
+
+    // Password validation: 8-100 chars
+    if (!password || password.length < 8) {
+      return 'Password must be at least 8 characters';
+    }
+    if (password.length > 100) {
+      return 'Password must not exceed 100 characters';
+    }
+
+    // Email validation (only if provided)
+    if (email && !/^[A-Za-z0-9+_.-]+@(.+)$/.test(email)) {
+      return 'Invalid email format';
+    }
+
+    return null;
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
     setError('');
     setSuccess('');
+
+    // Validate before submitting
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      setLoading(false);
+      return;
+    }
+
     try {
-      await registerUser({ username, password, email });
+      await registerUser({ username, password, email: email || null });
       setSuccess('Registration successful! You can now sign in.');
     } catch (err) {
       setError(err.message || 'Registration failed');
@@ -43,8 +78,13 @@ const Register = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                minLength={3}
+                maxLength={50}
+                pattern="^[a-zA-Z0-9_-]+$"
+                title="3-50 characters, letters, numbers, underscores, hyphens only"
                 autoComplete="username"
               />
+              <p className="text-xs text-gray-400 mt-1">3-50 characters, letters, numbers, underscores, hyphens only</p>
             </div>
             <div>
               <label className="block mb-2">Email (optional)</label>
@@ -64,8 +104,11 @@ const Register = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
+                maxLength={100}
                 autoComplete="new-password"
               />
+              <p className="text-xs text-gray-400 mt-1">At least 8 characters</p>
             </div>
             <button
               type="submit"

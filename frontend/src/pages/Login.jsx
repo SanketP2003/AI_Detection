@@ -14,9 +14,22 @@ function Login() {
     setIsLoading(true);
     setErrorMsg('');
 
+    // Basic validation before submitting
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername || trimmedUsername.length < 3) {
+      setErrorMsg('Username must be at least 3 characters');
+      setIsLoading(false);
+      return;
+    }
+    if (!password || password.length < 8) {
+      setErrorMsg('Password must be at least 8 characters');
+      setIsLoading(false);
+      return;
+    }
+
     try {
-      const userInfo = await login({ username, password });
-      
+      const userInfo = await login({ username: trimmedUsername, password });
+
       if (userInfo?.isAdmin) {
         window.location.href = '/admin';
       } else {
@@ -52,6 +65,7 @@ function Login() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
+                minLength={3}
                 autoComplete="username"
               />
             </div>
@@ -64,6 +78,7 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={8}
                 autoComplete="current-password"
               />
             </div>
