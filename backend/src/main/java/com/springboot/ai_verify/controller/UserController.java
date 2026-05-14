@@ -13,13 +13,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -45,23 +45,25 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<AuthUserDto> getCurrentUser(@AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<AuthUserDto> getCurrentUser(Authentication authentication) {
         try {
-            if (userDetails == null) {
+            if (!isAuthenticated(authentication)) {
                 return ResponseEntity.ok(new AuthUserDto(null, false, false));
             }
 
             boolean isAdmin = false;
             try {
-                if (userDetails.getAuthorities() != null) {
-                    isAdmin = userDetails.getAuthorities().stream()
+                if (authentication.getAuthorities() != null) {
+                    isAdmin = authentication.getAuthorities().stream()
                             .map(GrantedAuthority::getAuthority)
                             .anyMatch(role -> role.equals("ROLE_ADMIN"));
                 }
             } catch (Exception e) {
-                log.error("Error determining roles for user {}: {}", userDetails.getUsername(), e.getMessage());
+                log.error("Error determining roles for user {}: {}", authentication.getName(), e.getMessage());
             }
-            return ResponseEntity.ok(new AuthUserDto(userDetails.getUsername(), isAdmin, true));
+
+            String username = resolveUsername(authentication);
+            return ResponseEntity.ok(new AuthUserDto(username, isAdmin, true));
         } catch (Exception e) {
             log.error("Error in /me endpoint: {}", e.getMessage());
             return ResponseEntity.ok(new AuthUserDto(null, false, false));
@@ -70,20 +72,13 @@ public class UserController {
 
     @GetMapping("/profile")
     public ResponseEntity<UserProfileDto> getUserProfile(Authentication auth) {
-        if (auth == null) {
-            throw new InvalidRequestException("Authentication required");
-        }
-
-        User user = userService.getUserByUsername(auth.getName());
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found");
-        }
+        User user = resolveAuthenticatedUser(auth);
 
         return ResponseEntity.ok(new UserProfileDto(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
-                user.getRoles()
+                parseRoles(user.getRoles())
         ));
     }
 
@@ -92,9 +87,7 @@ public class UserController {
             @RequestBody Map<String, String> data,
             Authentication auth) {
 
-        if (auth == null) {
-            throw new InvalidRequestException("Authentication required");
-        }
+        User currentUser = resolveAuthenticatedUser(auth);
 
         String newUsername = data.get("username");
         if (newUsername == null || newUsername.trim().isEmpty()) {
@@ -110,8 +103,8 @@ public class UserController {
             throw new InvalidRequestException("Username must be between 3 and 50 characters");
         }
 
-        User updated = userService.updateUsername(auth.getName(), newUsername.trim());
-        log.info("User {} updated username to {}", auth.getName(), newUsername);
+        User updated = userService.updateUsername(currentUser.getUsername(), newUsername.trim());
+        log.info("User {} updated username to {}", currentUser.getUsername(), newUsername);
 
         return ResponseEntity.ok(ApiResponse.success(
                 "Username updated successfully",
@@ -124,9 +117,7 @@ public class UserController {
             @RequestBody Map<String, String> data,
             Authentication auth) {
 
-        if (auth == null) {
-            throw new InvalidRequestException("Authentication required");
-        }
+        User currentUser = resolveAuthenticatedUser(auth);
 
         String currentPass = data.get("currentPassword");
         String newPass = data.get("newPassword");
@@ -145,8 +136,8 @@ public class UserController {
             throw new InvalidRequestException("Password must contain at least one uppercase letter, one lowercase letter, and one number");
         }
 
-        userService.updatePassword(auth.getName(), currentPass, newPass);
-        log.info("User {} updated their password", auth.getName());
+        userService.updatePassword(currentUser.getUsername(), currentPass, newPass);
+        log.info("User {} updated their password", currentUser.getUsername());
 
         return ResponseEntity.ok(ApiResponse.success("Password updated successfully", null));
     }
@@ -156,17 +147,15 @@ public class UserController {
             @RequestBody Map<String, String> data,
             Authentication auth) {
 
-        if (auth == null) {
-            throw new InvalidRequestException("Authentication required");
-        }
+        User currentUser = resolveAuthenticatedUser(auth);
 
         String newEmail = data.get("email");
         if (newEmail == null || !newEmail.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new InvalidRequestException("Invalid email address");
         }
 
-        User updated = userService.updateEmail(auth.getName(), newEmail.trim());
-        log.info("User {} updated email to {}", auth.getName(), newEmail);
+        User updated = userService.updateEmail(currentUser.getUsername(), newEmail.trim());
+        log.info("User {} updated email to {}", currentUser.getUsername(), newEmail);
 
         return ResponseEntity.ok(ApiResponse.success(
                 "Email updated successfully",
@@ -203,4 +192,49 @@ public class UserController {
     // These endpoints allowed ANY authenticated user to modify ANY user
     // User modification should only be allowed via /profile/* endpoints (self)
     // or via /api/admin/* endpoints (admin only)
+
+    private boolean isAuthenticated(Authentication authentication) {
+        return authentication != null &&
+                authentication.isAuthenticated() &&
+                !(authentication instanceof AnonymousAuthenticationToken);
+    }
+
+    private String resolveUsername(Authentication auth) {
+        if (!isAuthenticated(auth)) {
+            return null;
+        }
+
+        User user = userService.getUserByUsername(auth.getName());
+        if (user != null) {
+            return user.getUsername();
+        }
+
+        String principalName = auth.getName();
+        return principalName != null && !principalName.isBlank() ? principalName : null;
+    }
+
+    private User resolveAuthenticatedUser(Authentication auth) {
+        if (!isAuthenticated(auth)) {
+            throw new InvalidRequestException("Authentication required");
+        }
+
+        User user = userService.getUserByUsername(auth.getName());
+
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+
+        return user;
+    }
+
+    private List<String> parseRoles(String roles) {
+        if (roles == null || roles.isBlank()) {
+            return List.of("ROLE_USER");
+        }
+
+        return Arrays.stream(roles.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .toList();
+    }
 }

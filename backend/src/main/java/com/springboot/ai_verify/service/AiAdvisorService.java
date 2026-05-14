@@ -25,13 +25,14 @@ public class AiAdvisorService {
 
     private final WebClient webClient;
 
-    @Value("${mistralmodel.api.url}")
+    // Make Mistral config optional so app can start when not configured.
+    @Value("${mistralmodel.api.url:}")
     private String mistralApiUrl;
 
-    @Value("${mistralmodel.api.key}")
+    @Value("${mistralmodel.api.key:}")
     private String mistralApiKey;
 
-    @Value("${mistralmodel.model}")
+    @Value("${mistralmodel.model:}")
     private String mistralModel;
 
     private static final String SYSTEM_PROMPT = """

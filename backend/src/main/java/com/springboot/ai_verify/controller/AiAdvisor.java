@@ -1,7 +1,8 @@
 package com.springboot.ai_verify.controller;
 
-import com.springboot.ai_verify.service.AiAdvisorService;
-import com.springboot.ai_verify.service.AiAdvisorService.ChatRequest;
+import com.springboot.ai_verify.service.NvidiaAdvisorService;
+import com.springboot.ai_verify.service.NvidiaAdvisorService.ChatRequest;
+import com.springboot.ai_verify.service.ChatHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +18,14 @@ public class AiAdvisor {
 
     private static final Logger log = LoggerFactory.getLogger(AiAdvisor.class);
 
-    private final AiAdvisorService aiAdvisorService;
-    private final ChatController chatController;
+    private final NvidiaAdvisorService advisorService;
+    private final ChatHistoryService chatHistoryService;
 
     // BEST PRACTICE: Use constructor injection for all dependencies
-    public AiAdvisor(AiAdvisorService aiAdvisorService, ChatController chatController) {
-        this.aiAdvisorService = aiAdvisorService;
-        this.chatController = chatController;
+    public AiAdvisor(NvidiaAdvisorService advisorService,
+                    ChatHistoryService chatHistoryService) {
+        this.advisorService = advisorService;
+        this.chatHistoryService = chatHistoryService;
     }
 
     @PostMapping("/chat")
@@ -31,14 +33,14 @@ public class AiAdvisor {
             @RequestBody ChatRequest request,
             Authentication auth) {
 
-        return aiAdvisorService.chatWithMistral(request)
+        return advisorService.chatWithNvidia(request)
                 .doOnSuccess(response -> {
                     // Log successful chat exchange
                     if (auth != null && response.getStatusCode().is2xxSuccessful()) {
                         String username = auth.getName();
                         Map<String, String> body = response.getBody();
                         if (body != null && body.containsKey("text")) {
-                            chatController.logChatExchange(
+                            chatHistoryService.logChatExchange(
                                 username,
                                 request.prompt(),
                                 body.get("text")

@@ -48,6 +48,10 @@ public class DetectionHistoryService {
         return repo.findTop100ByOrderByCreatedAtDesc();
     }
 
+    public long getTotalCount() {
+        return repo.count();
+    }
+
     /**
      * SECURITY FIX: Delete with ownership verification
      * Only allows deletion if the record belongs to the specified user.

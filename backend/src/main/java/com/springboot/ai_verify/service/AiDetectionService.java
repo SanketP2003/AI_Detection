@@ -46,13 +46,13 @@ public class AiDetectionService {
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${mistralmodel.api.url}")
+    @Value("${nvidia.api.url}")
     private String mistralApiUrl;
 
-    @Value("${mistralmodel.api.key}")
+    @Value("${nvidia.api.key}")
     private String mistralApiKey;
 
-    @Value("${mistralmodel.model}")
+    @Value("${nvidia.advisor.model}")
     private String mistralModel;
 
     public AiDetectionService(WebClient.Builder webClientBuilder, ObjectMapper objectMapper) {

@@ -7,7 +7,11 @@ import com.springboot.ai_verify.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -34,12 +38,14 @@ public class UserService {
             throw new ResourceNotFoundException("User not found");
         }
 
-        User existingUser = userRepository.findByUsername(newUsername);
+        String normalizedNewUsername = newUsername.trim();
+
+        User existingUser = userRepository.findByUsername(normalizedNewUsername);
         if (existingUser != null && !existingUser.getId().equals(user.getId())) {
             throw new InvalidRequestException("Username already taken");
         }
 
-        user.setUsername(newUsername);
+        user.setUsername(normalizedNewUsername);
         return userRepository.save(user);
     }
 
@@ -63,7 +69,15 @@ public class UserService {
             throw new ResourceNotFoundException("User not found");
         }
 
-        user.setEmail(newEmail);
+        String normalizedEmail = normalizeOptionalEmail(newEmail);
+        if (normalizedEmail != null) {
+            User existingUser = userRepository.findByEmail(normalizedEmail);
+            if (existingUser != null && !existingUser.getId().equals(user.getId())) {
+                throw new InvalidRequestException("Email already in use");
+            }
+        }
+
+        user.setEmail(normalizedEmail);
         return userRepository.save(user);
     }
 
@@ -71,11 +85,29 @@ public class UserService {
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        existingUser.setUsername(user.getUsername());
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            throw new InvalidRequestException("Username is required");
+        }
+        String normalizedUsername = user.getUsername().trim();
+        User userWithSameUsername = userRepository.findByUsername(normalizedUsername);
+        if (userWithSameUsername != null && !userWithSameUsername.getId().equals(existingUser.getId())) {
+            throw new InvalidRequestException("Username already taken");
+        }
+        existingUser.setUsername(normalizedUsername);
+
+        String normalizedEmail = normalizeOptionalEmail(user.getEmail());
+        if (normalizedEmail != null) {
+            User userWithSameEmail = userRepository.findByEmail(normalizedEmail);
+            if (userWithSameEmail != null && !userWithSameEmail.getId().equals(existingUser.getId())) {
+                throw new InvalidRequestException("Email already in use");
+            }
+        }
+        existingUser.setEmail(normalizedEmail);
+
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        existingUser.setRoles(user.getRoles());
+        existingUser.setRoles(normalizeRoles(user.getRoles()));
         return userRepository.save(existingUser);
     }
 
@@ -87,10 +119,55 @@ public class UserService {
     }
 
     public User saveUser(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRoles() == null || user.getRoles().isEmpty()) {
-            user.setRoles("ROLE_USER");
+        if (user == null) {
+            throw new InvalidRequestException("User data is required");
         }
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            throw new InvalidRequestException("Username is required");
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new InvalidRequestException("Password is required");
+        }
+
+        String normalizedUsername = user.getUsername().trim();
+        if (userRepository.findByUsername(normalizedUsername) != null) {
+            throw new InvalidRequestException("Username already taken");
+        }
+
+        String normalizedEmail = normalizeOptionalEmail(user.getEmail());
+        if (normalizedEmail != null && userRepository.findByEmail(normalizedEmail) != null) {
+            throw new InvalidRequestException("Email already in use");
+        }
+
+        user.setUsername(normalizedUsername);
+        user.setEmail(normalizedEmail);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(normalizeRoles(user.getRoles()));
         return userRepository.save(user);
+    }
+
+    private String normalizeOptionalEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return null;
+        }
+        return email.trim().toLowerCase();
+    }
+
+    private String normalizeRoles(String roles) {
+        if (roles == null || roles.isBlank()) {
+            return "ROLE_USER";
+        }
+
+        Set<String> normalizedRoles = Arrays.stream(roles.split(","))
+                .map(String::trim)
+                .filter(role -> !role.isBlank())
+                .map(role -> role.toUpperCase().startsWith("ROLE_") ? role.toUpperCase() : "ROLE_" + role.toUpperCase())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (normalizedRoles.isEmpty()) {
+            normalizedRoles.add("ROLE_USER");
+        }
+
+        return String.join(",", normalizedRoles);
     }
 }

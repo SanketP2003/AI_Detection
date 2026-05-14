@@ -73,5 +73,11 @@ public class AdminController {
     public ResponseEntity<List<DetectionHistory>> getHistoryForUser(@PathVariable String username) {
         return ResponseEntity.ok(historyService.allForUser(username));
     }
+
+    @DeleteMapping("/history/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteHistoryEntry(@PathVariable Long id) {
+        historyService.deleteByIdAsAdmin(id);
+        return ResponseEntity.ok(ApiResponse.success("Detection history entry deleted successfully", null));
+    }
 }
 

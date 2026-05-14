@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+    hikari:
+      max-lifetime: 1200000
+      idle-timeout: 600000
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 2
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+    open-in-view: false
+
+nvidia:
+  api:
+    url: ${NVIDIA_API_URL:https://integrate.api.nvidia.com/v1/chat/completions}
+    key: ${NVIDIA_API_KEY:}
+  detection:
+    model: ${NVIDIA_DETECTION_MODEL:meta/llama-3.1-70b-instruct}
+  advisor:
+    model: ${NVIDIA_ADVISOR_MODEL:meta/llama-3.1-70b-instruct}
+
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
