@@ -1,7 +1,7 @@
-import { LogOut, AlertTriangle, CheckCircle, Trash2, Search, Download, BarChart3 } from 'lucide-react';
+import { LogOut, AlertTriangle, CheckCircle, Trash2, Search, Download, BarChart3, HelpCircle, Eye, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 
@@ -91,14 +91,29 @@ export default function History() {
     return 'Low';
   };
 
-  const getRiskColor = (prob: number) => {
-    if (prob >= 0.7) return '#dc2626';
-    if (prob >= 0.4) return '#f59e0b';
-    return '#22c55e';
+  const getRiskBadgeStyles = (prob: number) => {
+    if (prob >= 0.7) {
+      return {
+        bg: 'bg-red-500/10 dark:bg-red-500/20 text-red-650 dark:text-red-400 border-red-200/40 dark:border-red-950/20',
+        progress: '#ef4444'
+      };
+    }
+    if (prob >= 0.4) {
+      return {
+        bg: 'bg-amber-500/10 dark:bg-amber-500/20 text-amber-650 dark:text-amber-400 border-amber-200/40 dark:border-amber-950/20',
+        progress: '#f59e0b'
+      };
+    }
+    return {
+      bg: 'bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-650 dark:text-emerald-400 border-emerald-200/40 dark:border-emerald-950/20',
+      progress: '#10b981'
+    };
   };
 
   const deleteRecord = (id: string) => {
-    setRecords((prev) => prev.filter((r) => r.id !== id));
+    const updated = records.filter((r) => r.id !== id);
+    setRecords(updated);
+    localStorage.setItem('detection_history', JSON.stringify(updated));
     setSelectedRecord(null);
   };
 
@@ -142,68 +157,67 @@ export default function History() {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex bg-neutral-50/40 dark:bg-[#070707] min-h-screen text-neutral-900 dark:text-neutral-100 transition-colors duration-300 w-full">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto flex flex-col">
+      <main className="flex-1 overflow-hidden flex flex-col w-full relative">
         {/* Header */}
-        <div className="border-b border-neutral-200 bg-white px-8 py-6 sticky top-0 z-10">
-          <div className="flex items-center justify-between mb-4">
+        <div className="border-b border-neutral-200/40 dark:border-neutral-800/40 bg-white/70 dark:bg-neutral-950/70 backdrop-blur px-8 py-6 flex flex-col z-10">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Detection History</h1>
-              <p className="text-sm text-neutral-500 mt-1">View and manage all your detection analyses</p>
+              <h1 className="text-2xl font-black text-neutral-900 dark:text-white">Detection History</h1>
+              <p className="text-xs text-neutral-550 dark:text-neutral-400 font-semibold mt-1">Review and download past document integrity analyses</p>
             </div>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition"
+              className="inline-flex items-center gap-2 border border-red-200 dark:border-red-950/20 text-xs font-bold text-red-650 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 px-4.5 py-2.5 rounded-xl transition"
             >
-              <LogOut className="w-4 h-4" />
               Logout
             </button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mt-6">
-            <div className="rounded-lg bg-neutral-50 border border-neutral-200 p-4">
-              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Total Detections</p>
-              <p className="text-2xl font-bold text-neutral-900 mt-2">{stats.total}</p>
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div className="rounded-2xl bg-white dark:bg-neutral-950 border border-neutral-200/40 dark:border-neutral-850 p-4.5 shadow-sm">
+              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Total Detections</p>
+              <p className="text-2xl font-extrabold text-neutral-900 dark:text-white mt-1">{stats.total}</p>
             </div>
-            <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-              <p className="text-xs font-medium text-red-600 uppercase tracking-wider">High Risk</p>
-              <p className="text-2xl font-bold text-red-900 mt-2">{stats.highRisk}</p>
+            <div className="rounded-2xl bg-white dark:bg-neutral-950 border border-neutral-200/40 dark:border-neutral-850 p-4.5 shadow-sm">
+              <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest">High Risk</p>
+              <p className="text-2xl font-extrabold text-red-650 mt-1">{stats.highRisk}</p>
             </div>
-            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
-              <p className="text-xs font-medium text-blue-600 uppercase tracking-wider">Avg AI Probability</p>
-              <p className="text-2xl font-bold text-blue-900 mt-2">{stats.avgAI}%</p>
+            <div className="rounded-2xl bg-white dark:bg-neutral-950 border border-neutral-200/40 dark:border-neutral-850 p-4.5 shadow-sm">
+              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest font-bold">Avg AI Probability</p>
+              <p className="text-2xl font-extrabold text-neutral-900 dark:text-white mt-1">{stats.avgAI}%</p>
             </div>
-            <div className="rounded-lg bg-neutral-50 border border-neutral-200 p-4">
-              <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">User</p>
-              <p className="text-lg font-semibold text-neutral-900 mt-2 truncate">{user?.username || 'Guest'}</p>
+            <div className="rounded-2xl bg-white dark:bg-neutral-950 border border-neutral-200/40 dark:border-neutral-850 p-4.5 shadow-sm">
+              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Active User</p>
+              <p className="text-base font-bold text-neutral-800 dark:text-neutral-200 mt-1.5 truncate">{user?.username || 'Guest'}</p>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 px-8 py-8">
-          {/* Controls */}
-          <div className="space-y-4 mb-8">
-            {/* Search and Filters */}
-            <div className="flex gap-4 flex-wrap">
+        {/* Content Container */}
+        <div className="flex-1 overflow-y-auto px-8 py-8 w-full mb-12">
+          <div className="max-w-4xl mx-auto space-y-6 w-full">
+            
+            {/* Filter controls */}
+            <div className="flex gap-3 flex-wrap">
               <div className="flex-1 min-w-64 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <input
                   type="text"
-                  placeholder="Search by text or analysis..."
+                  placeholder="Search past scans..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full pl-10 pr-4 py-3 border border-neutral-200/40 dark:border-neutral-850 rounded-xl text-xs font-semibold focus:outline-none bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white placeholder:text-neutral-450 shadow-sm"
                 />
               </div>
 
               <select
                 value={selectedRisk}
                 onChange={(e) => setSelectedRisk(e.target.value)}
-                className="px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="px-4 py-3 border border-neutral-200/40 dark:border-neutral-850 rounded-xl text-xs font-bold bg-white dark:bg-neutral-950 text-neutral-600 dark:text-neutral-300 focus:outline-none shadow-sm cursor-pointer"
               >
                 <option value="all">All Risk Levels</option>
                 <option value="high">High Risk</option>
@@ -214,7 +228,7 @@ export default function History() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                className="px-4 py-3 border border-neutral-200/40 dark:border-neutral-850 rounded-xl text-xs font-bold bg-white dark:bg-neutral-950 text-neutral-600 dark:text-neutral-300 focus:outline-none shadow-sm cursor-pointer"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -223,196 +237,205 @@ export default function History() {
               </select>
 
               {records.length > 0 && (
-                <>
+                <div className="flex gap-2">
                   <button
                     onClick={exportHistory}
-                    className="px-4 py-2 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition inline-flex items-center gap-2"
+                    className="px-4.5 py-3 border border-neutral-200/45 dark:border-neutral-850 rounded-xl text-xs font-bold text-neutral-600 dark:text-neutral-350 hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition shadow-sm flex items-center gap-1.5"
                   >
-                    <Download className="h-4 w-4" />
-                    Export CSV
+                    <Download className="h-4 w-4" /> Export CSV
                   </button>
                   <button
                     onClick={clearAllHistory}
-                    className="px-4 py-2 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition inline-flex items-center gap-2"
+                    className="px-4.5 py-3 border border-red-200 dark:border-red-950/20 rounded-xl text-xs font-bold text-red-650 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition shadow-sm flex items-center gap-1.5"
                   >
-                    <Trash2 className="h-4 w-4" />
-                    Clear All
+                    <Trash2 className="h-4 w-4" /> Clear All
                   </button>
-                </>
+                </div>
               )}
             </div>
-          </div>
 
-          {/* Records List */}
-          {filteredRecords.length === 0 ? (
-            <div className="text-center py-16">
-              <BarChart3 className="h-12 w-12 text-neutral-300 mx-auto mb-4" />
-              <p className="text-neutral-600 font-medium">
-                {records.length === 0 ? 'No detection history yet.' : 'No results match your filters.'}
-              </p>
-              <p className="text-sm text-neutral-500 mt-1">
-                {records.length === 0 ? 'Analyze text in the Detector to start building history.' : 'Try adjusting your search or filters.'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredRecords.map((record, index) => (
-                <motion.div
-                  key={record.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => setSelectedRecord(record)}
-                  className="rounded-lg border border-neutral-200 bg-white p-4 hover:border-neutral-300 hover:shadow-sm cursor-pointer transition"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-neutral-900 line-clamp-2">{record.preview}</p>
-                      <p className="text-xs text-neutral-500 mt-1">{new Date(record.timestamp).toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                      <div className="text-right">
-                        <p className="text-sm font-bold text-neutral-900">{(record.aiProbability * 100).toFixed(1)}%</p>
-                        <p className="text-xs text-neutral-500">{getRiskLevel(record.aiProbability)}</p>
+            {/* List */}
+            {filteredRecords.length === 0 ? (
+              <div className="text-center py-20 flex flex-col items-center">
+                <BarChart3 className="h-12 w-12 text-neutral-400 mx-auto mb-4 animate-pulse" />
+                <p className="text-neutral-500 dark:text-neutral-450 text-sm font-semibold">
+                  {records.length === 0 ? 'No detection history yet.' : 'No records match filters.'}
+                </p>
+                <p className="text-[11px] text-neutral-400 mt-1">
+                  {records.length === 0 ? 'Analyze text inside the detector to build your history log.' : 'Adjust search terms or try another risk filter.'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4 w-full">
+                {filteredRecords.map((record, index) => {
+                  const bStyles = getRiskBadgeStyles(record.aiProbability);
+                  return (
+                    <motion.div
+                      key={record.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => setSelectedRecord(record)}
+                      className="rounded-2xl border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-6 hover:border-neutral-400 dark:hover:border-neutral-750 hover:shadow-md cursor-pointer transition-all duration-200 flex flex-col md:flex-row md:items-center justify-between gap-4 w-full shadow-sm"
+                    >
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <p className="text-sm font-bold text-neutral-900 dark:text-white line-clamp-2 leading-relaxed">{record.preview}</p>
+                        <div className="flex items-center gap-4 text-[10px] text-neutral-450 font-bold uppercase tracking-wider">
+                          <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" /> {new Date(record.timestamp).toLocaleDateString()}</span>
+                          <span>•</span>
+                          <span>{record.preview.trim().split(/\s+/).length} Words</span>
+                        </div>
                       </div>
-                      {record.aiProbability >= 0.7 ? (
-                        <AlertTriangle className="h-5 w-5 text-red-600" />
-                      ) : record.aiProbability >= 0.4 ? (
-                        <AlertTriangle className="h-5 w-5 text-amber-500" />
-                      ) : (
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-xs text-neutral-600 line-clamp-2">{record.analysis}</p>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                      
+                      <div className="flex items-center gap-4 flex-shrink-0 self-end md:self-center">
+                        <div className="text-right">
+                          <p className="text-lg font-black text-neutral-900 dark:text-white">{(record.aiProbability * 100).toFixed(0)}%</p>
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wider ${bStyles.bg}`}>
+                            {getRiskLevel(record.aiProbability)} Match
+                          </span>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-neutral-50 dark:bg-neutral-900 flex items-center justify-center border border-neutral-200/10 hover:bg-neutral-100 transition-colors">
+                          <Eye className="w-4 h-4 text-neutral-500" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </main>
 
-      {/* Detail Modal */}
-      {selectedRecord && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-end"
-          onClick={() => setSelectedRecord(null)}
-        >
-          <motion.div
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            onClick={(e) => e.stopPropagation()}
-            className="w-full bg-white rounded-t-2xl max-h-[80vh] overflow-y-auto"
-          >
-            <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="font-bold text-neutral-900">Detection Details</h2>
-              <button
-                onClick={() => setSelectedRecord(null)}
-                className="text-neutral-500 hover:text-neutral-900"
-              >
-                ✕
-              </button>
-            </div>
+      {/* Side Slide-in Preview Drawer Modal */}
+      <AnimatePresence>
+        {selectedRecord && (
+          <div className="fixed inset-0 z-50 flex justify-end">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-neutral-900/60 dark:bg-black/70 backdrop-blur-sm"
+              onClick={() => setSelectedRecord(null)}
+            />
 
-            <div className="px-6 py-6 space-y-6">
-              {/* Risk Overview */}
-              <div
-                className="rounded-lg border-2 p-4"
-                style={{
-                  borderColor: getRiskColor(selectedRecord.aiProbability),
-                  backgroundColor: getRiskColor(selectedRecord.aiProbability) + '15',
-                }}
-              >
-                <p className="text-sm font-semibold mb-2" style={{ color: getRiskColor(selectedRecord.aiProbability) }}>
-                  {getRiskLevel(selectedRecord.aiProbability)} Risk
-                </p>
-                <p className="text-3xl font-bold text-neutral-900">
-                  {(selectedRecord.aiProbability * 100).toFixed(1)}%
-                </p>
-                <p className="text-xs text-neutral-500 mt-2">
-                  Confidence: {(selectedRecord.confidenceScore * 100).toFixed(1)}%
-                </p>
-              </div>
-
-              {/* Metrics */}
-              <div>
-                <h3 className="font-semibold text-neutral-900 mb-3">Metrics</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 p-4">
-                    <p className="text-xs text-neutral-500 font-medium mb-2">Perplexity</p>
-                    <p className="text-xl font-bold text-neutral-900">
-                      {(selectedRecord.metrics.perplexity * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 p-4">
-                    <p className="text-xs text-neutral-500 font-medium mb-2">Burstiness</p>
-                    <p className="text-xl font-bold text-neutral-900">
-                      {(selectedRecord.metrics.burstiness * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 p-4">
-                    <p className="text-xs text-neutral-500 font-medium mb-2">Consistency</p>
-                    <p className="text-xl font-bold text-neutral-900">
-                      {(selectedRecord.metrics.consistency * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Analysis */}
-              <div>
-                <h3 className="font-semibold text-neutral-900 mb-3">Analysis</h3>
-                <p className="text-sm text-neutral-700 leading-relaxed">{selectedRecord.analysis}</p>
-              </div>
-
-              {/* Patterns */}
-              {selectedRecord.patterns.length > 0 && (
+            {/* Slide Drawer panel */}
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+              className="relative w-full max-w-xl bg-white dark:bg-neutral-950 h-full shadow-2xl flex flex-col z-10 border-l border-neutral-200/40 dark:border-neutral-850"
+            >
+              {/* Header */}
+              <div className="border-b border-neutral-200/40 dark:border-neutral-850 px-6 py-5 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30">
                 <div>
-                  <h3 className="font-semibold text-neutral-900 mb-3">Observed Patterns</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedRecord.patterns.map((pattern, idx) => (
-                      <span key={idx} className="px-3 py-1 bg-neutral-100 border border-neutral-200 rounded-full text-xs text-neutral-700">
-                        {pattern}
+                  <h2 className="font-extrabold text-neutral-900 dark:text-white">Scan Diagnostics</h2>
+                  <p className="text-[10px] text-neutral-500 font-semibold mt-0.5">Scanned on {new Date(selectedRecord.timestamp).toLocaleString()}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedRecord(null)}
+                  className="w-8 h-8 rounded-full bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-550 dark:text-neutral-400 flex items-center justify-center font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Scroll Pane */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                
+                {/* Risk Banner */}
+                {(() => {
+                  const bStyles = getRiskBadgeStyles(selectedRecord.aiProbability);
+                  return (
+                    <div className={`rounded-2xl border p-6 flex flex-col justify-between ${bStyles.bg}`}>
+                      <span className="text-[9px] font-bold uppercase tracking-widest">
+                        {getRiskLevel(selectedRecord.aiProbability)} AI Probability Matches
                       </span>
-                    ))}
+                      <p className="text-4xl font-display font-black mt-2">{(selectedRecord.aiProbability * 100).toFixed(1)}%</p>
+                      <div className="h-2 rounded-full bg-neutral-200/40 dark:bg-neutral-800/40 overflow-hidden mt-4">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${selectedRecord.aiProbability * 100}%` }}
+                          style={{ backgroundColor: bStyles.progress }}
+                          className="h-full rounded-full"
+                        />
+                      </div>
+                      <p className="text-[9px] text-neutral-500 uppercase tracking-wider mt-3 font-semibold">
+                        Overall confidence score: {(selectedRecord.confidenceScore * 100).toFixed(1)}%
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Metrics Grid */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Key Performance Indicators</h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="rounded-xl border border-neutral-200/40 dark:border-neutral-850 p-4 bg-neutral-50/50 dark:bg-neutral-900/30">
+                      <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Perplexity</p>
+                      <p className="text-lg font-extrabold text-neutral-900 dark:text-white mt-1">{(selectedRecord.metrics.perplexity * 100).toFixed(1)}%</p>
+                    </div>
+                    <div className="rounded-xl border border-neutral-200/40 dark:border-neutral-850 p-4 bg-neutral-50/50 dark:bg-neutral-900/30">
+                      <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Burstiness</p>
+                      <p className="text-lg font-extrabold text-neutral-900 dark:text-white mt-1">{(selectedRecord.metrics.burstiness * 100).toFixed(1)}%</p>
+                    </div>
+                    <div className="rounded-xl border border-neutral-200/40 dark:border-neutral-850 p-4 bg-neutral-50/50 dark:bg-neutral-900/30">
+                      <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Consistency</p>
+                      <p className="text-lg font-extrabold text-neutral-900 dark:text-white mt-1">{(selectedRecord.metrics.consistency * 100).toFixed(1)}%</p>
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Full Text */}
-              <div>
-                <h3 className="font-semibold text-neutral-900 mb-3">Original Text</h3>
-                <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-                  <p className="text-sm text-neutral-700 whitespace-pre-wrap">{selectedRecord.text}</p>
+                {/* Detailed Analysis text */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Diagnostic Report</h3>
+                  <p className="text-xs font-semibold leading-relaxed text-neutral-650 dark:text-neutral-350 bg-neutral-50/50 dark:bg-neutral-900/30 border border-neutral-200/40 dark:border-neutral-850 p-5 rounded-2xl">{selectedRecord.analysis}</p>
+                </div>
+
+                {/* Patterns list */}
+                {selectedRecord.patterns.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Observed Signatures</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedRecord.patterns.map((pattern, idx) => (
+                        <span key={idx} className="px-3.5 py-1.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200/30 dark:border-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-300">
+                          {pattern}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Source text block */}
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Analyzed Document Copy</h3>
+                  <div className="bg-neutral-50/50 dark:bg-neutral-900/30 border border-neutral-200/40 dark:border-neutral-850 rounded-2xl p-5 max-h-64 overflow-y-auto shadow-inner">
+                    <p className="text-xs font-medium text-neutral-650 dark:text-neutral-355 whitespace-pre-wrap leading-relaxed">{selectedRecord.text}</p>
+                  </div>
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-neutral-200">
+              {/* Actions panel footer */}
+              <div className="p-6 border-t border-neutral-200/40 dark:border-neutral-850 bg-white/40 dark:bg-neutral-950/40 backdrop-blur flex gap-3.5">
                 <button
-                  onClick={() => {
-                    deleteRecord(selectedRecord.id);
-                  }}
-                  className="flex-1 px-4 py-2 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition inline-flex items-center justify-center gap-2"
+                  onClick={() => deleteRecord(selectedRecord.id)}
+                  className="flex-1 py-3 border border-red-200 dark:border-red-950/20 rounded-xl text-xs font-bold text-red-650 dark:text-red-405 hover:bg-red-50 dark:hover:bg-red-950/25 transition shadow-sm flex items-center justify-center gap-1.5"
                 >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
+                  <Trash2 className="h-4 w-4" /> Delete Record
                 </button>
                 <button
                   onClick={() => setSelectedRecord(null)}
-                  className="flex-1 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition"
+                  className="flex-1 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition shadow-md"
                 >
-                  Close
+                  Close Preview
                 </button>
               </div>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

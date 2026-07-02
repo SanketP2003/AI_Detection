@@ -7,34 +7,49 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/mistral")
 public class MistralController {
 
-    @Value("${mistralmodel.api.key:}")
+    @Value("${mistral.api.key:}")
     private String apiKey;
 
+    @Value("${mistral.detection.model:mistral-large-latest}")
+    private String detectionModel;
+
     @GetMapping("/health")
-    public ResponseEntity<Map<String, String>> checkHealth() {
+    public ResponseEntity<Map<String, Object>> checkHealth() {
+        Map<String, Object> response = new HashMap<>();
         if (apiKey == null || apiKey.isEmpty()) {
-            return ResponseEntity.ok(Map.of(
-                    "status", "CONFIG_MISSING",
-                    "message", "Mistral API key is not configured"
-            ));
+            response.put("status", "CONFIG_MISSING");
+            response.put("message", "Mistral API key is not configured");
+            return ResponseEntity.ok(response);
         }
 
-        if (!apiKey.startsWith("sk-") && apiKey.length() < 10) {
-            return ResponseEntity.ok(Map.of(
-                    "status", "INVALID_FORMAT",
-                    "message", "Mistral API key format appears invalid"
-            ));
-        }
+        response.put("status", "OK");
+        response.put("message", "Mistral API is configured");
+        response.put("detectionModel", detectionModel);
+        response.put("availableModels", new String[]{
+                "mistral-large-latest",
+                "mistral-medium-latest",
+                "mistral-small-latest",
+                "open-mixtral-8x22b"
+        });
+        return ResponseEntity.ok(response);
+    }
 
-        return ResponseEntity.ok(Map.of(
-                "status", "OK",
-                "message", "Mistral API is configured"
-        ));
+    @GetMapping("/models")
+    public ResponseEntity<Map<String, Object>> getModels() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("detectionModel", detectionModel);
+        response.put("availableModels", new String[]{
+                "mistral-large-latest",
+                "mistral-medium-latest",
+                "mistral-small-latest",
+                "open-mixtral-8x22b"
+        });
+        return ResponseEntity.ok(response);
     }
 }
-

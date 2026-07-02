@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
-import { getCurrentUser, login as apiLogin, logout as apiLogout, register as apiRegister } from '../api/client';
+import { getCurrentUser, login as apiLogin, logout as apiLogout, register as apiRegister, parseApiError } from '../api/client';
 
 export interface AuthUser {
   username: string | null;
@@ -53,14 +53,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    await apiLogin({ email, password });
-    await refreshUser();
+    try {
+      await apiLogin({ email, password });
+      await refreshUser();
+    } catch (error) {
+      throw new Error(parseApiError(error, 'Unable to sign in.'));
+    }
   };
 
   const register = async (username: string, email: string, password: string) => {
-    await apiRegister({ username, email, password });
-    await apiLogin({ email, password });
-    await refreshUser();
+    try {
+      await apiRegister({ username, email, password });
+      await apiLogin({ email, password });
+      await refreshUser();
+    } catch (error) {
+      throw new Error(parseApiError(error, 'Unable to create your account.'));
+    }
   };
 
   const logout = async () => {

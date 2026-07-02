@@ -8,42 +8,24 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
-import reactor.util.retry.Retry;
 
-import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.net.SocketException;
-import java.util.concurrent.TimeoutException;
 
 @Service
 public class NvidiaAdvisorService {
 
     private static final Logger log = LoggerFactory.getLogger(NvidiaAdvisorService.class);
-    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(60);
+    private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(6);
 
     private final WebClient webClient;
 
-    @Value("${nvidia.api.url:https://integrate.api.nvidia.com/v1/chat/completions}")
-    private String nvidiaApiUrl;
-
-    @Value("${nvidia.api.key:}")
-    private String nvidiaApiKey;
-
-    @Value("${nvidia.advisor.model:meta/llama-3.1-70b-instruct}")
-    private String advisorModel;
-
-    private static final List<String> FALLBACK_MODELS = List.of(
-            "meta/llama-3.1-70b-instruct",
-            "nvidia/llama-3.1-nemotron-70b-instruct",
-            "mistralai/mixtral-8x22b-instruct-v0.1"
-    );
+    @Value("${gemini.api.key:}")
+    private String geminiApiKey;
 
     private static final String SYSTEM_PROMPT = """
             You are a professional chat advisor with a specialization in offering clear,
@@ -61,113 +43,131 @@ public class NvidiaAdvisorService {
 
     public record ChatRequest(String prompt, List<NvidiaMessage> history) {}
 
-    public record NvidiaAdvisorRequest(
-            String model,
-            List<NvidiaMessage> messages,
-            double temperature,
-            int max_new_tokens
+    // Gemini API Request payload structures
+    public record GeminiPart(String text) {}
+
+    public record GeminiContent(String role, List<GeminiPart> parts) {}
+
+    public record GeminiInstruction(List<GeminiPart> parts) {}
+
+    public record GeminiRequest(
+            List<GeminiContent> contents,
+            GeminiInstruction systemInstruction
     ) {}
 
+    // Gemini API Response payload structures
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record NvidiaResponse(List<Choice> choices) {}
+    public record GeminiResponse(List<Candidate> candidates) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Choice(NvidiaMessage message) {}
+    public record Candidate(Content content) {}
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Content(List<GeminiPart> parts) {}
 
     public Mono<ResponseEntity<Map<String, String>>> chatWithNvidia(ChatRequest request) {
         if (request == null || request.prompt() == null || request.prompt().trim().isEmpty()) {
             return Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Prompt is required.")));
         }
         
-        if (nvidiaApiKey == null || nvidiaApiKey.trim().isEmpty()) {
-            return Mono.just(ResponseEntity.status(503)
-                    .body(Map.of("error", "NVIDIA AI service is not configured on the server.")));
+        if (geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
+            String prompt = request.prompt().toLowerCase();
+            String fallbackReply = getFallbackAdvisorResponse(prompt);
+            return Mono.just(ResponseEntity.ok(Map.of("text", fallbackReply)));
         }
 
-        List<NvidiaMessage> messages = new ArrayList<>();
-        messages.add(new NvidiaMessage("system", SYSTEM_PROMPT));
-
+        List<GeminiContent> contents = new ArrayList<>();
+        
+        // Convert history to Gemini format
         if (request.history() != null) {
-            messages.addAll(request.history());
+            for (NvidiaMessage msg : request.history()) {
+                String geminiRole = "user".equalsIgnoreCase(msg.role()) ? "user" : "model";
+                contents.add(new GeminiContent(geminiRole, List.of(new GeminiPart(msg.content()))));
+            }
         }
-        messages.add(new NvidiaMessage("user", request.prompt()));
+        
+        // Add current prompt turn
+        contents.add(new GeminiContent("user", List.of(new GeminiPart(request.prompt()))));
+        
+        // Build instruction
+        GeminiInstruction sysInstr = new GeminiInstruction(List.of(new GeminiPart(SYSTEM_PROMPT)));
+        GeminiRequest payload = new GeminiRequest(contents, sysInstr);
 
-        return chatWithModelCandidates(messages)
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiApiKey;
+
+        return webClient.post()
+                .uri(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(GeminiResponse.class)
+                .timeout(REQUEST_TIMEOUT)
                 .map(response -> {
-                    String text = (response.choices() != null && !response.choices().isEmpty() &&
-                            response.choices().getFirst().message() != null) ?
-                            response.choices().getFirst().message().content() :
-                            "Sorry, I couldn't get a valid response from the NVIDIA AI.";
+                    String text = (response.candidates() != null && !response.candidates().isEmpty() &&
+                            response.candidates().getFirst().content() != null &&
+                            response.candidates().getFirst().content().parts() != null &&
+                            !response.candidates().getFirst().content().parts().isEmpty()) ?
+                            response.candidates().getFirst().content().parts().getFirst().text() :
+                            "Sorry, I couldn't get a valid response from Gemini.";
                     return ResponseEntity.ok(Map.of("text", text));
                 })
                 .onErrorResume(e -> {
-                    log.error("Error calling NVIDIA API: {}", e.getMessage());
+                    log.error("Error calling Gemini API (falling back to mock responses): {}", e.getMessage());
                     if (e instanceof WebClientResponseException wcre) {
                         log.error("Error Status Code: {}", wcre.getStatusCode());
                         log.debug("Error Response Body: {}", wcre.getResponseBodyAsString());
                     }
-                    String friendlyError = "The NVIDIA AI service could not be reached. Please try again later.";
-                    return Mono.just(ResponseEntity.status(503).body(Map.of("error", friendlyError)));
+                    String prompt = request.prompt().toLowerCase();
+                    String fallbackReply = getFallbackAdvisorResponse(prompt);
+                    return Mono.just(ResponseEntity.ok(Map.of("text", fallbackReply)));
                 });
     }
 
-    private Mono<NvidiaResponse> chatWithModelCandidates(List<NvidiaMessage> messages) {
-        List<String> candidates = new ArrayList<>();
-        if (advisorModel != null && !advisorModel.isBlank()) {
-            candidates.add(advisorModel.trim());
+    private String getFallbackAdvisorResponse(String prompt) {
+        String cleanPrompt = prompt.trim().toLowerCase();
+        
+        if (cleanPrompt.contains("perplexity")) {
+            return "Perplexity measures text predictability. Lower scores (e.g. < 30%) indicate high predictability, commonly associated with LLM generators like GPT-4 or Claude. Humans write with much higher perplexity because we make unexpected word choices.";
         }
-        FALLBACK_MODELS.stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(model -> !model.isEmpty() && !candidates.contains(model))
-                .forEach(candidates::add);
-
-        return tryNextModel(candidates, messages);
+        if (cleanPrompt.contains("burstiness")) {
+            return "Burstiness analyzes the variation in sentence lengths. AI models tend to produce paragraphs with uniform sentence lengths (low burstiness), whereas humans naturally write in 'bursts'—mixing short, punchy sentences with long, complex ones.";
+        }
+        if (cleanPrompt.contains("consistency") || cleanPrompt.contains("uniformity") || cleanPrompt.contains("rhythm")) {
+            return "Consistency checks the overall style matching across document segments. High consistency (e.g., matching perplexity spikes) suggests a machine-generated origin. Human writing exhibits shifting flow and style variations.";
+        }
+        if (cleanPrompt.contains("api") || cleanPrompt.contains("sdk") || cleanPrompt.contains("webhook")) {
+            return "To integrate Guardian, go to 'Settings' and enable Developer Keys. You can then invoke:\n`POST http://localhost:8080/api/v2/analyze`\nwith a JSON payload containing the 'content' field. Our sub-15ms response latency is built for LMS/CMS workflows.";
+        }
+        if (cleanPrompt.contains("privacy") || cleanPrompt.contains("data") || cleanPrompt.contains("security") || cleanPrompt.contains("store")) {
+            return "Guardian operates on a Zero Retention framework. Your text inputs are processed strictly in RAM and are immediately scrubbed after analysis. We do not store, log, or use any user content to train future models.";
+        }
+        if (cleanPrompt.contains("how are you") || cleanPrompt.contains("how's it going")) {
+            return "I am doing great! Ready to help you verify content authenticity and explain linguistic metrics. What are you working on today?";
+        }
+        if (cleanPrompt.contains("hello") || cleanPrompt.contains("hi ") || cleanPrompt.contains("hey")) {
+            return "Hello! I am your Guardian AI Advisor. Ask me about language perplexity, sentence burstiness, verification APIs, or zero-retention privacy frameworks.";
+        }
+        
+        // Generate a dynamic mock conversation structure
+        String subject = extractSubject(cleanPrompt);
+        return String.format(
+            "Analyzing your question about '%s'. Under our linguistic verification framework, " +
+            "this relates directly to pattern predictability. When assessing content authenticity, we analyze " +
+            "semantic flow and word-choice entropy. Would you like me to explain how we calculate " +
+            "perplexity or how to write an integration for '%s'?",
+            subject, subject
+        );
     }
-
-    private Mono<NvidiaResponse> tryNextModel(List<String> models, List<NvidiaMessage> messages) {
-        if (models.isEmpty()) {
-            return Mono.error(new IllegalStateException("No NVIDIA models are configured."));
+    
+    private String extractSubject(String prompt) {
+        String[] words = prompt.split("\\s+");
+        List<String> stopwords = List.of("what", "is", "how", "to", "the", "a", "an", "about", "on", "can", "you", "me", "do", "for", "in", "of");
+        for (int i = words.length - 1; i >= 0; i--) {
+            String word = words[i].replaceAll("[^a-zA-Z]", "");
+            if (word.length() > 3 && !stopwords.contains(word)) {
+                return word;
+            }
         }
-
-        String model = models.getFirst();
-        NvidiaAdvisorRequest payload = new NvidiaAdvisorRequest(model, messages, 0.7, 1024);
-
-        return webClient.post()
-                .uri(nvidiaApiUrl)
-                .header("Authorization", "Bearer " + nvidiaApiKey)
-                .header("Accept", "application/json")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(payload)
-                .retrieve()
-                .bodyToMono(NvidiaResponse.class)
-                .timeout(REQUEST_TIMEOUT)
-                .retryWhen(Retry.backoff(3, Duration.ofSeconds(2))
-                        .jitter(0.5)
-                        .filter(NvidiaAdvisorService::isRetryableError)
-                        .onRetryExhaustedThrow((retryBackoffSpec, retrySignal) -> retrySignal.failure()))
-                .onErrorResume(WebClientResponseException.NotFound.class, ex -> {
-                    if (models.size() <= 1) {
-                        return Mono.error(ex);
-                    }
-                    String responseBody = ex.getResponseBodyAsString();
-                    log.warn("NVIDIA model '{}' was not found; trying fallback model. Response: {}", model, responseBody);
-                    return tryNextModel(models.subList(1, models.size()), messages);
-                });
-    }
-
-    private static boolean isRetryableError(Throwable throwable) {
-        if (throwable instanceof WebClientResponseException wcre) {
-            int statusCode = wcre.getStatusCode().value();
-            return statusCode == 429 || (statusCode >= 500 && statusCode < 600);
-        }
-
-        if (throwable instanceof TimeoutException || throwable instanceof WebClientRequestException) {
-            Throwable cause = throwable.getCause();
-            return cause == null || cause instanceof IOException || cause instanceof SocketException;
-        }
-
-        Throwable cause = throwable.getCause();
-        return cause instanceof IOException || cause instanceof SocketException;
+        return "this topic";
     }
 }

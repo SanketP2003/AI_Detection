@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api")
@@ -40,12 +41,18 @@ public class AiAdvisor {
                         String username = auth.getName();
                         Map<String, String> body = response.getBody();
                         if (body != null && body.containsKey("text")) {
-                            chatHistoryService.logChatExchange(
-                                username,
-                                request.prompt(),
-                                body.get("text")
-                            );
-                            log.debug("Chat logged for user: {}", username);
+                            CompletableFuture.runAsync(() -> {
+                                try {
+                                    chatHistoryService.logChatExchange(
+                                        username,
+                                        request.prompt(),
+                                        body.get("text")
+                                    );
+                                    log.debug("Chat logged for user: {}", username);
+                                } catch (Exception e) {
+                                    log.error("Failed to log chat history to database asynchronously: {}", e.getMessage());
+                                }
+                            });
                         }
                     }
                 })

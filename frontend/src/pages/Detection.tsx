@@ -5,6 +5,7 @@ import {
   Lightbulb,
   LogOut,
   Sparkles,
+  RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
@@ -187,54 +188,72 @@ export default function Detection() {
   };
 
   const riskLevel = detectionResult ? scoreLabel(detectionResult.aiProbability) : null;
-  const riskBgColor = riskLevel === 'High' ? '#fca5a5' : riskLevel === 'Medium' ? '#fcd34d' : '#a7f3d0';
-  const riskTextColor = riskLevel === 'High' ? '#991b1b' : riskLevel === 'Medium' ? '#92400e' : '#166534';
-  const riskProgressColor = riskLevel === 'High' ? '#ef4444' : riskLevel === 'Medium' ? '#f59e0b' : '#22c55e';
+  
+  // High, Medium, Low styles configured natively in code
+  const riskStyles = {
+    High: {
+      border: 'border-red-200/50 dark:border-red-950/20',
+      bg: 'bg-red-50/50 dark:bg-red-950/10',
+      text: 'text-red-650 dark:text-red-400',
+      progress: '#ef4444'
+    },
+    Medium: {
+      border: 'border-amber-200/50 dark:border-amber-950/20',
+      bg: 'bg-amber-50/50 dark:bg-amber-950/10',
+      text: 'text-amber-650 dark:text-amber-400',
+      progress: '#f59e0b'
+    },
+    Low: {
+      border: 'border-emerald-200/50 dark:border-emerald-950/20',
+      bg: 'bg-emerald-50/50 dark:bg-emerald-950/10',
+      text: 'text-emerald-650 dark:text-emerald-400',
+      progress: '#10b981'
+    }
+  }[riskLevel || 'Low'];
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex bg-neutral-50/40 dark:bg-[#070707] min-h-screen text-neutral-900 dark:text-neutral-100 transition-colors duration-300 w-full">
       <Sidebar />
 
-      <main className="flex-1 overflow-hidden flex flex-col">
+      <main className="flex-1 overflow-hidden flex flex-col w-full">
         {/* Header */}
-        <div className="border-b border-neutral-200 bg-white px-8 py-6 flex items-center justify-between">
+        <div className="border-b border-neutral-200/40 dark:border-neutral-800/40 bg-white/70 dark:bg-neutral-950/70 backdrop-blur px-8 py-6 flex items-center justify-between z-15">
           <div>
-            <h1 className="text-2xl font-bold text-neutral-900">AI Content Detector</h1>
-            <p className="text-sm text-neutral-500 mt-1">Analyze text for AI-generated patterns</p>
+            <h1 className="text-2xl font-black text-neutral-900 dark:text-white">AI Content Detector</h1>
+            <p className="text-xs text-neutral-550 dark:text-neutral-400 font-semibold mt-1">Analyze text for AI-generated patterns and entropy signatures</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={downloadReport}
               disabled={!detectionResult}
-              className="inline-flex items-center gap-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium text-neutral-900 transition"
+              className="inline-flex items-center gap-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-200 transition"
             >
               <Download className="h-4 w-4" />
               Export PDF
             </button>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 px-4 py-2 text-sm font-medium transition"
+              className="inline-flex items-center gap-2 rounded-xl border border-red-200 dark:border-red-950/20 text-xs font-bold text-red-650 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 px-4.5 py-2.5 transition"
             >
-              <LogOut className="h-4 w-4" />
               Logout
             </button>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto px-8 py-8">
-          <div className="max-w-6xl mx-auto space-y-8">
+        {/* Main Scroll Container */}
+        <div className="flex-1 overflow-y-auto px-8 py-8 w-full mb-12">
+          <div className="max-w-4xl mx-auto space-y-8 w-full">
             {/* Input Section */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-4"
+              className="space-y-4 w-full"
             >
-              <div>
-                <label className="block text-sm font-semibold text-neutral-900 mb-3">
+              <div className="w-full">
+                <label className="block text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mb-3">
                   Enter text to analyze
                 </label>
-                <div className="relative rounded-lg border border-neutral-200 bg-white overflow-hidden shadow-sm hover:border-neutral-300 transition">
+                <div className="relative rounded-2xl border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 overflow-hidden shadow-sm hover:border-neutral-300 dark:hover:border-neutral-800 transition">
                   <textarea
                     value={detectorText}
                     onChange={(e) => setDetectorText(e.target.value)}
@@ -244,19 +263,19 @@ export default function Detection() {
                       }
                     }}
                     placeholder="Paste or type your text here (minimum 10 characters)..."
-                    className="w-full h-56 p-4 bg-transparent text-base text-neutral-900 placeholder:text-neutral-400 focus:outline-none resize-none"
+                    className="w-full h-56 p-5 bg-transparent text-sm text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-450 focus:outline-none resize-none leading-relaxed"
                   />
                 </div>
               </div>
 
               {/* Info and Stats */}
-              <div className="flex items-center justify-between text-xs text-neutral-500">
+              <div className="flex items-center justify-between text-[10px] font-bold text-neutral-450 uppercase tracking-wider">
                 <div className="flex items-center gap-4">
                   <span>{charCount} characters</span>
                   <span>•</span>
                   <span>{wordCount} words</span>
                 </div>
-                {charCount >= 10 && <span className="text-green-600 font-medium">✓ Ready to analyze</span>}
+                {charCount >= 10 && <span className="text-emerald-600 dark:text-emerald-400">✓ Ready to analyze</span>}
               </div>
 
               {/* Error Message */}
@@ -264,10 +283,10 @@ export default function Detection() {
                 <motion.div
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex gap-3 rounded-lg border border-red-200 bg-red-50 p-4"
+                  className="flex gap-3 rounded-2xl border border-red-200/50 dark:border-red-950/20 bg-red-50/50 dark:bg-red-950/10 p-4"
                 >
-                  <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-600 mt-0.5" />
-                  <p className="text-sm text-red-700">{error}</p>
+                  <AlertTriangle className="h-5 w-5 flex-shrink-0 text-red-650 mt-0.5" />
+                  <p className="text-xs font-semibold text-red-750 dark:text-red-400">{error}</p>
                 </motion.div>
               )}
 
@@ -276,13 +295,13 @@ export default function Detection() {
                 <button
                   onClick={handleAnalyze}
                   disabled={loading || charCount < 10}
-                  className="px-6 py-3 bg-neutral-900 text-white rounded-lg font-medium text-sm hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  className="px-6 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl font-bold text-xs hover:bg-neutral-800 dark:hover:bg-neutral-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-2"
                 >
                   {loading ? 'Analyzing...' : 'Analyze Text'}
                 </button>
                 <button
                   onClick={clearDetector}
-                  className="px-6 py-3 border border-neutral-200 rounded-lg font-medium text-sm text-neutral-900 hover:bg-neutral-50 transition"
+                  className="px-6 py-3.5 border border-neutral-250 dark:border-neutral-850 text-neutral-600 dark:text-neutral-350 rounded-xl font-bold text-xs hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition-all hover:scale-105 active:scale-95"
                 >
                   Clear
                 </button>
@@ -294,59 +313,63 @@ export default function Detection() {
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="space-y-8 w-full"
               >
                 {/* Risk Card */}
-                <div
-                  className="rounded-lg border-2 p-6"
-                  style={{
-                    borderColor: riskBgColor,
-                    backgroundColor: `${riskBgColor}15`,
-                  }}
-                >
+                <div className={`rounded-3xl border-2 p-8 ${riskStyles.border} ${riskStyles.bg} relative overflow-hidden`}>
                   <div className="flex items-center gap-3 mb-4">
                     {riskLevel === 'High' ? (
                       <AlertTriangle className="h-5 w-5 text-red-600" />
                     ) : (
-                      <CheckCircle className="h-5 w-5" style={{ color: riskLevel === 'Medium' ? '#f59e0b' : '#22c55e' }} />
+                      <CheckCircle className="h-5 w-5" style={{ color: riskLevel === 'Medium' ? '#f59e0b' : '#10b981' }} />
                     )}
-                    <span className="font-semibold text-sm" style={{ color: riskTextColor }}>
+                    <span className={`font-bold text-xs uppercase tracking-widest ${riskStyles.text}`}>
                       {riskLevel} AI Probability
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    <p className="text-4xl font-bold text-neutral-900">{clampPercent(detectionResult.aiProbability)}%</p>
-                    <div className="h-2 rounded-full bg-neutral-200 overflow-hidden">
+                  <div className="space-y-4">
+                    <p className="text-5xl font-display font-black text-neutral-900 dark:text-white">
+                      {clampPercent(detectionResult.aiProbability)}%
+                    </p>
+                    <div className="h-2.5 rounded-full bg-neutral-200 dark:bg-neutral-800 overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${clampPercent(detectionResult.aiProbability)}%` }}
                         transition={{ duration: 0.8, ease: 'easeOut' }}
-                        style={{ backgroundColor: riskProgressColor }}
-                        className="h-full"
+                        style={{ backgroundColor: riskStyles.progress }}
+                        className="h-full rounded-full"
                       />
                     </div>
-                    <p className="text-xs text-neutral-500">Confidence: {clampPercent(detectionResult.confidenceScore)}%</p>
+                    <p className="text-[10px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">
+                      Confidence Level: {clampPercent(detectionResult.confidenceScore)}%
+                    </p>
                   </div>
                 </div>
 
                 {/* Metrics Grid */}
-                <div>
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-3">Key Metrics</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="rounded-lg border border-neutral-200 p-4 bg-neutral-50">
-                      <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Perplexity</p>
-                      <p className="text-2xl font-bold text-neutral-900 mt-2">{clampPercent(detectionResult.metrics.perplexity)}%</p>
-                      <p className="text-xs text-neutral-500 mt-2">Predictability of wording</p>
+                <div className="space-y-3">
+                  <h3 className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Key Metrics</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="rounded-2xl border border-neutral-200/40 dark:border-neutral-850 p-6 bg-white dark:bg-neutral-950 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <p className="text-[10px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Perplexity</p>
+                        <p className="text-3xl font-extrabold text-neutral-900 dark:text-white mt-2">{clampPercent(detectionResult.metrics.perplexity)}%</p>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-4 leading-relaxed font-semibold">Predictability of vocabulary patterns</p>
                     </div>
-                    <div className="rounded-lg border border-neutral-200 p-4 bg-neutral-50">
-                      <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Burstiness</p>
-                      <p className="text-2xl font-bold text-neutral-900 mt-2">{clampPercent(detectionResult.metrics.burstiness)}%</p>
-                      <p className="text-xs text-neutral-500 mt-2">Sentence rhythm variation</p>
+                    <div className="rounded-2xl border border-neutral-200/40 dark:border-neutral-850 p-6 bg-white dark:bg-neutral-950 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <p className="text-[10px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Burstiness</p>
+                        <p className="text-3xl font-extrabold text-neutral-900 dark:text-white mt-2">{clampPercent(detectionResult.metrics.burstiness)}%</p>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-4 leading-relaxed font-semibold">Sentence rhythm and spacing variation</p>
                     </div>
-                    <div className="rounded-lg border border-neutral-200 p-4 bg-neutral-50">
-                      <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Consistency</p>
-                      <p className="text-2xl font-bold text-neutral-900 mt-2">{clampPercent(detectionResult.metrics.consistency)}%</p>
-                      <p className="text-xs text-neutral-500 mt-2">Structure uniformity</p>
+                    <div className="rounded-2xl border border-neutral-200/40 dark:border-neutral-850 p-6 bg-white dark:bg-neutral-950 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <p className="text-[10px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Consistency</p>
+                        <p className="text-3xl font-extrabold text-neutral-900 dark:text-white mt-2">{clampPercent(detectionResult.metrics.consistency)}%</p>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-4 leading-relaxed font-semibold">Structure uniformity across the document</p>
                     </div>
                   </div>
                 </div>
@@ -355,28 +378,28 @@ export default function Detection() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Lightbulb className="h-5 w-5 text-amber-500" />
-                    <h3 className="text-sm font-semibold text-neutral-900">Why this result</h3>
+                    <h3 className="text-xs font-bold text-neutral-455 dark:text-neutral-500 uppercase tracking-widest">Diagnostic Insights</h3>
                   </div>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {insights.map((item, index) => (
-                      <div key={index} className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
-                        <p className="text-sm text-neutral-700 leading-relaxed">{item}</p>
+                      <div key={index} className="rounded-2xl border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-5 shadow-sm">
+                        <p className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 leading-relaxed">{item}</p>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Detailed Analysis */}
-                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-6 space-y-4">
-                  <h3 className="font-semibold text-neutral-900">Detailed Analysis</h3>
-                  <p className="text-sm text-neutral-700 leading-relaxed">{detectionResult.analysis}</p>
+                <div className="rounded-[2rem] border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-8 space-y-6 shadow-sm">
+                  <h3 className="font-extrabold text-lg text-neutral-900 dark:text-white">Detailed Diagnostic Analysis</h3>
+                  <p className="text-sm text-neutral-600 dark:text-neutral-350 leading-relaxed font-semibold">{detectionResult.analysis}</p>
                   
                   {detectionResult.patterns.length > 0 && (
-                    <div className="pt-4 border-t border-neutral-200 space-y-3">
-                      <p className="text-sm font-medium text-neutral-900">Observed Patterns</p>
+                    <div className="pt-6 border-t border-neutral-200/40 dark:border-neutral-800/40 space-y-3">
+                      <p className="text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Observed Signatures</p>
                       <div className="flex flex-wrap gap-2">
                         {detectionResult.patterns.map((pattern, index) => (
-                          <span key={index} className="px-3 py-1.5 rounded-full bg-white border border-neutral-200 text-xs text-neutral-700">
+                          <span key={index} className="px-3.5 py-1.5 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-neutral-200/40 dark:border-neutral-800 text-xs font-bold text-neutral-700 dark:text-neutral-300">
                             {pattern}
                           </span>
                         ))}
@@ -389,13 +412,11 @@ export default function Detection() {
 
             {/* Empty State */}
             {!detectionResult && !loading && (
-              <div className="text-center py-16">
-                <div className="flex justify-center mb-4">
-                  <div className="h-16 w-16 rounded-full bg-neutral-100 flex items-center justify-center">
-                    <Sparkles className="h-8 w-8 text-neutral-400" />
-                  </div>
+              <div className="text-center py-20 flex flex-col items-center">
+                <div className="h-16 w-16 rounded-2xl bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center mb-6 shadow-sm border border-neutral-200/10">
+                  <Sparkles className="h-6 w-6 text-neutral-450 dark:text-neutral-500 animate-pulse" />
                 </div>
-                <p className="text-neutral-600 text-sm">Enter text and click "Analyze Text" to get started</p>
+                <p className="text-neutral-500 dark:text-neutral-450 text-sm font-semibold">Enter text and click "Analyze Text" to generate a diagnostic report</p>
               </div>
             )}
           </div>

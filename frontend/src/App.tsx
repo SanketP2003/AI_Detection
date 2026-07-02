@@ -20,6 +20,7 @@ const SignUp = lazy(() => import('./pages/SignUp'));
 const Forensics = lazy(() => import('./pages/Forensics'));
 const Enterprise = lazy(() => import('./pages/Enterprise'));
 const Security = lazy(() => import('./pages/Security'));
+const Product = lazy(() => import('./pages/Product'));
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Landing />} />
+              <Route path="/product" element={<Product />} />
               <Route path="/signin" element={<SignIn />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/forensics" element={<Forensics />} />

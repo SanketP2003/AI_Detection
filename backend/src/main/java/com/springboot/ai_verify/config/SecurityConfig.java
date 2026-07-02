@@ -1,6 +1,9 @@
 package com.springboot.ai_verify.config;
 
 import com.springboot.ai_verify.security.CustomUserDetailsService;
+import com.springboot.ai_verify.security.CustomOAuth2UserService;
+import com.springboot.ai_verify.security.OAuth2SuccessHandler;
+import com.springboot.ai_verify.security.OAuth2FailureHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,16 +37,25 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Value("${cors.allowed-origins:${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4173}}")
     private String allowedOrigins;
 
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            CustomOAuth2UserService customOAuth2UserService,
+            OAuth2SuccessHandler oAuth2SuccessHandler,
+            OAuth2FailureHandler oAuth2FailureHandler
     ) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
+        this.oAuth2FailureHandler = oAuth2FailureHandler;
     }
 
     @Bean
@@ -103,6 +115,8 @@ public class SecurityConfig {
                             "/api/**",
                             "/login",
                             "/logout",
+                            "/oauth2/**",
+                            "/login/oauth2/**",
                             "/v3/api-docs/**",
                             "/swagger-ui/**",
                             "/swagger-ui.html"
@@ -125,9 +139,11 @@ public class SecurityConfig {
                                 "/api/user/me",
                                 "/api/user/health",
                                 "/api/user/register",
-                                "/api/nvidia/health",
-                                "/api/nvidia/models",
+                                "/api/mistral/health",
+                                "/api/mistral/models",
                                 "/actuator/health",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
@@ -154,6 +170,13 @@ public class SecurityConfig {
                             res.getWriter().write("{\"error\":\"Invalid credentials\"}");
                         })
                         .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService)
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")

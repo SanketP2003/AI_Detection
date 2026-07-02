@@ -1,7 +1,7 @@
-import { LogOut, Save, Eye, EyeOff, Download, Trash2, Bell, Moon, Zap, Shield, AlertCircle } from 'lucide-react';
+import { LogOut, Save, Eye, EyeOff, Download, Trash2, Bell, Zap, Shield, AlertCircle, Key, RefreshCw, Moon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,12 +32,10 @@ export default function Settings() {
   const [passwordMessage, setPasswordMessage] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [saved, setSaved] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState(false);
-  const [deleteDataConfirm, setDeleteDataConfirm] = useState(false);
 
   const [settings, setSettings] = useState<AppSettings>({
     username: user?.username || 'User',
-    email: user?.email || 'user@example.com',
+    email: (user as any)?.email || 'user@example.com',
     pushNotifications: true,
     emailAlerts: true,
     weeklyDigest: false,
@@ -105,7 +103,7 @@ export default function Settings() {
       return;
     }
 
-    setPasswordMessage('Password changed successfully! (Demo)');
+    setPasswordMessage('Password updated successfully! (Demo)');
     setNewPassword('');
     setConfirmPassword('');
     setTimeout(() => setPasswordMessage(''), 3000);
@@ -135,7 +133,6 @@ export default function Settings() {
   const clearAllHistory = () => {
     if (window.confirm('This will permanently delete all detection history. This cannot be undone.')) {
       localStorage.removeItem('detection_history');
-      setDeleteDataConfirm(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     }
@@ -154,71 +151,71 @@ export default function Settings() {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
+    <div className="flex bg-neutral-50/40 dark:bg-[#070707] min-h-screen text-neutral-900 dark:text-neutral-100 transition-colors duration-300 w-full">
       <Sidebar />
 
-      <main className="flex-1 overflow-y-auto flex flex-col">
+      <main className="flex-1 overflow-y-auto flex flex-col w-full">
         {/* Header */}
-        <div className="border-b border-neutral-200 bg-white px-8 py-6 sticky top-0 z-10">
+        <div className="border-b border-neutral-200/40 dark:border-neutral-800/40 bg-white/70 dark:bg-neutral-950/70 backdrop-blur px-8 py-6 sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-neutral-900">Settings</h1>
-              <p className="text-sm text-neutral-500 mt-1">Manage your account and preferences</p>
+              <h1 className="text-2xl font-black text-neutral-900 dark:text-white">Settings</h1>
+              <p className="text-xs text-neutral-550 dark:text-neutral-400 font-semibold mt-1">Manage your developer keys, accounts, and application filters</p>
             </div>
             <button
               onClick={handleLogout}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition"
+              className="inline-flex items-center gap-2 border border-red-200 dark:border-red-950/20 text-xs font-bold text-red-650 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 px-4.5 py-2.5 rounded-xl transition"
             >
-              <LogOut className="h-4 w-4" />
               Logout
             </button>
           </div>
 
-          {saved && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="mt-4 flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700"
-            >
-              ✓ Settings saved successfully
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {saved && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="mt-4 flex items-center gap-2 px-4 py-2 bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 rounded-xl text-xs text-emerald-600 dark:text-emerald-450 font-bold"
+              >
+                ✓ Settings saved successfully
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Content */}
-        <div className="px-8 py-8 space-y-6">
+        <div className="px-8 py-8 space-y-6 max-w-4xl mx-auto w-full mb-12">
+          
           {/* Account Section */}
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
+            className="rounded-[2rem] border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-8 shadow-sm space-y-6"
           >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Shield className="h-5 w-5 text-neutral-600" />
               Account Information
             </h2>
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-900 mb-2">Username</label>
+                <label className="block text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mb-2">Username</label>
                 <input
                   type="text"
                   value={settings.username}
                   onChange={(e) => handleSettingChange('username', e.target.value)}
-                  className="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full px-4 py-3 border border-neutral-200/40 dark:border-neutral-850 bg-transparent rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-700 text-neutral-900 dark:text-white"
                 />
-                <p className="text-xs text-neutral-500 mt-1">Your unique identifier</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-900 mb-2">Email Address</label>
+                <label className="block text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mb-2">Email Address</label>
                 <input
                   type="email"
                   value={settings.email}
                   onChange={(e) => handleSettingChange('email', e.target.value)}
-                  className="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  className="w-full px-4 py-3 border border-neutral-200/40 dark:border-neutral-850 bg-transparent rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-700 text-neutral-900 dark:text-white"
                 />
-                <p className="text-xs text-neutral-500 mt-1">Used for notifications and account recovery</p>
               </div>
             </div>
           </motion.section>
@@ -228,27 +225,27 @@ export default function Settings() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
+            className="rounded-[2rem] border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-8 shadow-sm space-y-6"
           >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              Security
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Zap className="h-5 w-5 text-neutral-600" />
+              Security Update
             </h2>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-neutral-900 mb-2">New Password</label>
+                <label className="block text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mb-2">New Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password (min 8 characters)"
-                    className="w-full px-4 py-2 pr-10 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                    placeholder="Enter new password (min 8 chars)"
+                    className="w-full px-4 py-3 pr-10 border border-neutral-200/40 dark:border-neutral-850 bg-transparent rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-700 text-neutral-900 dark:text-white"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -256,381 +253,168 @@ export default function Settings() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-900 mb-2">Confirm Password</label>
+                <label className="block text-xs font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mb-2">Confirm Password</label>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm password"
-                  className="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
+                  placeholder="Repeat new password"
+                  className="w-full px-4 py-3 border border-neutral-200/40 dark:border-neutral-850 bg-transparent rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-700 text-neutral-900 dark:text-white"
                 />
               </div>
-
-              {passwordError && (
-                <div className="px-4 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  {passwordError}
-                </div>
-              )}
-
-              {passwordMessage && (
-                <div className="px-4 py-2 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                  {passwordMessage}
-                </div>
-              )}
-
-              <button
-                onClick={changePassword}
-                className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition"
-              >
-                Update Password
-              </button>
             </div>
+
+            {passwordError && (
+              <div className="flex gap-2 rounded-xl bg-red-500/10 text-red-650 dark:text-red-400 p-3.5 border border-red-500/10 text-xs font-semibold">
+                <AlertCircle className="h-4 w-4" /> {passwordError}
+              </div>
+            )}
+            {passwordMessage && (
+              <div className="flex gap-2 rounded-xl bg-emerald-500/10 text-emerald-650 dark:text-emerald-400 p-3.5 border border-emerald-500/10 text-xs font-semibold">
+                ✓ {passwordMessage}
+              </div>
+            )}
+
+            <button
+              onClick={changePassword}
+              className="px-5 py-3 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl text-xs font-bold hover:bg-neutral-850 transition"
+            >
+              Update Password
+            </button>
           </motion.section>
 
-          {/* Notifications Section */}
+          {/* Preferences Section */}
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
+            className="rounded-[2rem] border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-8 shadow-sm space-y-6"
           >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              Notifications
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Bell className="h-5 w-5 text-neutral-600" />
+              Application Settings
             </h2>
             <div className="space-y-4">
-              {[
-                { key: 'pushNotifications', label: 'Push Notifications', desc: 'Get browser notifications' },
-                { key: 'emailAlerts', label: 'Email Alerts', desc: 'Receive alerts via email' },
-                { key: 'weeklyDigest', label: 'Weekly Digest', desc: 'Summary of your activity' },
-                { key: 'riskAlerts', label: 'High Risk Alerts', desc: 'Alerts for high-risk detections' },
-              ].map((item) => (
-                <div key={item.key} className="flex items-center justify-between py-3 border-b border-neutral-200 last:border-0">
-                  <div>
-                    <p className="font-medium text-neutral-900">{item.label}</p>
-                    <p className="text-xs text-neutral-500">{item.desc}</p>
-                  </div>
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings[item.key as keyof AppSettings] as boolean}
-                      onChange={(e) => handleSettingChange(item.key as keyof AppSettings, e.target.checked)}
-                      className="w-5 h-5 rounded accent-neutral-900"
-                    />
-                  </label>
+              <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-neutral-900">
+                <div>
+                  <p className="text-xs font-bold text-neutral-850 dark:text-neutral-200">Save Diagnostic History</p>
+                  <p className="text-[10px] text-neutral-500">Keep history records for analysis preview</p>
                 </div>
-              ))}
+                <input
+                  type="checkbox"
+                  checked={settings.saveHistory}
+                  onChange={(e) => handleSettingChange('saveHistory', e.target.checked)}
+                  className="w-4 h-4 accent-neutral-900"
+                />
+              </div>
+
+              <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-neutral-900">
+                <div>
+                  <p className="text-xs font-bold text-neutral-850 dark:text-neutral-200">Confidence Match Warnings</p>
+                  <p className="text-[10px] text-neutral-500">Notify when matches exceed thresholds</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={settings.riskAlerts}
+                  onChange={(e) => handleSettingChange('riskAlerts', e.target.checked)}
+                  className="w-4 h-4 accent-neutral-900"
+                />
+              </div>
             </div>
           </motion.section>
 
-          {/* Appearance Section */}
+          {/* Developer API Configuration */}
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
+            className="rounded-[2rem] border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-8 shadow-sm space-y-6"
           >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
-              <Moon className="h-5 w-5" />
-              Appearance
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Key className="h-5 w-5 text-neutral-600" />
+              Developer Settings
             </h2>
             <div className="space-y-4">
-              <div className="flex items-center justify-between py-3">
+              <div className="flex items-center justify-between py-2 border-b border-neutral-100 dark:border-neutral-900">
                 <div>
-                  <p className="font-medium text-neutral-900">Dark Mode</p>
-                  <p className="text-xs text-neutral-500">Use dark theme</p>
+                  <p className="text-xs font-bold text-neutral-850 dark:text-neutral-200">Enable Developer Keys</p>
+                  <p className="text-[10px] text-neutral-500">Activate webhooks and REST integrations</p>
                 </div>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.darkMode}
-                    onChange={(e) => handleSettingChange('darkMode', e.target.checked)}
-                    className="w-5 h-5 rounded accent-neutral-900"
-                  />
-                </label>
+                <input
+                  type="checkbox"
+                  checked={settings.apiEnabled}
+                  onChange={(e) => handleSettingChange('apiEnabled', e.target.checked)}
+                  className="w-4 h-4 accent-neutral-900"
+                />
               </div>
 
-              <div className="border-t border-neutral-200 pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-neutral-900">Compact Mode</p>
-                    <p className="text-xs text-neutral-500">Reduce spacing for more content</p>
-                  </div>
-                  <label className="flex items-center cursor-pointer">
+              {settings.apiEnabled && (
+                <div className="space-y-3 pt-3">
+                  <label className="block text-xs font-bold text-neutral-450 dark:text-neutral-550 uppercase tracking-widest">Client API Key</label>
+                  <div className="flex gap-2">
                     <input
-                      type="checkbox"
-                      checked={settings.compactMode}
-                      onChange={(e) => handleSettingChange('compactMode', e.target.checked)}
-                      className="w-5 h-5 rounded accent-neutral-900"
+                      type="text"
+                      readOnly
+                      value={settings.apiKey || 'No key generated yet'}
+                      className="flex-1 px-4 py-3 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200/40 dark:border-neutral-850 rounded-xl text-xs font-mono font-semibold focus:outline-none"
                     />
-                  </label>
+                    <button
+                      onClick={generateApiKey}
+                      className="px-4 py-3 border border-neutral-250 dark:border-neutral-850 rounded-xl text-xs font-bold hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition flex items-center gap-1.5"
+                    >
+                      <RefreshCw className="h-4 w-4" /> Generate
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </motion.section>
 
-          {/* Detection Preferences */}
+          {/* System Actions & Data Portability */}
           <motion.section
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
+            className="rounded-[2rem] border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 p-8 shadow-sm space-y-6"
           >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              Detection Preferences
+            <h2 className="text-base font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+              <Download className="h-5 w-5 text-neutral-600" />
+              Portability & Danger Zone
             </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-neutral-900 mb-3">
-                  Confidence Threshold: {settings.confidenceThreshold}%
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="10"
-                  value={settings.confidenceThreshold}
-                  onChange={(e) => handleSettingChange('confidenceThreshold', parseInt(e.target.value))}
-                  className="w-full"
-                />
-                <p className="text-xs text-neutral-500 mt-2">Show results with confidence above this threshold</p>
-              </div>
-
-              <div className="border-t border-neutral-200 pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-neutral-900">Show All Metrics</p>
-                    <p className="text-xs text-neutral-500">Display perplexity, burstiness, consistency</p>
-                  </div>
-                  <label className="flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.showMetrics}
-                      onChange={(e) => handleSettingChange('showMetrics', e.target.checked)}
-                      className="w-5 h-5 rounded accent-neutral-900"
-                    />
-                  </label>
-                </div>
-              </div>
-            </div>
-          </motion.section>
-
-          {/* Data & Privacy */}
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
-          >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6 flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Data & Privacy
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3">
-                <div>
-                  <p className="font-medium text-neutral-900">Save Detection History</p>
-                  <p className="text-xs text-neutral-500">Keep records of analyses</p>
-                </div>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.saveHistory}
-                    onChange={(e) => handleSettingChange('saveHistory', e.target.checked)}
-                    className="w-5 h-5 rounded accent-neutral-900"
-                  />
-                </label>
-              </div>
-
-              {settings.saveHistory && (
-                <div className="border-t border-neutral-200 pt-4">
-                  <label className="block text-sm font-medium text-neutral-900 mb-3">
-                    Auto-delete history after: {settings.autoDeleteAfterDays === 0 ? 'Never' : settings.autoDeleteAfterDays + ' days'}
-                  </label>
-                  <select
-                    value={settings.autoDeleteAfterDays}
-                    onChange={(e) => handleSettingChange('autoDeleteAfterDays', parseInt(e.target.value))}
-                    className="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900"
-                  >
-                    <option value={0}>Never delete</option>
-                    <option value={30}>After 30 days</option>
-                    <option value={60}>After 60 days</option>
-                    <option value={90}>After 90 days</option>
-                  </select>
-                </div>
-              )}
-
-              <div className="border-t border-neutral-200 pt-4 space-y-3">
-                <button
-                  onClick={exportData}
-                  className="w-full px-4 py-2 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition inline-flex items-center justify-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Download My Data
-                </button>
-
-                <button
-                  onClick={() => setDeleteDataConfirm(true)}
-                  className="w-full px-4 py-2 border border-red-200 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition inline-flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Clear All History
-                </button>
-              </div>
-            </div>
-          </motion.section>
-
-          {/* API Settings */}
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="rounded-lg border border-neutral-200 bg-white p-6"
-          >
-            <h2 className="text-lg font-semibold text-neutral-900 mb-6">API Settings</h2>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-neutral-900">Enable API Access</p>
-                  <p className="text-xs text-neutral-500">Allow external applications to use your account</p>
-                </div>
-                <label className="flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={settings.apiEnabled}
-                    onChange={(e) => handleSettingChange('apiEnabled', e.target.checked)}
-                    className="w-5 h-5 rounded accent-neutral-900"
-                  />
-                </label>
-              </div>
-
-              {settings.apiEnabled && (
-                <div className="border-t border-neutral-200 pt-4 space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-900 mb-2">API Key</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={settings.apiKey}
-                        readOnly
-                        className="flex-1 px-4 py-2 border border-neutral-200 rounded-lg text-sm bg-neutral-50 font-mono"
-                        placeholder="Generate an API key"
-                      />
-                      <button
-                        onClick={generateApiKey}
-                        className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition"
-                      >
-                        Generate
-                      </button>
-                    </div>
-                    <p className="text-xs text-neutral-500 mt-2">Keep this key secure. Never share it publicly.</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.section>
-
-          {/* Danger Zone */}
-          <motion.section
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="rounded-lg border border-red-200 bg-red-50 p-6 mb-12"
-          >
-            <h2 className="text-lg font-semibold text-red-900 mb-6">Danger Zone</h2>
-            <div className="space-y-3">
+            <div className="flex flex-wrap gap-4">
               <button
-                onClick={() => setDeleteConfirm(true)}
-                className="w-full px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-600 hover:bg-red-100 transition"
+                onClick={exportData}
+                className="px-4.5 py-3 border border-neutral-250 dark:border-neutral-850 rounded-xl text-xs font-bold hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition flex items-center gap-2"
               >
-                Delete Account
-              </button>
-              <p className="text-xs text-red-700">This action cannot be undone. All your data will be permanently deleted.</p>
-            </div>
-          </motion.section>
-
-          {/* Save Button */}
-          <div className="flex gap-3 pb-8">
-            <button
-              onClick={saveSettings}
-              className="px-6 py-2 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition inline-flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              Save Settings
-            </button>
-          </div>
-        </div>
-      </main>
-
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-lg max-w-md w-full p-6"
-          >
-            <p className="font-semibold text-neutral-900 mb-2">Delete Account?</p>
-            <p className="text-sm text-neutral-600 mb-6">
-              This will permanently delete your account and all associated data. This cannot be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteConfirm(false)}
-                className="flex-1 px-4 py-2 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-900 hover:bg-neutral-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={deleteAccount}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-
-      {/* Clear History Confirmation Modal */}
-      {deleteDataConfirm && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-lg max-w-md w-full p-6"
-          >
-            <p className="font-semibold text-neutral-900 mb-2">Clear All History?</p>
-            <p className="text-sm text-neutral-600 mb-6">
-              This will permanently delete all your detection history. This cannot be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteDataConfirm(false)}
-                className="flex-1 px-4 py-2 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-900 hover:bg-neutral-50"
-              >
-                Cancel
+                <Download className="h-4 w-4" /> Export Workspace Data
               </button>
               <button
                 onClick={clearAllHistory}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
+                className="px-4.5 py-3 border border-red-200 dark:border-red-950/20 text-red-650 rounded-xl text-xs font-bold hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center gap-2"
               >
-                Clear
+                <Trash2 className="h-4 w-4" /> Clear All History
+              </button>
+              <button
+                onClick={deleteAccount}
+                className="px-4.5 py-3 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-750 transition flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" /> Permanent Account Delete
               </button>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
+          </motion.section>
+
+          {/* Footer Save Button sticky */}
+          <div className="pt-4 flex justify-end gap-3.5">
+            <button
+              onClick={saveSettings}
+              className="px-8 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-2"
+            >
+              <Save className="h-4 w-4" /> Save Preferences
+            </button>
+          </div>
+
+        </div>
+      </main>
     </div>
   );
 }

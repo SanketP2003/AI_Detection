@@ -1,10 +1,8 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 
-const apiEnv = import.meta.env as ImportMetaEnv & {
-  VITE_API_BASE_URL?: string;
-};
+const apiEnv = (import.meta as any).env || {};
 
-const API_BASE_URL = apiEnv.VITE_API_BASE_URL || (import.meta.env.DEV ? 'http://localhost:8080' : '');
+export const API_BASE_URL = apiEnv.VITE_API_BASE_URL || ((import.meta as any).env?.DEV ? 'http://localhost:8080' : '');
 
 type ApiEnvelope<T> = {
   success?: boolean;

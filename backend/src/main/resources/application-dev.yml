@@ -17,15 +17,28 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-google-client-secret}
+            scope:
+              - email
+              - profile
 
-nvidia:
+mistral:
   api:
-    url: ${NVIDIA_API_URL:https://integrate.api.nvidia.com/v1/chat/completions}
-    key: ${NVIDIA_API_KEY:}
+    url: ${MISTRAL_API_URL:https://api.mistral.ai/v1/chat/completions}
+    key: ${MISTRAL_API_KEY:}
   detection:
-    model: ${NVIDIA_DETECTION_MODEL:meta/llama-3.1-70b-instruct}
-  advisor:
-    model: ${NVIDIA_ADVISOR_MODEL:meta/llama-3.1-70b-instruct}
+    model: ${MISTRAL_DETECTION_MODEL:mistral-large-latest}
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY:}
+
 
 server:
   error:

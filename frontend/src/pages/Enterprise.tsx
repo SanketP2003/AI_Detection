@@ -11,7 +11,7 @@ const fadeIn = {
 
 export default function Enterprise() {
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden">
+    <div className="min-h-screen flex flex-col relative overflow-x-clip">
       <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)] -z-10" />
       <div className="absolute top-1/2 left-0 w-[600px] h-[600px] -translate-y-1/2 opacity-20 pointer-events-none -z-10 bg-gradient-to-tr from-purple-400 to-transparent dark:from-purple-600 blur-[100px] rounded-full mix-blend-multiply dark:mix-blend-screen" />
 
