@@ -105,10 +105,19 @@ public class SecurityConfig {
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
         requestHandler.setCsrfRequestAttributeName("_csrf");
 
+        CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfTokenRepository.setCookieCustomizer(cookie -> {
+            // Apply SameSite=None and Secure for cross-site cookie support if running on different domains
+            // You can make these conditional based on an environment variable, but for Render deployments 
+            // where frontend and backend are on different origins, this is required.
+            cookie.sameSite("None");
+            cookie.secure(true);
+        });
+
         http
                 // SECURITY FIX: Enable CSRF protection with cookie-based tokens
                 .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                        .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(requestHandler)
                         // Allow these endpoints without CSRF (API endpoints use session-based auth with CORS protection)
                         .ignoringRequestMatchers(

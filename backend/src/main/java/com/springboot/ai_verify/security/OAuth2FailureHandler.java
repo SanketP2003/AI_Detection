@@ -16,10 +16,13 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
     private final String frontendUrl;
 
     public OAuth2FailureHandler(
+            @Value("${frontend.url:${FRONTEND_URL:}}") String frontendEnvUrl,
             @Value("${cors.allowed-origins:${CORS_ALLOWED_ORIGINS:http://localhost:5173}}") String allowedOrigins
     ) {
         String url = "http://localhost:5173";
-        if (allowedOrigins != null && !allowedOrigins.isBlank()) {
+        if (frontendEnvUrl != null && !frontendEnvUrl.isBlank()) {
+            url = frontendEnvUrl.trim();
+        } else if (allowedOrigins != null && !allowedOrigins.isBlank()) {
             String[] origins = allowedOrigins.split(",");
             if (origins.length > 0) {
                 url = origins[0].trim();
