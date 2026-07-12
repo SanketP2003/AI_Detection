@@ -1,7 +1,8 @@
-import { Bot, MessageSquarePlus, Send, Trash2, Sparkles, MessageSquare, Compass, ShieldCheck } from 'lucide-react';
+import { Bot, MessageSquarePlus, Send, Trash2, Sparkles, Compass, ShieldCheck, History } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import { motion, AnimatePresence } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { chatWithAdvisor } from '../api/client';
 
 interface Message {
@@ -20,12 +21,13 @@ interface Conversation {
 
 const suggestedPrompts = [
   "Explain perplexity and burstiness metrics.",
-  "How does the AI Classifier detect paragraph patterns?",
+  "How does the style classifier detect paragraph patterns?",
   "What is the consistency score inside the diagnostic report?",
-  "How can I integrate Guardian APIs into my LMS?"
+  "How can I integrate Guardian APIs into my workflows?"
 ];
 
 export default function Advisor() {
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -35,12 +37,33 @@ export default function Advisor() {
   // Load conversations from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('advisor_conversations');
+    let loadedConversations: Conversation[] = [];
     if (saved) {
-      const parsed = JSON.parse(saved);
-      setConversations(parsed);
-      if (parsed.length > 0 && !activeConversationId) {
-        setActiveConversationId(parsed[0].id);
+      try {
+        loadedConversations = JSON.parse(saved);
+        setConversations(loadedConversations);
+      } catch (e) {
+        console.error('Failed to load advisor conversations:', e);
       }
+    }
+
+    const resumeId = localStorage.getItem('active_advisor_chat_id');
+    if (resumeId && loadedConversations.some((c) => c.id === resumeId)) {
+      setActiveConversationId(resumeId);
+      localStorage.removeItem('active_advisor_chat_id');
+    } else if (loadedConversations.length > 0) {
+      setActiveConversationId(loadedConversations[0].id);
+    } else {
+      // Automatically create a new conversation if none exist
+      const newConversation: Conversation = {
+        id: Date.now().toString(),
+        title: 'New Conversation',
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      setConversations([newConversation]);
+      setActiveConversationId(newConversation.id);
     }
   }, []);
 
@@ -58,6 +81,11 @@ export default function Advisor() {
 
   const currentConversation = conversations.find((c) => c.id === activeConversationId);
 
+  const navigateToHistory = () => {
+    localStorage.setItem('preferred_history_tab', 'advisor');
+    navigate('/history');
+  };
+
   function createNewConversation() {
     const newConversation: Conversation = {
       id: Date.now().toString(),
@@ -72,14 +100,20 @@ export default function Advisor() {
 
   function deleteConversation(id: string) {
     const newConversations = conversations.filter((c) => c.id !== id);
-    setConversations(newConversations);
-    if (activeConversationId === id && newConversations.length > 0) {
+    if (newConversations.length > 0) {
+      setConversations(newConversations);
       setActiveConversationId(newConversations[0].id);
-    } else if (newConversations.length === 0) {
-      setActiveConversationId(null);
-    }
-    // Remove from localStorage if empty
-    if (newConversations.length === 0) {
+    } else {
+      // Reset to a single fresh conversation if history is cleared
+      const newConversation: Conversation = {
+        id: Date.now().toString(),
+        title: 'New Conversation',
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      setConversations([newConversation]);
+      setActiveConversationId(newConversation.id);
       localStorage.removeItem('advisor_conversations');
     }
   }
@@ -150,73 +184,58 @@ export default function Advisor() {
     <div className="flex bg-neutral-50/40 dark:bg-[#070707] min-h-screen text-neutral-900 dark:text-neutral-100 transition-colors duration-300 w-full">
       <Sidebar />
 
-      <main className="flex-1 flex overflow-hidden h-screen w-full relative">
+      <main className="flex-1 flex overflow-hidden h-screen w-full relative animate-fadeIn">
         
-        {/* Left Side: Conversation Hub */}
-        <aside className="w-80 border-r border-neutral-200/40 dark:border-neutral-800/40 bg-white/40 dark:bg-[#090909]/40 backdrop-blur-md flex flex-col justify-between hidden lg:flex">
-          <div className="p-6 flex flex-col h-full overflow-hidden">
-            <button
-              onClick={createNewConversation}
-              className="w-full py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-2xl text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all hover:scale-103 active:scale-97 shadow-sm flex items-center justify-center gap-2 mb-6"
-            >
-              <MessageSquarePlus className="w-4 h-4" />
-              New Conversation
-            </button>
-
-            <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-555 uppercase tracking-widest mb-3 pl-2">Recent Chats</p>
-              <AnimatePresence initial={false}>
-                {conversations.map((c) => {
-                  const isActive = c.id === activeConversationId;
-                  return (
-                    <motion.div
-                      key={c.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                        isActive
-                          ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-950 shadow-sm'
-                          : 'hover:bg-neutral-100/70 dark:hover:bg-neutral-900/40 text-neutral-600 dark:text-neutral-300'
-                      }`}
-                      onClick={() => setActiveConversationId(c.id)}
-                    >
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                        <span className="text-xs font-semibold truncate leading-tight">{c.title}</span>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteConversation(c.id);
-                        }}
-                        className={`opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 rounded transition-opacity ${
-                          isActive ? 'text-white/60 dark:text-neutral-950/60 hover:text-white' : 'text-neutral-400'
-                        }`}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
-
-              {conversations.length === 0 && (
-                <div className="text-center py-10 text-neutral-400 dark:text-neutral-500 text-xs font-semibold">
-                  No active chats. Start one now!
-                </div>
-              )}
-            </div>
-          </div>
-        </aside>
-
-        {/* Right Side: Main Chat window */}
+        {/* Right Side: Main Chat window (expanded to full window) */}
         <section className="flex-1 flex flex-col justify-between h-full bg-transparent overflow-hidden">
           
+          {/* Header Bar */}
+          <div className="border-b border-neutral-200/40 dark:border-neutral-800/40 bg-white/70 dark:bg-neutral-950/70 backdrop-blur px-8 py-5 flex items-center justify-between z-20 flex-shrink-0">
+            <div>
+              <h1 className="text-base font-extrabold text-neutral-900 dark:text-white truncate max-w-xs md:max-w-md">
+                {currentConversation && currentConversation.title !== 'New Conversation' 
+                  ? currentConversation.title 
+                  : "Forensic Advisor"}
+              </h1>
+              <p className="text-[10px] text-neutral-450 dark:text-neutral-500 font-semibold mt-0.5">Consult with Guardian Forensic style engines</p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <button
+                onClick={createNewConversation}
+                className="inline-flex items-center gap-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-200 transition active:scale-95 shadow-sm"
+                title="Start a new chat"
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+                New Chat
+              </button>
+
+              {currentConversation && currentConversation.messages.length > 0 && (
+                <button
+                  onClick={() => deleteConversation(currentConversation.id)}
+                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 dark:border-red-950/20 text-xs font-bold text-red-650 dark:text-red-405 hover:bg-red-50 dark:hover:bg-red-950/20 px-4.5 py-2.5 transition active:scale-95 shadow-sm"
+                  title="Clear current chat"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Clear Chat
+                </button>
+              )}
+
+              <button
+                onClick={navigateToHistory}
+                className="inline-flex items-center gap-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-4 py-2.5 text-xs font-bold text-neutral-900 dark:text-neutral-200 transition active:scale-95 shadow-sm"
+                title="View consultation logs"
+              >
+                <History className="h-4 w-4" />
+                History
+              </button>
+            </div>
+          </div>
+
           {/* Active Conversation messages */}
           <div 
             ref={scrollRef}
-            className="flex-1 overflow-y-auto px-8 py-8 space-y-6 w-full max-w-4xl mx-auto"
+            className="flex-1 overflow-y-auto no-scrollbar px-8 py-8 space-y-6 w-full max-w-4xl mx-auto"
           >
             {currentConversation && currentConversation.messages.length > 0 ? (
               <AnimatePresence initial={false}>
@@ -242,7 +261,7 @@ export default function Advisor() {
                       <div className={`rounded-2xl p-5 border text-sm leading-relaxed shadow-sm max-w-xl font-medium ${
                         isBot 
                           ? 'bg-white border-neutral-200/40 dark:bg-neutral-950 dark:border-neutral-850 text-neutral-800 dark:text-neutral-200' 
-                          : 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-950'
+                          : 'bg-neutral-900 border-neutral-900 text-white dark:bg-white dark:border-white dark:text-neutral-955'
                       }`}>
                         {renderMessageText(m.text)}
                       </div>
@@ -257,7 +276,7 @@ export default function Advisor() {
                   <Sparkles className="h-6 w-6 text-neutral-500 animate-pulse" />
                 </div>
                 <div className="space-y-3">
-                  <h2 className="text-2xl font-black text-neutral-900 dark:text-white">Guardian AI Advisor</h2>
+                  <h2 className="text-2xl font-black text-neutral-900 dark:text-white">Guardian Forensic Advisor</h2>
                   <p className="text-sm text-neutral-550 dark:text-neutral-400 font-semibold leading-relaxed">
                     Ask me anything about text classification algorithms, language model entropy, or integrating verification workflows.
                   </p>
@@ -287,7 +306,7 @@ export default function Advisor() {
                       }}
                       className="p-4 rounded-xl border border-neutral-200/40 dark:border-neutral-850 bg-white dark:bg-neutral-950 text-left text-xs font-semibold text-neutral-600 dark:text-neutral-300 hover:border-neutral-400 dark:hover:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition-all duration-200 flex items-start gap-3.5 shadow-sm"
                     >
-                      <Compass className="w-4 h-4 text-neutral-400 dark:text-neutral-500 flex-shrink-0 mt-0.5" />
+                      <Compass className="w-4 h-4 text-neutral-400 dark:text-neutral-550 flex-shrink-0 mt-0.5" />
                       <span>{p}</span>
                     </button>
                   ))}
@@ -394,7 +413,7 @@ const parseInlineFormatting = (content: string) => {
     }
     
     if (codeLastIdx < content.length) {
-      codeParts.push(content.substring(codeLastIdx));
+      codeParts.push(codeLastIdx === 0 ? content : content.substring(codeLastIdx));
     }
     return codeParts.length > 0 ? codeParts : content;
   }

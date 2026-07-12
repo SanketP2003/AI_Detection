@@ -164,7 +164,7 @@ export async function updateUsername(username: string): Promise<{ username: stri
 }
 
 /**
- * AI Advisor chat
+ * Writing Advisor chat
  */
 export async function chatWithAdvisor(prompt: string, history: Array<{role: string; content: string}> = []): Promise<string> {
   const payload = { prompt, history };
@@ -184,7 +184,7 @@ export async function chatWithAdvisor(prompt: string, history: Array<{role: stri
 }
 
 /**
- * AI Detection APIs
+ * Content Authenticity APIs
  */
 
 export interface DetectionRequest {
@@ -251,7 +251,7 @@ export async function detectAiContent(text: string): Promise<DetectionResponse> 
   const analysis =
     typeof payload?.analysis === 'string' && payload.analysis.trim()
       ? payload.analysis
-      : 'No analysis details were returned by the AI service.';
+      : 'No analysis details were returned by the verification engine.';
 
   return { aiProbability, confidenceScore, metrics, patterns, analysis };
 }

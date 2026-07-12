@@ -70,7 +70,7 @@ function Dashboard3DMockup() {
                   className="absolute inset-0 border-4 border-emerald-500/30 rounded-full border-t-emerald-500"
                 />
                 <span className="font-display text-3xl font-black text-neutral-900 dark:text-white">98.2%</span>
-                <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-bold mt-1">AI Match</span>
+                <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-bold mt-1">Pattern Match</span>
               </div>
             </div>
           </div>
@@ -290,7 +290,7 @@ export default function Landing() {
 
 Response (12ms):
 {
-  "ai_probability": 0.98,
+  "similarity_score": 0.98,
   "status": "VERIFIED"
 }`}
                     </code>

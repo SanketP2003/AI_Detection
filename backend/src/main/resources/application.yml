@@ -22,7 +22,7 @@ springdoc:
     enabled: true
     operations-sorter: method
     tags-sorter: alpha
-    urls-primary-name: "AI Verify API"
+    urls-primary-name: "Guardian Verify API"
     display-request-duration: true
     show-extensions: true
     doc-expansion: list

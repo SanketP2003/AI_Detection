@@ -29,7 +29,7 @@ function buildInsights(result: DetectionResponse) {
   const insights: string[] = [];
 
   if (result.metrics.consistency >= 0.7) {
-    insights.push('The content stays highly consistent in structure and tone, which is common in AI-written output.');
+    insights.push('The content stays highly consistent in structure and tone, which is common in templated or automated output.');
   } else if (result.metrics.consistency <= 0.4) {
     insights.push('The content shows more variation, which is more typical of human writing.');
   } else {
@@ -39,7 +39,7 @@ function buildInsights(result: DetectionResponse) {
   if (result.metrics.burstiness <= 0.45) {
     insights.push('Low burstiness suggests the sentence rhythm is too even, a pattern often seen in generated text.');
   } else {
-    insights.push('Uneven burstiness adds natural variation, which reduces the AI signature.');
+    insights.push('Uneven burstiness adds natural variation, which reduces the automated signature.');
   }
 
   if (result.metrics.perplexity <= 0.45) {
@@ -131,7 +131,7 @@ export default function Detection() {
     const margin = 44;
     const contentWidth = pageWidth - margin * 2;
     const now = new Date();
-    const fileName = `ai-detection-report-${now.toISOString().replace(/[:.]/g, '-')}.pdf`;
+    const fileName = `authenticity-verification-report-${now.toISOString().replace(/[:.]/g, '-')}.pdf`;
     const textSnippet = detectorText.trim() || 'No source text available.';
 
     let cursorY = 54;
@@ -156,11 +156,11 @@ export default function Detection() {
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
-    doc.text('AI Detection Report', margin + 22, 62);
+    doc.text('Content Authenticity Report', margin + 22, 62);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.text(`Generated ${now.toLocaleString()}`, margin + 22, 82);
-    doc.text(`AI probability: ${clampPercent(detectionResult.aiProbability)}%`, margin + 22, 100);
+    doc.text(`Match probability: ${clampPercent(detectionResult.aiProbability)}%`, margin + 22, 100);
     doc.setTextColor(23, 23, 23);
 
     cursorY = 142;
@@ -168,7 +168,7 @@ export default function Detection() {
     addParagraph(`Risk level: ${scoreLabel(detectionResult.aiProbability)}. Confidence: ${clampPercent(detectionResult.confidenceScore)}%.`);
     addParagraph(`Perplexity: ${clampPercent(detectionResult.metrics.perplexity)}%. Burstiness: ${clampPercent(detectionResult.metrics.burstiness)}%. Consistency: ${clampPercent(detectionResult.metrics.consistency)}%.`);
 
-    addSectionTitle('Why It Looks AI Generated');
+    addSectionTitle('Stylistic Signatures Found');
     insights.forEach((item) => {
       addParagraph(`• ${item}`, 10, 4);
     });
@@ -219,8 +219,8 @@ export default function Detection() {
         {/* Header */}
         <div className="border-b border-neutral-200/40 dark:border-neutral-800/40 bg-white/70 dark:bg-neutral-950/70 backdrop-blur px-8 py-6 flex items-center justify-between z-15">
           <div>
-            <h1 className="text-2xl font-black text-neutral-900 dark:text-white">AI Content Detector</h1>
-            <p className="text-xs text-neutral-550 dark:text-neutral-400 font-semibold mt-1">Analyze text for AI-generated patterns and entropy signatures</p>
+            <h1 className="text-2xl font-black text-neutral-900 dark:text-white">Content Authenticity Detector</h1>
+            <p className="text-xs text-neutral-550 dark:text-neutral-400 font-semibold mt-1">Analyze text for automated patterns and style signatures</p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -324,7 +324,7 @@ export default function Detection() {
                       <CheckCircle className="h-5 w-5" style={{ color: riskLevel === 'Medium' ? '#f59e0b' : '#10b981' }} />
                     )}
                     <span className={`font-bold text-xs uppercase tracking-widest ${riskStyles.text}`}>
-                      {riskLevel} AI Probability
+                      {riskLevel} Match Probability
                     </span>
                   </div>
                   <div className="space-y-4">

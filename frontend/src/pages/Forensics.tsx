@@ -29,7 +29,7 @@ export default function Forensics() {
             </motion.h1>
             
             <motion.p variants={fadeIn} className="text-lg md:text-xl text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto leading-relaxed font-medium">
-              We decompose digital text into its mathematical properties, providing objective evidence for AI involvement. Not just a score—proof.
+              We decompose digital text into its mathematical properties, providing objective evidence for automated/synthetic origins. Not just a score—proof.
             </motion.p>
           </motion.div>
         </section>

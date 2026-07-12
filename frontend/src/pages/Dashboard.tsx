@@ -55,7 +55,7 @@ const CircularProgress = ({ percentage }: { percentage: number }) => {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
         <span className="text-4xl font-display font-black tracking-tight text-neutral-900 dark:text-white">{percentage}%</span>
-        <span className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mt-1.5">Avg AI Likelihood</span>
+        <span className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mt-1.5">Avg Pattern Match</span>
       </div>
     </div>
   );
@@ -121,7 +121,7 @@ export default function Dashboard() {
 
         {/* Analytics Grid */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* AI Probability Card */}
+          {/* Match Probability Card */}
           <div className="lg:col-span-1 glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-8 flex flex-col items-center justify-center min-h-[350px] shadow-sm relative overflow-hidden">
             <div className="self-start mb-auto text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-neutral-900 dark:bg-white animate-pulse" />
@@ -203,7 +203,7 @@ export default function Dashboard() {
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">AI Detections</p>
+              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">High-Confidence Matches</p>
               <p className="text-3xl font-extrabold tracking-tight text-red-650 mt-1">{aiScans || 8}</p>
               <p className="text-[10px] text-neutral-400 mt-1">{detectionRate || 33}% overall match rate</p>
             </div>

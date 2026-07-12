@@ -126,7 +126,7 @@ export default function Settings() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `ai-detection-data-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `guardian-export-data-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
   };
 

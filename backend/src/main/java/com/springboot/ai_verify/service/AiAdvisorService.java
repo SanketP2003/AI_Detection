@@ -65,7 +65,7 @@ public class AiAdvisorService {
         }
         if (mistralApiKey == null || mistralApiKey.trim().isEmpty()) {
             return Mono.just(ResponseEntity.status(503)
-                    .body(Map.of("error", "AI service is not configured on the server.")));
+                    .body(Map.of("error", "Advisor service is not configured on the server.")));
         }
 
         List<MistralMessage> messages = new ArrayList<>();
@@ -100,7 +100,7 @@ public class AiAdvisorService {
                     String text = (response.choices() != null && !response.choices().isEmpty() &&
                             response.choices().get(0).message() != null) ?
                             response.choices().get(0).message().content() :
-                            "Sorry, I couldn't get a valid response from the AI.";
+                            "Sorry, I couldn't get a valid response from the advisor.";
                     return ResponseEntity.ok(Map.of("text", text));
                 })
                 .onErrorResume(e -> {
@@ -109,7 +109,7 @@ public class AiAdvisorService {
                         log.error("Error Status Code: {}", wcre.getStatusCode());
                         log.debug("Error Response Body: {}", wcre.getResponseBodyAsString());
                     }
-                    String friendlyError = "The AI service could not be reached. Please try again later.";
+                    String friendlyError = "The service could not be reached. Please try again later.";
                     return Mono.just(ResponseEntity.status(503).body(Map.of("error", friendlyError)));
                 });
     }
