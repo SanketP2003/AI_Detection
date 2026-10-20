@@ -91,26 +91,14 @@ apiClient.interceptors.request.use(async (config) => {
 });
 
 
-let isRedirectingToSignIn = false;
-
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     const status = error.response?.status;
-    const path = window.location.pathname;
     const requestUrl = error.config?.url || '';
-    const isAuthBootstrap = requestUrl.includes('/api/user/me');
-    const isLoginRequest = requestUrl.includes('/login');
 
     if (error.response?.data) {
       console.warn(`[API ${status}] ${error.config?.method?.toUpperCase()} ${requestUrl}:`, error.response.data);
-    }
-
-    if (status === 401 && !isAuthBootstrap && !isLoginRequest && path !== '/signin' && !isRedirectingToSignIn) {
-      isRedirectingToSignIn = true;
-      const target = window.location.pathname + window.location.search;
-      const encodedTarget = encodeURIComponent(target);
-      window.location.href = `/signin?next=${encodedTarget}`;
     }
 
     return Promise.reject(error);

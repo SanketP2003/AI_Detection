@@ -44,7 +44,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const [backendUser, setBackendUser] = useState<{ username: string | null; isAdmin: boolean } | null>(null);
 
-  // Wire Clerk token retriever into apiClient
+  // Wire Clerk token retriever into apiClient immediately and on token changes
+  setClerkTokenGetter(async () => {
+    try {
+      return await getToken();
+    } catch {
+      return null;
+    }
+  });
+
   useEffect(() => {
     setClerkTokenGetter(async () => {
       try {
