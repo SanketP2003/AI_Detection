@@ -169,7 +169,12 @@ export default function Landing() {
       <div className={`landing-header-sticky ${isScrolled ? 'scrolled' : ''}`}>
         <header className="landing-nav">
           <button className="landing-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src="/logo.png" alt="AI Verify" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+            <img
+              src="/logo.png"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
+              alt="AI Verify"
+              style={{ width: 30, height: 30, objectFit: 'contain' }}
+            />
             <span>AI Verify</span>
           </button>
 
@@ -724,7 +729,12 @@ export default function Landing() {
       <footer className="landing-footer">
         <div>
           <div className="landing-brand">
-            <img src="/logo.png" alt="AI Verify" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+            <img
+              src="/logo.png"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
+              alt="AI Verify"
+              style={{ width: 30, height: 30, objectFit: 'contain' }}
+            />
             <span>AI Verify</span>
           </div>
           <p>Pattern analysis for thoughtful human review.</p>

@@ -30,7 +30,12 @@ export default function SignUpPage() {
     <div className={`landing ${resolvedTheme}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header className="landing-nav">
         <Link to="/" className="landing-brand">
-          <img src="/logo.png" alt="AI Verify" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+          <img
+            src="/logo.png"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
+            alt="AI Verify"
+            style={{ width: 28, height: 28, objectFit: 'contain' }}
+          />
           <span>AI Verify</span>
         </Link>
       </header>

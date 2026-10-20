@@ -16,6 +16,9 @@ export default function PageLoader() {
       <img
         src="/logo.png"
         alt="AI Verify"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).src = '/logo.svg';
+        }}
         style={{
           width: 44,
           height: 44,

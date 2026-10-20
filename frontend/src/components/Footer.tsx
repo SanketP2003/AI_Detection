@@ -8,7 +8,14 @@ export default function Footer() {
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2.5">
               <div className="w-8 h-8 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-lg flex items-center justify-center p-1 transition-colors shadow-sm">
-                <img src="/logo.png" alt="AI Verify" className="w-5 h-5 object-contain" />
+                <img
+                  src="/logo.png"
+                  alt="AI Verify"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = '/logo.svg';
+                  }}
+                  className="w-5 h-5 object-contain"
+                />
               </div>
               <span className="font-display text-xl font-bold tracking-tight text-neutral-900 dark:text-white transition-colors">
                 AI Verify

@@ -144,7 +144,12 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
               className="flex items-center gap-3 text-inherit no-underline"
             >
               <div className="w-10 h-10 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 flex items-center justify-center p-1.5 shadow-sm flex-shrink-0">
-                <img src="/logo.png" alt="AI Verify" className="w-7 h-7 object-contain" />
+                <img
+                  src="/logo.png"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
+                  alt="AI Verify"
+                  className="w-7 h-7 object-contain"
+                />
               </div>
               <div className="overflow-hidden">
                 <h1 className="font-display font-extrabold text-sm tracking-tight text-neutral-900 dark:text-white leading-tight">

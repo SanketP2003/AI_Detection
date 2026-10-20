@@ -22,7 +22,12 @@ export default function Navbar() {
         <div className="flex items-center">
           <Link to="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 sm:w-9 sm:h-9 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm p-1">
-              <img src="/logo.png" alt="AI Verify" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+              <img
+                src="/logo.png"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
+                alt="AI Verify"
+                className="w-5 h-5 sm:w-6 sm:h-6 object-contain"
+              />
             </div>
             <span className="font-display text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-white transition-colors flex items-center gap-1.5">
               AI Verify
