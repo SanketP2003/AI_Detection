@@ -45,13 +45,53 @@ export function parseApiError(error: unknown, fallback = 'Request failed. Please
   return fallback;
 }
 
+let clerkTokenGetter: (() => Promise<string | null>) | null = null;
+
+export function setClerkTokenGetter(getter: () => Promise<string | null>) {
+  clerkTokenGetter = getter;
+}
+
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+  withXSRFToken: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+apiClient.interceptors.request.use(async (config) => {
+  // Attach Clerk Bearer token if user is signed in
+  try {
+    let token: string | null = null;
+    if (clerkTokenGetter) {
+      token = await clerkTokenGetter();
+    } else if (typeof window !== 'undefined' && (window as any).Clerk?.session) {
+      token = await (window as any).Clerk.session.getToken();
+    }
+
+    if (token) {
+      config.headers.set('Authorization', `Bearer ${token}`);
+    }
+  } catch (tokenErr) {
+    // Session token retrieval silent fallback
+  }
+
+  if (['post', 'put', 'delete', 'patch'].includes(config.method?.toLowerCase() || '')) {
+    if (!config.headers['X-XSRF-TOKEN']) {
+      const match = typeof document !== 'undefined' ? document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/) : null;
+      if (match) {
+        config.headers['X-XSRF-TOKEN'] = decodeURIComponent(match[1]);
+      }
+    }
+  }
+  return config;
+});
+
+
+let isRedirectingToSignIn = false;
 
 apiClient.interceptors.response.use(
   (response) => response,
@@ -62,8 +102,15 @@ apiClient.interceptors.response.use(
     const isAuthBootstrap = requestUrl.includes('/api/user/me');
     const isLoginRequest = requestUrl.includes('/login');
 
-    if (status === 401 && !isAuthBootstrap && !isLoginRequest && path !== '/signin') {
-      window.location.href = '/signin';
+    if (error.response?.data) {
+      console.warn(`[API ${status}] ${error.config?.method?.toUpperCase()} ${requestUrl}:`, error.response.data);
+    }
+
+    if (status === 401 && !isAuthBootstrap && !isLoginRequest && path !== '/signin' && !isRedirectingToSignIn) {
+      isRedirectingToSignIn = true;
+      const target = window.location.pathname + window.location.search;
+      const encodedTarget = encodeURIComponent(target);
+      window.location.href = `/signin?next=${encodedTarget}`;
     }
 
     return Promise.reject(error);
@@ -209,8 +256,8 @@ type RawDetectionResponse = {
 
 export interface DetectionResponse {
   aiProbability: number;
-  confidenceScore: number;
-  metrics: {
+  confidenceScore?: number;
+  metrics?: {
     perplexity: number;
     burstiness: number;
     consistency: number;
@@ -238,13 +285,35 @@ export async function detectAiContent(text: string): Promise<DetectionResponse> 
     throw new Error(payload.error);
   }
 
-  const aiProbability = normalizeScore(payload?.aiProbability ?? payload?.probability ?? 0);
-  const confidenceScore = normalizeScore(payload?.confidenceScore ?? payload?.metrics?.consistency ?? aiProbability);
-  const metrics = {
-    perplexity: normalizeScore(payload?.metrics?.perplexity ?? 0),
-    burstiness: normalizeScore(payload?.metrics?.burstiness ?? 0),
-    consistency: normalizeScore(payload?.metrics?.consistency ?? confidenceScore),
-  };
+  const rawProb = payload?.aiProbability ?? payload?.probability;
+  if (typeof rawProb !== 'number' || !Number.isFinite(rawProb)) {
+    throw new Error('The verification engine returned an unexpected response.');
+  }
+  const aiProbability = normalizeScore(rawProb);
+
+  const confidenceScore =
+    typeof payload?.confidenceScore === 'number' && Number.isFinite(payload.confidenceScore)
+      ? normalizeScore(payload.confidenceScore)
+      : undefined;
+
+  const rawMetrics = payload?.metrics;
+  const hasCompleteMetrics =
+    rawMetrics != null &&
+    typeof rawMetrics.perplexity === 'number' &&
+    Number.isFinite(rawMetrics.perplexity) &&
+    typeof rawMetrics.burstiness === 'number' &&
+    Number.isFinite(rawMetrics.burstiness) &&
+    typeof rawMetrics.consistency === 'number' &&
+    Number.isFinite(rawMetrics.consistency);
+
+  const metrics = hasCompleteMetrics
+    ? {
+        perplexity: normalizeScore(rawMetrics.perplexity),
+        burstiness: normalizeScore(rawMetrics.burstiness),
+        consistency: normalizeScore(rawMetrics.consistency),
+      }
+    : undefined;
+
   const patterns = Array.isArray(payload?.patterns)
     ? payload.patterns.map((pattern) => String(pattern).trim()).filter(Boolean)
     : [];
@@ -254,6 +323,50 @@ export async function detectAiContent(text: string): Promise<DetectionResponse> 
       : 'No analysis details were returned by the verification engine.';
 
   return { aiProbability, confidenceScore, metrics, patterns, analysis };
+}
+
+export interface BackendDetectionRecord {
+  id: number;
+  username: string;
+  contentPreview: string;
+  result: string;
+  confidence: number;
+  createdAt?: string;
+}
+
+export async function getUserDetections(): Promise<BackendDetectionRecord[]> {
+  try {
+    const response = await apiClient.get('/api/detections/all');
+    return response.data || [];
+  } catch (error) {
+    console.warn('Failed to fetch backend detections:', error);
+    return [];
+  }
+}
+
+export async function getRecentUserDetections(): Promise<BackendDetectionRecord[]> {
+  try {
+    const response = await apiClient.get('/api/detections/recent');
+    return response.data || [];
+  } catch (error) {
+    console.warn('Failed to fetch recent backend detections:', error);
+    return [];
+  }
+}
+
+export async function saveUserDetection(data: { contentPreview: string; result: string; confidence: number }): Promise<{ id: number }> {
+  const response = await apiClient.post('/api/detections', data);
+  return response.data;
+}
+
+export async function deleteUserDetection(id: number | string): Promise<boolean> {
+  try {
+    await apiClient.delete(`/api/detections/${id}`);
+    return true;
+  } catch (error) {
+    console.error('Failed to delete detection record:', error);
+    throw error;
+  }
 }
 
 /**
@@ -302,10 +415,14 @@ export async function deleteChat(id: number | string): Promise<boolean> {
  * Admin APIs
  */
 
-export async function getAdminUsers(): Promise<any[]> {
+export async function getAdminUsers(page?: number, size?: number, q?: string): Promise<any> {
   try {
-    const response = await apiClient.get('/api/admin/users');
-    return response.data || [];
+    const params: Record<string, any> = {};
+    if (page !== undefined) params.page = page;
+    if (size !== undefined) params.size = size;
+    if (q) params.q = q;
+    const response = await apiClient.get('/api/admin/users', { params });
+    return response.data;
   } catch (error) {
     console.error('Failed to fetch users:', error);
     throw error;
@@ -380,6 +497,239 @@ export async function getAdminChatsForUser(username: string): Promise<Chat[]> {
     console.error('Failed to fetch user chats:', error);
     return [];
   }
+}
+
+// -------------------------------------------------------------
+// Billing & SaaS Entitlement APIs
+// -------------------------------------------------------------
+
+export interface PlanDefinition {
+  id: string;
+  name: string;
+  monthlyPriceCents: number;
+  yearlyPriceCents: number;
+  monthlyScans: number;
+  maxCharsPerAnalysis: number;
+  maxUploadBytes: number;
+  monthlyAdvisorMessages: number;
+  historyRetentionDays: number;
+  seats: number;
+  exportEnabled: boolean;
+  apiAccessEnabled: boolean;
+  supportTier: string;
+  overageAllowed: boolean;
+}
+
+export interface EntitlementDetails {
+  plan: string;
+  planName: string;
+  maxCharsPerAnalysis: number;
+  maxUploadBytes: number;
+  monthlyScans: number;
+  monthlyAdvisorMessages: number;
+  historyRetentionDays: number;
+  exportEnabled: boolean;
+  apiAccessEnabled: boolean;
+  supportTier: string;
+  overageAllowed: boolean;
+}
+
+export interface UsageEntitlementInfo {
+  used: number;
+  limit: number;
+  resetsAt: string;
+}
+
+export interface UsageResponse {
+  period: string;
+  periodStart: string;
+  periodEnd: string;
+  plan: string;
+  status: string;
+  seats: number;
+  trialEnd: string | null;
+  entitlements: {
+    scans?: UsageEntitlementInfo;
+    advisor_messages?: UsageEntitlementInfo;
+    characters?: UsageEntitlementInfo;
+    [key: string]: UsageEntitlementInfo | undefined;
+  };
+}
+
+export interface BillingInvoiceItem {
+  id: number;
+  providerInvoiceId: string;
+  invoiceNumber: string;
+  amountCents: number;
+  amountFormatted: string;
+  currency: string;
+  status: string;
+  hostedInvoiceUrl: string | null;
+  pdfUrl: string | null;
+  periodStart: string | null;
+  periodEnd: string | null;
+  createdAt: string;
+}
+
+export async function getBillingPlans(): Promise<PlanDefinition[]> {
+  const response = await apiClient.get('/api/billing/plans');
+  return response.data || [];
+}
+
+export async function getBillingEntitlements(): Promise<EntitlementDetails> {
+  const response = await apiClient.get('/api/billing/entitlements');
+  return response.data;
+}
+
+export async function getUsage(): Promise<UsageResponse> {
+  const response = await apiClient.get('/api/usage');
+  return response.data;
+}
+
+export async function createCheckoutSession(
+  plan: string,
+  interval: string = 'monthly',
+  seats: number = 1
+): Promise<{ url: string }> {
+  const response = await apiClient.post('/api/billing/checkout', {
+    plan,
+    interval,
+    seats,
+  });
+  return response.data;
+}
+
+export async function createPortalSession(returnUrl?: string): Promise<{ url: string }> {
+  const response = await apiClient.post('/api/billing/portal', {
+    returnUrl,
+  });
+  return response.data;
+}
+
+export async function getInvoices(page: number = 0, size: number = 20): Promise<{
+  content: BillingInvoiceItem[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+}> {
+  const response = await apiClient.get('/api/billing/invoices', {
+    params: { page, size },
+  });
+  return response.data;
+}
+
+export async function toggleUserLock(userId: number, locked: boolean): Promise<any> {
+  const response = await apiClient.patch(`/api/admin/users/${userId}/lock`, null, {
+    params: { locked },
+  });
+  return response.data;
+}
+
+// -------------------------------------------------------------
+// Team & Workspace APIs
+// -------------------------------------------------------------
+
+export interface Workspace {
+  id: number;
+  name: string;
+  slug: string;
+  ownerUserId: number;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+  memberCount: number;
+  seats: number;
+  plan: string;
+  isDefault: boolean;
+  createdAt: string;
+}
+
+export interface WorkspaceMember {
+  userId: number;
+  username: string;
+  email: string;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+  joinedAt: string;
+  isCurrentUser: boolean;
+  isOwner: boolean;
+}
+
+export interface WorkspaceInvitation {
+  id: number;
+  workspaceId: number;
+  workspaceName: string;
+  email: string;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+  token?: string;
+  expiresAt: string;
+  createdAt: string;
+}
+
+export interface PublicInvitation {
+  workspaceName: string;
+  email: string;
+  role: 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+  inviterName: string;
+  expiresAt: string;
+  isValid: boolean;
+}
+
+export async function getWorkspaces(): Promise<Workspace[]> {
+  const response = await apiClient.get('/api/workspaces');
+  return response.data || [];
+}
+
+export async function createWorkspace(name: string): Promise<Workspace> {
+  const response = await apiClient.post('/api/workspaces', { name });
+  return response.data;
+}
+
+export async function switchWorkspace(id: number): Promise<Workspace> {
+  const response = await apiClient.post(`/api/workspaces/${id}/switch-default`);
+  return response.data;
+}
+
+export async function getWorkspaceMembers(id: number): Promise<WorkspaceMember[]> {
+  const response = await apiClient.get(`/api/workspaces/${id}/members`);
+  return response.data || [];
+}
+
+export async function updateMemberRole(workspaceId: number, userId: number, role: string): Promise<void> {
+  await apiClient.patch(`/api/workspaces/${workspaceId}/members/${userId}/role`, { role });
+}
+
+export async function removeMember(workspaceId: number, userId: number): Promise<void> {
+  await apiClient.delete(`/api/workspaces/${workspaceId}/members/${userId}`);
+}
+
+export async function getWorkspaceInvitations(workspaceId: number): Promise<WorkspaceInvitation[]> {
+  const response = await apiClient.get(`/api/workspaces/${workspaceId}/invitations`);
+  return response.data || [];
+}
+
+export async function inviteWorkspaceMember(workspaceId: number, email: string, role: string): Promise<WorkspaceInvitation> {
+  const response = await apiClient.post(`/api/workspaces/${workspaceId}/invitations`, { email, role });
+  return response.data;
+}
+
+export async function cancelWorkspaceInvitation(workspaceId: number, invitationId: number): Promise<void> {
+  await apiClient.delete(`/api/workspaces/${workspaceId}/invitations/${invitationId}`);
+}
+
+export async function getPublicInvitation(token: string): Promise<PublicInvitation> {
+  const response = await apiClient.get(`/api/workspaces/invitations/${token}`);
+  return response.data;
+}
+
+export async function acceptWorkspaceInvitation(token: string): Promise<Workspace> {
+  const response = await apiClient.post(`/api/workspaces/invitations/${token}/accept`);
+  return response.data;
+}
+
+export async function transferWorkspaceOwnership(workspaceId: number, newOwnerUserId: number): Promise<void> {
+  await apiClient.post(`/api/workspaces/${workspaceId}/transfer-ownership`, { newOwnerUserId });
+}
+
+export async function deleteWorkspace(workspaceId: number): Promise<void> {
+  await apiClient.delete(`/api/workspaces/${workspaceId}`);
 }
 
 export default apiClient;

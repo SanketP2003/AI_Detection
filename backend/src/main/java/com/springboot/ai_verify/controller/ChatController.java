@@ -4,6 +4,9 @@ import com.springboot.ai_verify.dto.ApiResponse;
 import com.springboot.ai_verify.exception.InvalidRequestException;
 import com.springboot.ai_verify.model.ChatHistory;
 import com.springboot.ai_verify.service.ChatHistoryService;
+import com.springboot.ai_verify.service.UserService;
+import com.springboot.ai_verify.workspace.service.WorkspaceService;
+import com.springboot.ai_verify.entitlement.service.EntitlementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -27,15 +30,25 @@ public class ChatController {
     private static final Logger log = LoggerFactory.getLogger(ChatController.class);
 
     private final ChatHistoryService chatHistoryService;
+    private final UserService userService;
+    private final WorkspaceService workspaceService;
+    private final EntitlementService entitlementService;
 
-    public ChatController(ChatHistoryService chatHistoryService) {
+    public ChatController(ChatHistoryService chatHistoryService,
+                          UserService userService,
+                          WorkspaceService workspaceService,
+                          EntitlementService entitlementService) {
         this.chatHistoryService = chatHistoryService;
+        this.userService = userService;
+        this.workspaceService = workspaceService;
+        this.entitlementService = entitlementService;
     }
 
     @GetMapping("/recent")
     public ResponseEntity<List<Map<String, Object>>> getRecentChats(Authentication auth) {
         String username = requireAuthenticatedUsername(auth);
-        List<Map<String, Object>> chats = chatHistoryService.recentForUser(username).stream()
+        int retentionDays = resolveRetentionDays(username);
+        List<Map<String, Object>> chats = chatHistoryService.recentForUser(username, retentionDays).stream()
                 .map(this::toMap)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(chats);
@@ -44,10 +57,23 @@ public class ChatController {
     @GetMapping("/all")
     public ResponseEntity<List<Map<String, Object>>> getAllChats(Authentication auth) {
         String username = requireAuthenticatedUsername(auth);
-        List<Map<String, Object>> chats = chatHistoryService.allForUser(username).stream()
+        int retentionDays = resolveRetentionDays(username);
+        List<Map<String, Object>> chats = chatHistoryService.allForUser(username, retentionDays).stream()
                 .map(this::toMap)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(chats);
+    }
+
+    private int resolveRetentionDays(String username) {
+        try {
+            var user = userService.getUserByUsername(username);
+            if (user != null) {
+                var ws = workspaceService.getOrCreateDefaultWorkspace(user);
+                var plan = entitlementService.getEffectivePlan(ws.getId());
+                return plan.getHistoryRetentionDays();
+            }
+        } catch (Exception ignored) {}
+        return 30;
     }
 
     @DeleteMapping("/{id}")
@@ -97,11 +123,11 @@ public class ChatController {
 
     private String requireAuthenticatedUsername(Authentication auth) {
         if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            throw new InvalidRequestException("Authentication required");
+            throw new org.springframework.security.authentication.InsufficientAuthenticationException("Authentication required");
         }
         String username = auth.getName();
         if (username == null || username.isBlank() || "anonymousUser".equalsIgnoreCase(username)) {
-            throw new InvalidRequestException("Authentication required");
+            throw new org.springframework.security.authentication.InsufficientAuthenticationException("Authentication required");
         }
         return username;
     }

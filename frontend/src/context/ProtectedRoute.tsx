@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import PageLoader from '../components/PageLoader';
 
@@ -10,13 +10,15 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRouteProps) => {
   const { isAuthenticated, isAdmin, isLoading } = useAuth();
+  const location = useLocation();
 
   if (isLoading) {
     return <PageLoader />;
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/signin" replace />;
+    const nextPath = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/signin?next=${nextPath}`} replace />;
   }
 
   if (adminOnly && !isAdmin) {
@@ -26,3 +28,4 @@ export const ProtectedRoute = ({ children, adminOnly = false }: ProtectedRoutePr
   return <>{children}</>;
 };
 
+export default ProtectedRoute;

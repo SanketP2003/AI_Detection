@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -209,16 +210,33 @@ public class UserController {
             return user.getUsername();
         }
 
+        if (auth.getPrincipal() instanceof Jwt jwt) {
+            String email = jwt.getClaimAsString("email");
+            try {
+                user = userService.getOrCreateClerkUser(auth.getName(), email);
+                if (user != null) {
+                    return user.getUsername();
+                }
+            } catch (Exception e) {
+                log.warn("Could not auto-provision Clerk user in resolveUsername: {}", e.getMessage());
+            }
+        }
+
         String principalName = auth.getName();
         return principalName != null && !principalName.isBlank() ? principalName : null;
     }
 
     private User resolveAuthenticatedUser(Authentication auth) {
         if (!isAuthenticated(auth)) {
-            throw new InvalidRequestException("Authentication required");
+            throw new org.springframework.security.authentication.InsufficientAuthenticationException("Authentication required");
         }
 
         User user = userService.getUserByUsername(auth.getName());
+
+        if (user == null && auth.getPrincipal() instanceof Jwt jwt) {
+            String email = jwt.getClaimAsString("email");
+            user = userService.getOrCreateClerkUser(auth.getName(), email);
+        }
 
         if (user == null) {
             throw new ResourceNotFoundException("User not found");

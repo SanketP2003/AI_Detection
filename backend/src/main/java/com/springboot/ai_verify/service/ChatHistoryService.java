@@ -42,9 +42,27 @@ public class ChatHistoryService {
         return chatHistoryRepository.findTop20ByUsernameOrderByCreatedAtDesc(username);
     }
 
+    public List<ChatHistory> recentForUser(String username, int retentionDays) {
+        validateUsername(username);
+        if (retentionDays <= 0) {
+            return recentForUser(username);
+        }
+        Instant cutoff = Instant.now().minus(retentionDays, java.time.temporal.ChronoUnit.DAYS);
+        return chatHistoryRepository.findTop20ByUsernameAndCreatedAtGreaterThanEqualOrderByCreatedAtDesc(username, cutoff);
+    }
+
     public List<ChatHistory> allForUser(String username) {
         validateUsername(username);
         return chatHistoryRepository.findTop100ByUsernameOrderByCreatedAtDesc(username);
+    }
+
+    public List<ChatHistory> allForUser(String username, int retentionDays) {
+        validateUsername(username);
+        if (retentionDays <= 0) {
+            return allForUser(username);
+        }
+        Instant cutoff = Instant.now().minus(retentionDays, java.time.temporal.ChronoUnit.DAYS);
+        return chatHistoryRepository.findAllByUsernameAndCreatedAtGreaterThanEqualOrderByCreatedAtDesc(username, cutoff);
     }
 
     public List<ChatHistory> recentForAdmin() {

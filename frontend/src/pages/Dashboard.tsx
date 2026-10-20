@@ -1,254 +1,399 @@
-import { LogOut, ArrowRight, Zap, AlertTriangle, CheckCircle, BarChart3, Clock, HelpCircle } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import { ResponsiveContainer, XAxis, YAxis, Tooltip, Area, AreaChart } from 'recharts';
 import { useAuth } from '../context/AuthContext';
+import { getUserDetections } from '../api/client';
 import { motion } from 'motion/react';
 
-const chartData = [
-  { name: 'Mon', value: 5 },
-  { name: 'Tue', value: 45 },
-  { name: 'Wed', value: 65 },
-  { name: 'Thu', value: 85 },
-  { name: 'Fri', value: 72 },
-  { name: 'Sat', value: 58 },
-  { name: 'Sun', value: 90 },
+import UsageStrip from '../components/UsageStrip';
+
+interface ScanItem {
+  id: string;
+  title: string;
+  type: string;
+  scoreText: string;
+  scoreValue?: number;
+  verdict: string;
+  dateText: string;
+  fullData?: any;
+}
+
+
+const WAVE_BARS = [
+  { height: 35, duration: 1.2, delay: 0.1 },
+  { height: 55, duration: 1.4, delay: 0.3 },
+  { height: 75, duration: 1.1, delay: 0 },
+  { height: 95, duration: 1.5, delay: 0.2 },
+  { height: 65, duration: 1.3, delay: 0.4 },
+  { height: 100, duration: 1.6, delay: 0.1 },
+  { height: 70, duration: 1.2, delay: 0.5 },
+  { height: 85, duration: 1.4, delay: 0.2 },
+  { height: 60, duration: 1.1, delay: 0.3 },
+  { height: 45, duration: 1.5, delay: 0.4 },
+  { height: 30, duration: 1.3, delay: 0.2 },
 ];
 
-const CircularProgress = ({ percentage }: { percentage: number }) => {
-  const radius = 70;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+function formatScanDate(ts?: string | number | Date): string {
+  if (!ts) return 'Recent';
+  const d = new Date(ts);
+  if (isNaN(d.getTime())) return 'Recent';
+  const now = new Date();
+  const isToday = d.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = d.toDateString() === yesterday.toDateString();
 
-  return (
-    <div className="relative flex flex-col items-center justify-center">
-      <svg className="w-48 h-48 -rotate-90">
-        <circle
-          cx="96"
-          cy="96"
-          r={radius}
-          stroke="currentColor"
-          strokeWidth="10"
-          fill="transparent"
-          className="text-neutral-100 dark:text-neutral-900"
-        />
-        <circle
-          cx="96"
-          cy="96"
-          r={radius}
-          stroke="url(#progressGradient)"
-          strokeWidth="10"
-          fill="transparent"
-          strokeDasharray={circumference}
-          style={{ strokeDashoffset }}
-          strokeLinecap="round"
-          className="transition-all duration-1000 ease-out"
-        />
-        <defs>
-          <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ef4444" />
-            <stop offset="50%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#10b981" />
-          </linearGradient>
-        </defs>
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
-        <span className="text-4xl font-display font-black tracking-tight text-neutral-900 dark:text-white">{percentage}%</span>
-        <span className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest mt-1.5">Avg Pattern Match</span>
-      </div>
-    </div>
-  );
-};
+  const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  if (isToday) return `Today, ${timeStr}`;
+  if (isYesterday) return `Yesterday, ${timeStr}`;
+  return `${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timeStr}`;
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
-  const [totalScans, setTotalScans] = useState(0);
-  const [aiScans, setAiScans] = useState(0);
-  const [avgConfidence, setAvgConfidence] = useState(0);
+  const { user } = useAuth();
+  const [allScans, setAllScans] = useState<ScanItem[]>([]);
+  const [realScans, setRealScans] = useState<ScanItem[]>([]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('detection_history');
-    if (saved) {
-      try {
-        const history = JSON.parse(saved);
-        if (history.length > 0) {
-          setTotalScans(history.length);
-          const aiCount = history.filter((r: any) => r.aiProbability >= 0.5).length;
-          setAiScans(aiCount);
-          const sumConf = history.reduce((acc: number, curr: any) => acc + curr.confidenceScore, 0);
-          setAvgConfidence(Math.round((sumConf / history.length) * 100));
-        }
-      } catch (e) {
-        console.error('Failed to parse history:', e);
-      }
-    }
+  // Time-based greeting
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/signin');
-    } catch (error) {
-      console.error('Logout failed:', error);
+  const todayFormatted = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric',
+    });
+  }, []);
+
+  useEffect(() => {
+    const loadScans = async () => {
+      const items: ScanItem[] = [];
+
+      // 1. Try local storage history
+      try {
+        const local = localStorage.getItem('detection_history');
+        if (local) {
+          const parsed = JSON.parse(local);
+          if (Array.isArray(parsed)) {
+            parsed.forEach((p: any) => {
+              const prob =
+                typeof p.aiProbability === 'number'
+                  ? Math.round(p.aiProbability * 100)
+                  : typeof p.score === 'number'
+                  ? Math.round(p.score)
+                  : undefined;
+              const hasScore = typeof prob === 'number';
+              items.push({
+                id: String(p.id || Math.random()),
+                title: p.preview || p.contentPreview || (p.text ? p.text.slice(0, 60) + '…' : 'Text analysis'),
+                type: 'Text',
+                scoreText: hasScore ? `${prob}%` : '—',
+                scoreValue: prob,
+                verdict: hasScore
+                  ? prob >= 65
+                    ? 'AI patterns likely'
+                    : prob <= 30
+                    ? 'Mostly human patterns'
+                    : 'Mixed signals'
+                  : 'Not scored',
+                dateText: formatScanDate(p.timestamp),
+                fullData: p,
+              });
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Error reading local history:', err);
+      }
+
+      // 2. Fetch backend detections if authenticated
+      if (user?.username) {
+        try {
+          const backend = await getUserDetections();
+          if (Array.isArray(backend) && backend.length > 0) {
+            backend.forEach((b) => {
+              let parsedResult: any = {};
+              try {
+                parsedResult = JSON.parse(b.result);
+              } catch {}
+              const prob =
+                typeof parsedResult.aiProbability === 'number'
+                  ? Math.round(parsedResult.aiProbability * 100)
+                  : typeof b.confidence === 'number'
+                  ? Math.round(b.confidence)
+                  : undefined;
+              const hasScore = typeof prob === 'number';
+
+              items.unshift({
+                id: String(b.id),
+                title: b.contentPreview || 'Scan snippet',
+                type: 'Text',
+                scoreText: hasScore ? `${prob}%` : '—',
+                scoreValue: prob,
+                verdict: hasScore
+                  ? prob >= 65
+                    ? 'AI patterns likely'
+                    : prob <= 30
+                    ? 'Mostly human patterns'
+                    : 'Mixed signals'
+                  : 'Not scored',
+                dateText: formatScanDate(b.createdAt),
+                fullData: {
+                  ...parsedResult,
+                  contentPreview: b.contentPreview,
+                  aiProbability: hasScore ? prob / 100 : undefined,
+                  confidenceScore:
+                    typeof parsedResult.confidenceScore === 'number' ? parsedResult.confidenceScore : undefined,
+                },
+              });
+            });
+          }
+        } catch (err) {
+          console.warn('Backend history sync:', err);
+        }
+      }
+
+      // Filter out test scripts if they were saved to history
+      const meaningfulItems = items.filter(
+        (it) => it.title && !it.title.startsWith('Furthermore') && !it.title.startsWith('The ongoing')
+      );
+
+      setAllScans(meaningfulItems);
+      setRealScans(meaningfulItems.slice(0, 3));
+    };
+
+    loadScans();
+  }, [user]);
+
+  const totalAnalyses = allScans.length;
+  const scoredAnalyses = allScans.filter((s) => typeof s.scoreValue === 'number');
+  const avgScore =
+    scoredAnalyses.length > 0
+      ? Math.round(scoredAnalyses.reduce((acc, s) => acc + s.scoreValue!, 0) / scoredAnalyses.length)
+      : null;
+
+  const openScan = (scan: ScanItem) => {
+    if (scan.fullData) {
+      localStorage.setItem('latest_analysis', JSON.stringify(scan.fullData));
     }
+    navigate('/detection?view=results');
   };
 
-  const detectionRate = totalScans > 0 ? Math.round((aiScans / totalScans) * 100) : 0;
+  const username =
+    user?.fullName ||
+    (user?.username && !user.username.startsWith('user_') ? user.username : 'Sanket');
 
   return (
-    <div className="flex bg-neutral-50/40 dark:bg-[#070707] min-h-screen text-neutral-900 dark:text-neutral-100 transition-colors duration-300">
-      <Sidebar />
-      
-      <main className="flex-1 p-8 md:p-12 overflow-y-auto max-w-7xl mx-auto space-y-10 w-full mb-12">
-        {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 border-b border-neutral-200/40 dark:border-neutral-800/40 pb-8">
-          <div>
-            <h1 className="font-display text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">Dashboard</h1>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 font-semibold mt-1">Console Analytics & System Metrics</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl border border-red-200 dark:border-red-950/20 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all active:scale-95"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
-        </header>
+    <div className="max-w-6xl w-full mx-auto p-4 sm:p-8 space-y-8 pb-24">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+        <div className="space-y-1">
+          <p className="text-xs sm:text-sm font-semibold text-neutral-500 dark:text-neutral-400">
+            {todayFormatted}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
+            {greeting}, {username}.
+          </h1>
+          <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400">
+            Review recent findings or start a new content analysis.
+          </p>
+          <UsageStrip />
+        </div>
 
-        {/* Analytics Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Match Probability Card */}
-          <div className="lg:col-span-1 glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-8 flex flex-col items-center justify-center min-h-[350px] shadow-sm relative overflow-hidden">
-            <div className="self-start mb-auto text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-neutral-900 dark:bg-white animate-pulse" />
-              Global Average
-            </div>
-            <CircularProgress percentage={detectionRate || 72} />
-            <div className="mt-auto" />
-          </div>
+        <button
+          type="button"
+          onClick={() => navigate('/detection')}
+          className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-[#174d3b] hover:bg-[#123e2f] text-white text-sm font-bold shadow-sm transition-all hover:scale-105 active:scale-95 self-start sm:self-auto"
+        >
+          <span>+ New analysis</span>
+        </button>
+      </div>
 
-          {/* Confidence Trends Card */}
-          <div className="lg:col-span-2 glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-8 flex flex-col shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-8">
-              <div className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest flex items-center gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Detection Activity
-              </div>
-              <div className="flex p-0.5 bg-neutral-100/60 dark:bg-neutral-900/60 rounded-xl border border-neutral-200/20 dark:border-neutral-800/30">
-                <button className="px-3.5 py-1.5 bg-white dark:bg-neutral-800 shadow-sm rounded-lg text-[9px] font-bold uppercase tracking-wider text-neutral-800 dark:text-white">This Week</button>
-                <button className="px-3.5 py-1.5 text-neutral-400 dark:text-neutral-500 text-[9px] font-bold uppercase tracking-wider">Historical</button>
-              </div>
-            </div>
-
-            <div className="flex-1 -mx-6 -mb-2 h-44">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fontSize: 9, fill: '#888888', fontWeight: 600 }}
-                    dy={12}
-                  />
-                  <YAxis hide domain={[0, 100]} />
-                  <Tooltip 
-                    contentStyle={{ 
-                      borderRadius: '16px', 
-                      border: 'none', 
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', 
-                      fontSize: '11px',
-                      background: 'rgba(23, 23, 23, 0.95)',
-                      color: '#fff'
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="value" 
-                    stroke="#10b981" 
-                    strokeWidth={2.5} 
-                    fillOpacity={1} 
-                    fill="url(#colorValue)" 
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </section>
-
-        {/* Statistics Cards */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-6 shadow-sm flex items-center gap-5">
-            <div className="w-12 h-12 bg-neutral-100 dark:bg-neutral-900 rounded-xl flex items-center justify-center border border-neutral-200/10 shadow-sm text-neutral-600 dark:text-neutral-400">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Total Scans</p>
-              <p className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white mt-1">{totalScans || 24}</p>
-              <p className="text-[10px] text-neutral-400 mt-1">Processed successfully</p>
-            </div>
-          </div>
-
-          <div className="glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-6 shadow-sm flex items-center gap-5">
-            <div className="w-12 h-12 bg-red-500/5 dark:bg-red-500/10 rounded-xl flex items-center justify-center border border-red-500/10 shadow-sm text-red-500">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">High-Confidence Matches</p>
-              <p className="text-3xl font-extrabold tracking-tight text-red-650 mt-1">{aiScans || 8}</p>
-              <p className="text-[10px] text-neutral-400 mt-1">{detectionRate || 33}% overall match rate</p>
-            </div>
-          </div>
-
-          <div className="glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-6 shadow-sm flex items-center gap-5">
-            <div className="w-12 h-12 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/10 shadow-sm text-emerald-500">
-              <CheckCircle className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-[9px] font-bold text-neutral-450 dark:text-neutral-500 uppercase tracking-widest">Avg Confidence</p>
-              <p className="text-3xl font-extrabold tracking-tight text-emerald-600 mt-1">{avgConfidence || 87}%</p>
-              <p className="text-[10px] text-neutral-400 mt-1">Precision grade accuracy</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Quick Actions */}
-        <section className="glass-card border border-neutral-200/40 dark:border-neutral-850 rounded-[2rem] p-8 shadow-sm relative overflow-hidden">
-          <h2 className="text-sm font-bold text-neutral-900 dark:text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-            <Zap className="w-4 h-4 text-emerald-500 animate-pulse" />
-            Console Quick Actions
+      {/* Hero Green Verdant Banner Card with Waveform Animation */}
+      <div className="rounded-[24px] p-8 sm:p-10 lg:p-12 bg-[#174d3b] text-white shadow-lg relative overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        {/* Left Content */}
+        <div className="lg:col-span-7 space-y-4 z-10">
+          <span className="inline-block text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full bg-[#dce8d8] text-[#174d3b]">
+            ANALYSIS WORKSPACE
+          </span>
+          <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-bold text-white leading-tight">
+            Examine content with context, not conclusions.
           </h2>
-          <div className="flex flex-wrap gap-4">
-            <button 
+          <p className="text-[#d5e1da] text-xs sm:text-sm leading-relaxed max-w-xl">
+            Surface language patterns, inspect model signals, and build a more informed assessment in one focused workspace.
+          </p>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <button
+              type="button"
               onClick={() => navigate('/detection')}
-              className="px-6 py-3.5 bg-neutral-900 dark:bg-white text-white dark:text-neutral-950 rounded-xl text-xs font-bold hover:bg-neutral-800 dark:hover:bg-neutral-100 transition-all hover:scale-105 active:scale-95 shadow-md flex items-center gap-2"
+              className="px-5 py-2.5 rounded-lg bg-white text-[#174d3b] font-bold text-xs sm:text-sm hover:bg-neutral-100 transition shadow-sm active:scale-95"
             >
-              Analyze Content <ArrowRight className="w-3.5 h-3.5" />
+              Analyze text
             </button>
-            <button 
-              onClick={() => navigate('/history')}
-              className="px-6 py-3.5 border border-neutral-200 dark:border-neutral-850 rounded-xl text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition-all hover:scale-105 active:scale-95"
+            <button
+              type="button"
+              onClick={() => navigate('/how-it-works')}
+              className="px-5 py-2.5 rounded-lg border border-white/30 text-white font-bold text-xs sm:text-sm hover:bg-white/10 transition active:scale-95"
             >
-              Review History
-            </button>
-            <button 
-              onClick={() => navigate('/settings')}
-              className="px-6 py-3.5 border border-neutral-200 dark:border-neutral-850 rounded-xl text-xs font-bold text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-900/30 transition-all hover:scale-105 active:scale-95"
-            >
-              Configure Settings
+              How it works
             </button>
           </div>
-        </section>
-      </main>
+        </div>
+
+        {/* Right Animated Signal Waveform directly on the green banner */}
+        <div className="lg:col-span-5 border-t lg:border-t-0 lg:border-l border-white/20 pt-6 lg:pt-0 lg:pl-10 flex flex-col justify-center items-center lg:items-center z-10">
+          <div className="flex items-end justify-center gap-2 h-28 sm:h-32 mb-4 w-full">
+            {WAVE_BARS.map((bar, idx) => {
+              const isLime = (idx + 1) % 3 === 0;
+              return (
+                <motion.span
+                  key={idx}
+                  animate={{
+                    scaleY: [0.3, 1, 0.45, 1.1, 0.3],
+                    opacity: [0.8, 1, 0.85, 1, 0.8],
+                  }}
+                  transition={{
+                    duration: bar.duration,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                    delay: bar.delay,
+                  }}
+                  style={{
+                    height: `${bar.height}%`,
+                    width: 7,
+                    borderRadius: 9999,
+                    backgroundColor: isLime ? '#d8e886' : '#89aa8c',
+                    transformOrigin: 'bottom',
+                  }}
+                />
+              );
+            })}
+          </div>
+          <div className="text-center space-y-0.5">
+            <p className="font-bold text-white text-sm tracking-wide">
+              Signal analysis
+            </p>
+            <p className="text-[#b8cbc0] text-[11px]">
+              Pattern-level evaluation
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Honest Stats Ribbon */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-5 rounded-xl bg-white dark:bg-[#1e221f] border border-neutral-200/80 dark:border-neutral-800">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-400">
+            TOTAL ANALYSES
+          </span>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-2">
+            {totalAnalyses}
+          </p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            Recorded in workspace
+          </p>
+        </div>
+
+        <div className="p-5 rounded-xl bg-white dark:bg-[#1e221f] border border-neutral-200/80 dark:border-neutral-800">
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-neutral-400">
+            AVERAGE SCORE
+          </span>
+          <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-2">
+            {avgScore != null ? `${avgScore}%` : '—'}
+          </p>
+          <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            {avgScore != null ? 'Across scored analyses' : 'No scored analyses recorded'}
+          </p>
+        </div>
+      </div>
+
+      {/* Recent analyses section */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-neutral-900 dark:text-white">
+              Recent analyses
+            </h2>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              Continue where you left off.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => navigate('/history')}
+            className="text-xs font-bold text-neutral-700 dark:text-neutral-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+          >
+            View all →
+          </button>
+        </div>
+
+        {/* 3 Cards Grid or Honest Empty State */}
+        {realScans.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {realScans.map((scan) => {
+              const val = scan.scoreValue;
+              const hasScore = typeof val === 'number';
+
+              const badgeBg = !hasScore
+                ? 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300'
+                : val >= 60
+                ? 'bg-[#fef3c7] text-[#b45309] dark:bg-[#3a3022] dark:text-[#e0aa60] border border-amber-200/60 dark:border-amber-900/60'
+                : val <= 35
+                ? 'bg-[#dcfce7] text-[#15803d] dark:bg-[#273c30] dark:text-[#86b99a] border border-emerald-200/60 dark:border-emerald-900/60'
+                : 'bg-[#f1f5f9] text-[#475569] dark:bg-[#252a26] dark:text-[#a8aea7] border border-neutral-200/60 dark:border-neutral-700';
+
+              return (
+                <div
+                  key={scan.id}
+                  onClick={() => openScan(scan)}
+                  className="p-5 rounded-xl bg-white dark:bg-[#1e221f] border border-neutral-200/80 dark:border-neutral-800 hover:border-emerald-500/50 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between text-left"
+                >
+                  <div>
+                    {/* Card top row */}
+                    <div className="flex items-center justify-between">
+                      <span className="w-8 h-8 rounded-lg bg-[#dce8d8] dark:bg-[#253029] text-[#174d3b] dark:text-[#86b99a] flex items-center justify-center font-bold text-sm">
+                        ¶
+                      </span>
+                      <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${badgeBg}`}>
+                        {scan.scoreText}
+                      </span>
+                    </div>
+
+                    {/* Title and Verdict */}
+                    <h3 className="text-sm font-bold text-neutral-900 dark:text-white mt-5 line-clamp-1">
+                      {scan.title}
+                    </h3>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                      {scan.verdict}
+                    </p>
+                  </div>
+
+                  {/* Card footer */}
+                  <div className="border-t border-neutral-100 dark:border-neutral-800/80 mt-5 pt-3 flex items-center justify-between text-[11px] text-neutral-400">
+                    <span>{scan.type}</span>
+                    <span>{scan.dateText}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="p-8 rounded-xl bg-white dark:bg-[#1e221f] border border-neutral-200/80 dark:border-neutral-800 text-center">
+            <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+              No recent analyses recorded
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              Start an analysis to inspect language patterns and diagnostic signals.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

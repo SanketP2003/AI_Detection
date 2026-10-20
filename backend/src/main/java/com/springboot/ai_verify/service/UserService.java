@@ -4,6 +4,7 @@ import com.springboot.ai_verify.exception.InvalidRequestException;
 import com.springboot.ai_verify.exception.ResourceNotFoundException;
 import com.springboot.ai_verify.model.User;
 import com.springboot.ai_verify.repository.UserRepository;
+import com.springboot.ai_verify.workspace.service.WorkspaceService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,12 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final WorkspaceService workspaceService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, WorkspaceService workspaceService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.workspaceService = workspaceService;
     }
 
     public List<User> getAllUsers() {
@@ -143,8 +146,70 @@ public class UserService {
         user.setEmail(normalizedEmail);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRoles(normalizeRoles(user.getRoles()));
-        return userRepository.save(user);
+        if (user.getPlan() == null) {
+            user.setPlan("FREE");
+        }
+        User saved = userRepository.save(user);
+        workspaceService.createPersonalWorkspace(saved);
+        return saved;
     }
+
+    public synchronized User getOrCreateClerkUser(String clerkId, String email) {
+        if (clerkId == null || clerkId.isBlank()) {
+            return null;
+        }
+
+        // 1. Check by real clerkId column
+        User existing = userRepository.findByClerkId(clerkId);
+        if (existing != null) {
+            if (existing.getDefaultWorkspaceId() == null) {
+                workspaceService.getOrCreateDefaultWorkspace(existing);
+            }
+            return existing;
+        }
+
+        String safeUsername = clerkId.replaceAll("[^a-zA-Z0-9_-]", "_").trim();
+        if (safeUsername.length() > 50) {
+            safeUsername = safeUsername.substring(0, 50);
+        }
+
+        // 2. Check by safe username
+        existing = userRepository.findByUsername(safeUsername);
+        if (existing != null) {
+            existing.setClerkId(clerkId);
+            if (existing.getDefaultWorkspaceId() == null) {
+                workspaceService.getOrCreateDefaultWorkspace(existing);
+            }
+            return userRepository.save(existing);
+        }
+
+        // 3. Check by normalized email
+        String normalizedEmail = normalizeOptionalEmail(email);
+        if (normalizedEmail != null) {
+            existing = userRepository.findByEmail(normalizedEmail);
+            if (existing != null) {
+                existing.setClerkId(clerkId);
+                if (existing.getDefaultWorkspaceId() == null) {
+                    workspaceService.getOrCreateDefaultWorkspace(existing);
+                }
+                return userRepository.save(existing);
+            }
+        }
+
+        // 4. Create new user with personal workspace
+        User newUser = new User();
+        newUser.setClerkId(clerkId);
+        newUser.setUsername(safeUsername);
+        newUser.setEmail(normalizedEmail != null ? normalizedEmail : safeUsername + "@clerk.user");
+        newUser.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+        newUser.setRoles("ROLE_USER");
+        newUser.setPlan("FREE");
+        User savedUser = userRepository.save(newUser);
+
+        workspaceService.createPersonalWorkspace(savedUser);
+        return savedUser;
+    }
+
 
     private String normalizeOptionalEmail(String email) {
         if (email == null || email.isBlank()) {
@@ -169,5 +234,28 @@ public class UserService {
         }
 
         return String.join(",", normalizedRoles);
+    }
+
+    public org.springframework.data.domain.Page<User> getUsersPaginated(int page, int size, String query) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, org.springframework.data.domain.Sort.by("id").descending());
+        if (query != null && !query.trim().isBlank()) {
+            String q = query.trim();
+            return userRepository.findByUsernameContainingIgnoreCaseOrEmailContainingIgnoreCase(q, q, pageable);
+        }
+        return userRepository.findAll(pageable);
+    }
+
+    public User getUserById(Long id) {
+        if (id == null) return null;
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public User setUserLockedStatus(Long userId, boolean locked) {
+        User user = getUserById(userId);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found: " + userId);
+        }
+        user.setAccountLocked(locked);
+        return userRepository.save(user);
     }
 }

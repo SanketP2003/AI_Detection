@@ -1,123 +1,90 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { useMemo } from 'react';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { SignUp } from '@clerk/clerk-react';
 import { useAuth } from '../context/AuthContext';
-import { API_BASE_URL } from '../api/client';
+import { useTheme } from '../context/ThemeContext';
+
+function getSafeNext(nextParam: string | null): string {
+  if (!nextParam) return '/dashboard';
+  if (nextParam.startsWith('/') && !nextParam.startsWith('//') && !nextParam.includes('\\')) {
+    return nextParam;
+  }
+  return '/dashboard';
+}
 
 export default function SignUpPage() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { register } = useAuth();
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(
-    searchParams.get('error') === 'oauth' ? 'Google authentication failed. Please try again.' : null
-  );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isAuthenticated, isLoading } = useAuth();
+  const { resolvedTheme } = useTheme();
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+  const nextParam = searchParams.get('next');
+  const safeNext = useMemo(() => getSafeNext(nextParam), [nextParam]);
 
-    try {
-      await register(username, email, password);
-      navigate('/dashboard', { replace: true });
-    } catch (authError) {
-      setError(authError instanceof Error ? authError.message : 'Unable to create your account.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!isLoading && isAuthenticated) {
+    return <Navigate to={safeNext} replace />;
+  }
+
+  const isDark = resolvedTheme === 'dark';
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Link to="/" className="w-12 h-12 bg-neutral-900 rounded-xl flex items-center justify-center shadow-lg shadow-neutral-200 hover:scale-105 transition-transform">
-            <Shield className="w-6 h-6 text-white" />
-          </Link>
+    <div className={`landing ${resolvedTheme}`} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <header className="landing-nav">
+        <Link to="/" className="landing-brand">
+          <img src="/logo.png" alt="AI Verify" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+          <span>AI Verify</span>
+        </Link>
+      </header>
+
+      <main style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ maxWidth: 460, width: '100%' }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <span className="eyebrow" style={{ color: 'var(--green)' }}>CREATE WORKSPACE ACCOUNT</span>
+            <h1 style={{ font: '600 30px/1.2 "Manrope", sans-serif', margin: '8px 0 6px', color: 'var(--ink)' }}>
+              Get started with AI Verify
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+              Access full pattern telemetry, scan persistence, and contextual guidance.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <SignUp
+              routing="path"
+              path="/signup"
+              signInUrl="/signin"
+              forceRedirectUrl={safeNext}
+              appearance={{
+                variables: {
+                  colorPrimary: '#059669',
+                  colorBackground: isDark ? '#0b1215' : '#ffffff',
+                  colorText: isDark ? '#f1f5f9' : '#0f172a',
+                  colorTextSecondary: isDark ? '#94a3b8' : '#64748b',
+                  colorInputBackground: isDark ? '#111c21' : '#f8fafc',
+                  colorInputText: isDark ? '#f8fafc' : '#0f172a',
+                  borderRadius: '0.75rem',
+                  fontFamily: 'Manrope, sans-serif',
+                },
+                elements: {
+                  card: isDark
+                    ? 'bg-[#0e171b] border border-[#1b2a32] shadow-2xl text-slate-100'
+                    : 'bg-white border border-slate-200 shadow-xl text-slate-900',
+                  headerTitle: isDark ? 'text-white' : 'text-slate-900',
+                  headerSubtitle: isDark ? 'text-slate-400' : 'text-slate-500',
+                  socialButtonsBlockButton: isDark
+                    ? 'border-[#22353f] bg-[#142026] text-slate-200 hover:bg-[#1a2b34]'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100',
+                  formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-700 text-white font-semibold',
+                  footerActionLink: 'text-emerald-500 hover:text-emerald-400 font-semibold',
+                },
+              }}
+            />
+          </div>
         </div>
-        <h2 className="mt-6 text-center font-display text-3xl font-bold tracking-tight text-neutral-900">
-          Create your account
-        </h2>
-      </div>
+      </main>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-6 px-4 shadow-2xl shadow-neutral-200/50 sm:rounded-3xl sm:px-6 border border-neutral-100">
-          <form className="space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">Username</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(event) => setUsername(event.target.value)}
-                className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-neutral-900 outline-none transition focus:border-neutral-900"
-                placeholder="yourname"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-neutral-900 outline-none transition focus:border-neutral-900"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-2">Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full rounded-xl border border-neutral-200 px-4 py-3 text-neutral-900 outline-none transition focus:border-neutral-900"
-                placeholder="At least 8 characters"
-                required
-              />
-            </div>
-
-            {error && <p className="text-sm text-red-600">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-xl bg-neutral-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-60"
-            >
-              {isSubmitting ? 'Creating account...' : 'Create account'}
-            </button>
-
-            <div className="relative my-4 flex items-center justify-center text-xs font-semibold uppercase tracking-wider text-neutral-400">
-              <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                <div className="w-full border-t border-neutral-100" />
-              </div>
-              <span className="relative bg-white px-3">Or continue with</span>
-            </div>
-
-            <a
-              href={`${API_BASE_URL}/oauth2/authorization/google`}
-              className="flex w-full items-center justify-center gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-50 hover:border-neutral-300"
-            >
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-              </svg>
-              Google
-            </a>
-          </form>
-          <p className="mt-5 text-center text-sm text-neutral-500">
-            Already have an account? <Link to="/signin" className="font-medium text-neutral-900">Sign in</Link>
-          </p>
-        </div>
-      </div>
+      <footer style={{ borderTop: '1px solid var(--line)', padding: '20px 42px', textAlign: 'center', fontSize: 11, color: 'var(--muted)' }}>
+        © {new Date().getFullYear()} AI Verify • Forensic Language Verification
+      </footer>
     </div>
   );
 }

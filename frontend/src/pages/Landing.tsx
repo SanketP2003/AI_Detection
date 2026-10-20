@@ -1,309 +1,750 @@
-import { ArrowRight, Zap, Cpu, Lock, Activity, Blocks, Shield, CheckCircle2, Terminal } from 'lucide-react';
-import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { useTheme } from '../context/ThemeContext';
+import { Button, Badge } from '../components/CommonUI';
+import MagneticButton from '../components/MagneticButton';
+import ScrollReveal from '../animations/ScrollReveal';
+import { useHeroTimeline } from '../animations/HeroTimeline';
 
-const fadeIn = {
-  initial: { opacity: 0, y: 30 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
-};
-
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-function Dashboard3DMockup() {
-  return (
-    <div className="relative w-full max-w-5xl mx-auto mt-24 mb-10 perspective-[2000px] z-10">
-      <motion.div
-        animate={{
-          rotateX: [6, 10, 6],
-          rotateY: [-3, 3, -3],
-          y: [-6, 6, -6],
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-        className="w-full glass-panel rounded-[2rem] overflow-hidden shadow-2xl border border-neutral-200/50 dark:border-neutral-800/80 bg-white/70 dark:bg-neutral-950/70 backdrop-blur-xl"
-      >
-        {/* Top Control Bar */}
-        <div className="flex border-b border-neutral-200/50 dark:border-neutral-800/50 p-4 items-center gap-4 bg-white/40 dark:bg-black/30 backdrop-blur-md">
-          <div className="flex gap-2">
-            <div className="w-3.5 h-3.5 rounded-full bg-red-400/70 dark:bg-red-500/30" />
-            <div className="w-3.5 h-3.5 rounded-full bg-amber-400/70 dark:bg-amber-500/30" />
-            <div className="w-3.5 h-3.5 rounded-full bg-emerald-400/70 dark:bg-emerald-500/30" />
-          </div>
-          <div className="flex-1 flex justify-center">
-            <div className="bg-neutral-100 dark:bg-neutral-900/60 rounded-full px-16 py-1 text-[10px] text-neutral-500 dark:text-neutral-400 font-mono tracking-widest border border-neutral-200/30 dark:border-neutral-800/50">
-              guardian-core-analysis-dashboard
-            </div>
-          </div>
-          <div className="w-16" />
-        </div>
-
-        {/* Mockup Dashboard Content */}
-        <div className="p-8 grid grid-cols-1 md:grid-cols-12 gap-8 bg-neutral-50/20 dark:bg-[#060606]/20">
-
-          {/* Left Metrics column */}
-          <div className="md:col-span-4 space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-neutral-200/40 dark:border-neutral-800/50 space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-widest">Real-time status</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-display font-extrabold text-neutral-900 dark:text-white">Active</span>
-                <span className="text-xs font-mono text-emerald-500">11ms latency</span>
-              </div>
-            </div>
-
-            <div className="glass-card rounded-2xl p-6 border border-neutral-200/40 dark:border-neutral-800/50 flex flex-col items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/5 to-transparent pointer-events-none" />
-              <div className="relative aspect-square w-32 rounded-full border-4 border-emerald-500/10 flex flex-col items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 border-4 border-emerald-500/30 rounded-full border-t-emerald-500"
-                />
-                <span className="font-display text-3xl font-black text-neutral-900 dark:text-white">98.2%</span>
-                <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-bold mt-1">Pattern Match</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Chart & Content Column */}
-          <div className="md:col-span-8 flex flex-col justify-between space-y-6">
-            <div className="glass-card rounded-2xl p-6 border border-neutral-200/40 dark:border-neutral-800/50 flex-1 space-y-6">
-              <div className="flex justify-between items-center border-b border-neutral-200/30 dark:border-neutral-800/30 pb-4">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-bold text-neutral-900 dark:text-white">Linguistic Variance Plot</h3>
-                  <p className="text-[10px] text-neutral-500 font-medium">Linguistic perplexity patterns mapping across document</p>
-                </div>
-                <div className="text-xs bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-3 py-1.5 rounded-full font-bold">
-                  Entropy: High
-                </div>
-              </div>
-
-              {/* Simulated Wave Plot */}
-              <div className="h-40 w-full relative flex items-end justify-between px-2 pt-6">
-                {/* Visual grid lines */}
-                <div className="absolute inset-x-0 top-1/4 border-t border-neutral-200/10 dark:border-neutral-800/30" />
-                <div className="absolute inset-x-0 top-2/4 border-t border-neutral-200/10 dark:border-neutral-800/30" />
-                <div className="absolute inset-x-0 top-3/4 border-t border-neutral-200/10 dark:border-neutral-800/30" />
-
-                {/* Simulated Chart Bars */}
-                {[40, 55, 35, 70, 90, 65, 45, 80, 95, 75, 50, 85, 60, 40, 75].map((val, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${val}%` }}
-                    transition={{ duration: 1.5, delay: i * 0.05, ease: "easeOut" }}
-                    className="w-[5%] rounded-t bg-gradient-to-t from-emerald-500 to-blue-500 opacity-80"
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="flex-1 glass-card rounded-xl p-4 border border-neutral-200/30 dark:border-neutral-800/30 flex items-center justify-between text-xs font-semibold text-neutral-500">
-                <span>Scanning throughput</span>
-                <span className="font-bold text-neutral-900 dark:text-white">12,500 words/s</span>
-              </div>
-              <div className="flex-1 glass-card rounded-xl p-4 border border-neutral-200/30 dark:border-neutral-800/30 flex items-center justify-between text-xs font-semibold text-neutral-500">
-                <span>Verification confidence</span>
-                <span className="font-bold text-neutral-900 dark:text-white">99.98%</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
-  );
+interface SampleCase {
+  id: string;
+  tabLabel: string;
+  badgeText: string;
+  badgeTone: 'amber' | 'green' | 'neutral' | 'sage';
+  score: number;
+  scoreStatus: string;
+  scoreDescription: string;
+  perplexityValue: string;
+  perplexityPct: number;
+  burstinessValue: string;
+  burstinessPct: number;
+  repetitionValue: string;
+  repetitionPct: number;
+  sentences: { text: string; type: 'ai' | 'mixed' | 'human'; prob: string }[];
 }
+
+const HERO_SAMPLES: SampleCase[] = [
+  {
+    id: 'chatgpt',
+    tabLabel: 'AI Generated',
+    badgeText: 'AI PATTERNS DETECTED',
+    badgeTone: 'amber',
+    score: 94,
+    scoreStatus: 'Elevated Model Pattern',
+    scoreDescription: 'Low perplexity & uniform sentence lengths indicate synthetic generation.',
+    perplexityValue: '14.2 (Low variance)',
+    perplexityPct: 92,
+    burstinessValue: '0.18 (Uniform cadence)',
+    burstinessPct: 88,
+    repetitionValue: '91% (High token predictability)',
+    repetitionPct: 91,
+    sentences: [
+      { text: 'Artificial intelligence represents an unprecedented paradigm shift across modern technological ecosystems.', type: 'ai', prob: '96% synthetic' },
+      { text: 'It is imperative to recognize that machine learning models fundamentally transform how organizations streamline digital workflows.', type: 'ai', prob: '94% synthetic' },
+      { text: 'Furthermore, these advancements foster enhanced collaboration and drive synergistic efficiencies across multi-disciplinary teams.', type: 'ai', prob: '92% synthetic' },
+      { text: 'In conclusion, the future of automated discovery will inevitably redefine human creative potential.', type: 'ai', prob: '95% synthetic' },
+    ],
+  },
+  {
+    id: 'human',
+    tabLabel: 'Human Written',
+    badgeText: 'HUMAN PATTERNS DOMINANT',
+    badgeTone: 'green',
+    score: 12,
+    scoreStatus: 'Natural Linguistic Flow',
+    scoreDescription: 'High burstiness, dynamic syntax variance, and idiosyncratic vocabulary.',
+    perplexityValue: '86.4 (High entropy)',
+    perplexityPct: 15,
+    burstinessValue: '0.84 (Dynamic cadence)',
+    burstinessPct: 12,
+    repetitionValue: '18% (Natural distribution)',
+    repetitionPct: 18,
+    sentences: [
+      { text: 'We sat on the damp wooden steps waiting for the fog to lift off the river.', type: 'human', prob: '9% synthetic' },
+      { text: 'Neither of us spoke—not because we were angry, but because the cold seemed to swallow any words before they could take shape.', type: 'human', prob: '11% synthetic' },
+      { text: 'A lone heron cut across the grey water, deliberate and slow, reminding me of winters spent in Maine.', type: 'human', prob: '8% synthetic' },
+      { text: 'You looked at your watch, shook your head, and finally smiled.', type: 'human', prob: '14% synthetic' },
+    ],
+  },
+  {
+    id: 'hybrid',
+    tabLabel: 'AI-Human Hybrid',
+    badgeText: 'MIXED SYNTHESIS SIGNALS',
+    badgeTone: 'amber',
+    score: 61,
+    scoreStatus: 'Dual-Pattern Synthesis',
+    scoreDescription: 'Algorithmic transitions blended with organic anecdotal observations.',
+    perplexityValue: '48.1 (Mixed distribution)',
+    perplexityPct: 62,
+    burstinessValue: '0.46 (Moderate variation)',
+    burstinessPct: 54,
+    repetitionValue: '58% (Assisted structure)',
+    repetitionPct: 60,
+    sentences: [
+      { text: 'When investigating linguistic anomalies, researchers often encounter hybrid compositions that blend distinct stylistic cadences.', type: 'ai', prob: '88% synthetic' },
+      { text: 'I remember testing our first classifier back in 2023 on my own rough thesis notes.', type: 'human', prob: '12% synthetic' },
+      { text: 'While the algorithmic structure suggests high probabilistic coherence, the specific anecdotal phrasing reflects genuine personal memory.', type: 'mixed', prob: '65% synthetic' },
+      { text: 'Consequently, human oversight remains indispensable when evaluating nuanced narrative documents.', type: 'ai', prob: '84% synthetic' },
+    ],
+  },
+];
 
 export default function Landing() {
+  const navigate = useNavigate();
+  const { resolvedTheme, toggleTheme } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSampleIndex, setActiveSampleIndex] = useState(0);
+  const [hoveredSentence, setHoveredSentence] = useState<number | null>(null);
+
+  // GSAP hero intro timeline orchestration
+  const { heroRef, demoRef } = useHeroTimeline();
+
+  const currentSample = HERO_SAMPLES[activeSampleIndex];
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const faqs = [
+    [
+      'What is AI Verify?',
+      'AI Verify is a workspace for analyzing text patterns commonly associated with AI-generated language and interpreting those findings with appropriate context.',
+    ],
+    [
+      'What content can it analyze?',
+      'The current workspace supports pasted text analysis and document detection (.pdf, .docx, .txt, .md) with deep forensic metrics.',
+    ],
+    [
+      'How should I interpret a detection score?',
+      'Treat it as a model pattern score, not proof or a calibrated probability of authorship. Review the contributing indicators and the context around the content.',
+    ],
+    [
+      'Can human-written content be flagged?',
+      'Yes. Detection systems can produce false positives, and AI-generated content can also go undetected. A score should never be used as the sole basis for a consequential decision.',
+    ],
+    [
+      'Does the application store submitted content?',
+      'The workspace includes a user-controlled analysis-history setting. You can disable history saving or delete all records at any time from Settings.',
+    ],
+    [
+      'How does the AI Advisor work?',
+      'The Advisor is connected to your latest analysis so you can ask contextual questions about its score, indicators, and methodology limitations in real time.',
+    ],
+  ];
+
+  const scrollTo = (id: string) => {
+    setMenuOpen(false);
+    const element = document.querySelector(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleTestInWorkspace = () => {
+    const fullText = currentSample.sentences.map((s) => s.text).join(' ');
+    try {
+      localStorage.setItem('pending_demo_text', fullText);
+    } catch { }
+    navigate('/detection');
+  };
+
+
+
   return (
-    <div className="min-h-screen flex flex-col relative overflow-x-clip">
-      <div className="absolute inset-0 bg-grid-pattern [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)] -z-10" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] opacity-35 dark:opacity-10 pointer-events-none -z-10 bg-gradient-to-b from-blue-400 to-emerald-400 dark:from-emerald-600 dark:to-blue-900 blur-[130px] rounded-full mix-blend-multiply dark:mix-blend-screen animate-pulse duration-[10000ms]" />
+    <div className={`landing ${resolvedTheme} landing-ambient-wrapper`}>
+      {/* Atmospheric Ambient Orbs */}
+      <div className="ambient-orb ambient-orb-1" aria-hidden="true" />
+      <div className="ambient-orb ambient-orb-2" aria-hidden="true" />
+      <div className="ambient-orb ambient-orb-3" aria-hidden="true" />
 
-      <Navbar />
+      {/* Sticky Glass Navigation */}
+      <div className={`landing-header-sticky ${isScrolled ? 'scrolled' : ''}`}>
+        <header className="landing-nav">
+          <button className="landing-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img src="/logo.png" alt="AI Verify" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+            <span>AI Verify</span>
+          </button>
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-8 pt-24 md:pt-32 pb-20 text-center relative z-10">
-          <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-8 md:space-y-10">
-            <motion.div
-              variants={fadeIn}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-200/60 dark:border-neutral-800/60 bg-white/50 dark:bg-black/50 backdrop-blur-md text-[11px] font-bold text-neutral-600 dark:text-neutral-300 uppercase tracking-widest shadow-lg hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+          <nav className={menuOpen ? 'open' : ''}>
+            <a href="#product" onClick={(e) => { e.preventDefault(); scrollTo('#product'); }}>Product</a>
+            <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('#features'); }}>Features</a>
+            <a href="#method" onClick={(e) => { e.preventDefault(); scrollTo('#method'); }}>How it works</a>
+            <a href="#about" onClick={(e) => { e.preventDefault(); scrollTo('#about'); }}>About</a>
+            <Link to="/signin" onClick={() => setMenuOpen(false)}>Sign in</Link>
+          </nav>
+
+          <div className="landing-actions">
+            <button
+              className="icon-button"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              title="Toggle theme"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              Engine v3.0 Deployment Active
-            </motion.div>
-
-            <motion.h1
-              variants={fadeIn}
-              className="font-display text-6xl md:text-8xl lg:text-[9rem] font-black tracking-tighter leading-[0.85] text-neutral-900 dark:text-white"
+              {resolvedTheme === 'light' ? '◐' : '○'}
+            </button>
+            <button
+              className="landing-menu-button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-expanded={menuOpen}
+              aria-label="Toggle navigation"
             >
-              Verify <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500">the truth.</span>
-            </motion.h1>
+              ☰
+            </button>
+            <Button onClick={() => navigate('/detection')}>Try AI Verify</Button>
+          </div>
+        </header>
+      </div>
 
-            <motion.p
-              variants={fadeIn}
-              className="text-lg md:text-xl text-neutral-600 dark:text-neutral-400 max-w-3xl mx-auto leading-relaxed font-semibold"
-            >
-              The enterprise standard for content authenticity. Transform your risk management with forensic-level algorithmic detection.
-            </motion.p>
-
-            <motion.div variants={fadeIn} className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-              <Link to="/signup" className="w-full sm:w-auto relative group overflow-hidden bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-8 py-4 rounded-full text-sm font-bold shadow-2xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2">
-                <div className="absolute inset-0 w-full h-full bg-white/20 dark:bg-black/10 transition-transform -translate-x-full group-hover:translate-x-full duration-500 ease-out" />
-                Deploy Guardian <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link to="/product" className="w-full sm:w-auto px-8 py-4 rounded-full text-sm font-bold glass-card hover:bg-white/80 dark:hover:bg-[#222]/80 transition-all text-neutral-900 dark:text-white border border-neutral-200/50">
-                Explore Products
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8, duration: 1 }}>
-            <Dashboard3DMockup />
-          </motion.div>
-        </section>
-
-        {/* Partners Banner */}
-        <section className="py-20 relative z-10 border-y border-neutral-200/50 dark:border-neutral-800/50 bg-white/30 dark:bg-black/30 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-8">
-            <p className="text-center text-[10px] sm:text-[11px] font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-[0.3em] mb-12">Securing infrastructure for industry leaders</p>
-            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-x-24 gap-y-12 opacity-60 dark:opacity-40 grayscale transition-opacity hover:grayscale-0 hover:opacity-100 duration-500">
-              <span className="font-display font-black text-2xl tracking-tighter">ACME CORP</span>
-              <span className="font-display font-bold text-2xl tracking-tight text-nowrap">GLOBAL NET</span>
-              <span className="font-display font-medium text-2xl italic tracking-[0.2em]">STARK</span>
-              <span className="font-display font-black text-2xl tracking-[0.1em]">WAYNE</span>
+      <main>
+        {/* Minimalist Editorial Hero Section */}
+        <section className="landing-hero" id="product" ref={heroRef}>
+          <div className="hero-copy">
+            {/* Elegant Minimalist Pill */}
+            <div className="hero-pill-badge">
+              <span className="hero-pill-dot" aria-hidden="true" />
+              <span>AI Analysis · With Context</span>
             </div>
+
+            {/* Editorial Headline */}
+            <h1>
+              Detect AI text with{' '}
+              <span className="hero-text-accent">clarity and context</span>.
+            </h1>
+
+            <p>
+              Inspect sentence perplexity, burstiness variation, and token rhythm in real time.
+              Designed for researchers, editors, and educators who need explainable evidence — not opaque certainty.
+            </p>
+
+            {/* Restrained Action CTAs */}
+            <div className="hero-cta-group">
+              <Button onClick={() => navigate('/detection')}>
+                Start free analysis →
+              </Button>
+              <Button kind="secondary" onClick={() => scrollTo('#features')}>
+                Explore how it works
+              </Button>
+            </div>
+
+            {/* Typographic Trust Bar */}
+            <div className="hero-trust-bar">
+              <span>Empirical signal evaluation</span>
+              <span className="dot-divider">•</span>
+              <span>Transparent methodology</span>
+              <span className="dot-divider">•</span>
+              <span>Controlled data retention</span>
+            </div>
+          </div>
+
+          {/* Minimalist Editorial Linguistic Inspector Canvas */}
+          <div className="hero-canvas-container" ref={demoRef}>
+            <div className="minimal-manuscript-card">
+              {/* Header: Clean Segmented Sample Switcher & Status */}
+              <div className="manuscript-header">
+                <div className="manuscript-tabs" role="tablist" aria-label="Sample text cases">
+                  {HERO_SAMPLES.map((sample, idx) => (
+                    <button
+                      key={sample.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeSampleIndex === idx}
+                      className={`manuscript-tab ${activeSampleIndex === idx ? 'active' : ''}`}
+                      onClick={() => {
+                        setActiveSampleIndex(idx);
+                        setHoveredSentence(null);
+                      }}
+                    >
+                      {sample.tabLabel}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="manuscript-status">
+                  <Badge tone={currentSample.badgeTone}>{currentSample.badgeText}</Badge>
+                  <span className="manuscript-score">
+                    <strong>{currentSample.score}%</strong> pattern match
+                  </span>
+                </div>
+              </div>
+
+              {/* Prose Inspection Area */}
+              <div className="manuscript-body">
+                <div className="manuscript-prose">
+                  {currentSample.sentences.map((sent, i) => (
+                    <span
+                      key={i}
+                      className={`prose-sentence highlight-${sent.type} ${hoveredSentence === i ? 'is-active' : ''}`}
+                      onMouseEnter={() => setHoveredSentence(i)}
+                      onMouseLeave={() => setHoveredSentence(null)}
+                      onClick={() => setHoveredSentence(hoveredSentence === i ? null : i)}
+                      title={`${sent.prob} · Perplexity: ${currentSample.perplexityValue}`}
+                    >
+                      {sent.text}{' '}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Micro-Inspector Line */}
+                <div className="manuscript-inspector-bar">
+                  <div className="prose-legend">
+                    <span className="legend-tag">
+                      <span className="tag-dot human" /> Human Syntax
+                    </span>
+                    <span className="legend-tag">
+                      <span className="tag-dot mixed" /> Mixed Variation
+                    </span>
+                    <span className="legend-tag">
+                      <span className="tag-dot ai" /> Algorithmic Cadence
+                    </span>
+                  </div>
+
+                  <div className="sentence-probe">
+                    {hoveredSentence !== null ? (
+                      <span className="probe-active">
+                        <strong>Sentence #{hoveredSentence + 1}:</strong> {currentSample.sentences[hoveredSentence].prob}
+                      </span>
+                    ) : (
+                      <span className="probe-hint">Hover or click any sentence to view linguistic confidence</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Forensic Metrics Strip */}
+              <div className="manuscript-footer">
+                <div className="manuscript-metrics">
+                  <div className="metric-cell">
+                    <div className="metric-header">
+                      <span className="metric-name">Token Perplexity</span>
+                      <span className="metric-stat">{currentSample.perplexityValue}</span>
+                    </div>
+                    <div className="metric-line-track">
+                      <div
+                        className="metric-line-fill"
+                        style={{
+                          width: `${currentSample.perplexityPct}%`,
+                          backgroundColor: currentSample.score >= 60 ? 'var(--amber)' : 'var(--green)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="metric-cell">
+                    <div className="metric-header">
+                      <span className="metric-name">Burstiness Entropy</span>
+                      <span className="metric-stat">{currentSample.burstinessValue}</span>
+                    </div>
+                    <div className="metric-line-track">
+                      <div
+                        className="metric-line-fill"
+                        style={{
+                          width: `${currentSample.burstinessPct}%`,
+                          backgroundColor: currentSample.score >= 60 ? 'var(--amber)' : 'var(--green)'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="metric-cell">
+                    <div className="metric-header">
+                      <span className="metric-name">Syntactic Cadence</span>
+                      <span className="metric-stat">{currentSample.repetitionValue}</span>
+                    </div>
+                    <div className="metric-line-track">
+                      <div
+                        className="metric-line-fill"
+                        style={{
+                          width: `${currentSample.repetitionPct}%`,
+                          backgroundColor: currentSample.score >= 60 ? 'var(--amber)' : 'var(--green)'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="manuscript-action">
+                  <span className="manuscript-summary">
+                    {currentSample.scoreDescription}
+                  </span>
+                  <button
+                    type="button"
+                    className="manuscript-open-btn"
+                    onClick={handleTestInWorkspace}
+                  >
+                    <span>Analyze in editor</span>
+                    <span className="arrow" aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p className="hero-disclaimer">
+              Illustrative analysis. Results describe statistical language features and do not constitute proof of authorship.
+            </p>
           </div>
         </section>
 
-        {/* Bento Grid Features Section */}
-        <section className="py-32 relative z-10">
-          <div className="max-w-7xl mx-auto px-8">
-            <div className="mb-20 text-center md:text-left">
-              <h2 className="font-display text-4xl md:text-6xl font-extrabold tracking-tighter mb-6 text-neutral-900 dark:text-white">
-                Architected for scale.
-              </h2>
-              <p className="text-lg text-neutral-500 dark:text-neutral-400 max-w-2xl font-semibold">
-                Our infrastructure guarantees zero-retention ephemeral processing, sub-millisecond latency, and mathematically sound truth verification.
+        {/* Principle Strip — Staggered Reveal */}
+        <ScrollReveal stagger y={30}>
+          <section className="principle-strip">
+            <div>
+              <span>◎</span>
+              <p>
+                <b>Transparent results</b>
+                Scores explained without overstating certainty.
               </p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-              {/* Bento Card 1 (Large 2-column) */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                className="md:col-span-2 glass-card rounded-[2.5rem] p-10 flex flex-col justify-between group overflow-hidden relative border border-neutral-200/30 dark:border-neutral-800/50 hover:shadow-2xl transition-all duration-300"
-              >
-                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity dark:text-white pointer-events-none">
-                  <Cpu className="w-56 h-56" />
-                </div>
-                <div className="w-14 h-14 bg-neutral-950 dark:bg-white text-white dark:text-neutral-900 rounded-2xl flex items-center justify-center mb-12 shadow-lg">
-                  <Zap className="w-6 h-6 animate-pulse" />
-                </div>
-                <div>
-                  <h3 className="font-display text-3xl font-extrabold tracking-tight mb-4 text-neutral-900 dark:text-white">Neural Acceleration</h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-base leading-relaxed max-w-lg font-medium">
-                    We developed custom inference pathways that reduce analysis time to under 12ms per request. Keep user flow uninterrupted with absolute security.
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Bento Card 2 (Standard 1-column) */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.1 }}
-                className="glass-card rounded-[2.5rem] p-10 flex flex-col justify-between group overflow-hidden relative border border-neutral-200/30 dark:border-neutral-800/50 hover:shadow-2xl transition-all duration-300"
-              >
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-8">
-                  <Lock className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-display text-2xl font-bold tracking-tight mb-3 text-neutral-900 dark:text-white">Zero Retention</h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed font-semibold">
-                    Your data exists in RAM just long enough to analyze. Fully ephemeral. We do not store, leak, or train models on your proprietary IP.
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Bento Card 3 (Standard 1-column) */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-                className="glass-card rounded-[2.5rem] p-10 flex flex-col justify-between group overflow-hidden relative border border-neutral-200/30 dark:border-neutral-800/50 hover:shadow-2xl transition-all duration-300"
-              >
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-8">
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-display text-2xl font-bold tracking-tight mb-3 text-neutral-900 dark:text-white">Sentence Highlights</h3>
-                  <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed font-semibold">
-                    Pinpoint classification down to paragraph chunks and individual sentences. Highlights display custom probability metrics dynamically.
-                  </p>
-                </div>
-              </motion.div>
-
-              {/* Bento Card 4 (Large 2-column with mock editor code visual) */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }}
-                className="md:col-span-2 glass-card rounded-[2.5rem] p-10 flex flex-col lg:flex-row items-center justify-between gap-10 group overflow-hidden relative border border-neutral-200/30 dark:border-neutral-800/50 hover:shadow-2xl transition-all duration-300"
-              >
-                <div className="flex-1 space-y-6">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center">
-                    <Terminal className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-3">
-                    <h3 className="font-display text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">API-First Integrations</h3>
-                    <p className="text-neutral-600 dark:text-neutral-400 text-sm leading-relaxed font-semibold">
-                      Deploy our detection services directly into CMS workflows, classroom management portals, or chat channels with one lightweight endpoint.
-                    </p>
-                  </div>
-                </div>
-                <div className="w-full lg:w-1/2 p-6 bg-neutral-950 dark:bg-black rounded-2xl border border-neutral-200/10 dark:border-neutral-800/50 shadow-2xl relative z-10">
-                  <div className="flex gap-1.5 border-b border-neutral-800/50 pb-3 mb-4">
-                    <div className="w-2.5 h-2.5 rounded-full bg-neutral-850" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-neutral-850" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-neutral-850" />
-                  </div>
-                  <pre className="text-[10px] sm:text-xs font-mono text-emerald-400 leading-relaxed overflow-x-auto">
-                    <code>
-                      {`POST /v2/analyze
-{
-  "content": "Sample document...",
-  "strict": true,
-  "webhook_url": "..."
-}
-
-Response (12ms):
-{
-  "similarity_score": 0.98,
-  "status": "VERIFIED"
-}`}
-                    </code>
-                  </pre>
-                </div>
-              </motion.div>
-
+            <div>
+              <span>≋</span>
+              <p>
+                <b>Understandable analysis</b>
+                Indicators presented in clear, practical language.
+              </p>
             </div>
-          </div>
+            <div>
+              <span>◇</span>
+              <p>
+                <b>Privacy-conscious design</b>
+                User-controlled history and careful processing.
+              </p>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* Why Context Matters */}
+        <ScrollReveal y={35}>
+          <section className="story-section">
+            <div>
+              <span className="eyebrow">WHY CONTEXT MATTERS</span>
+              <h2>A score alone isn’t the whole story.</h2>
+              <p>
+                A binary label cannot explain uncertainty, reveal what influenced a result, or account for false positives and false negatives. Responsible review needs the signal and the surrounding context.
+              </p>
+            </div>
+            <div className="story-visual verdant-glass-panel">
+              <div className="story-score">
+                <strong>68</strong>
+                <span>Illustrative model score</span>
+              </div>
+              <div className="story-copy">
+                <Badge tone="amber">REVIEW RECOMMENDED</Badge>
+                <h3>Some indicators are elevated</h3>
+                <p>Language predictability contributed most strongly. Sentence variation and repetition were mixed.</p>
+                <span>Not a probability of AI authorship</span>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* Showcase / Features */}
+        <section className="showcase" id="features">
+          <ScrollReveal y={30}>
+            <div className="showcase-heading">
+              <span className="eyebrow">ONE COHERENT WORKFLOW</span>
+              <h2>From first draft to deeper understanding.</h2>
+            </div>
+          </ScrollReveal>
+
+          <ScrollReveal y={40}>
+            <article className="feature-row">
+              <div className="feature-copy">
+                <span>01 · TEXT ANALYSIS</span>
+                <h3>A focused place to examine language.</h3>
+                <p>Analyze supported text and explore the signals behind the assessment with complete clarity.</p>
+                <button onClick={() => navigate('/detection')}>Open the editor →</button>
+              </div>
+              <div className="editor-mock">
+                <div>
+                  <span>Plain text</span>
+                  <small>Use example</small>
+                </div>
+                <p>Artificial intelligence is changing how people create, research, and communicate. Detection tools can identify patterns...</p>
+                <footer>
+                  <span>27 words</span>
+                  <b>Analyze content →</b>
+                </footer>
+              </div>
+            </article>
+          </ScrollReveal>
+
+          <ScrollReveal y={40}>
+            <article className="feature-row reverse">
+              <div className="feature-copy">
+                <span>02 · SUPPORTED INPUTS</span>
+                <h3>Direct text and document forensics.</h3>
+                <p>Analyze text or upload documents (.pdf, .docx, .txt, .md). Inspect extracted structure, word counts, and stylistic signatures.</p>
+                <Badge tone="green">DOCUMENT DETECTION ACTIVE</Badge>
+              </div>
+              <div className="upload-mock">
+                <div>
+                  <span>▧</span>
+                  <h4>Document Detection Engine</h4>
+                  <p>Upload PDF, DOCX, Markdown, and text files. Extract and analyze multi-page documents in seconds.</p>
+                </div>
+              </div>
+            </article>
+          </ScrollReveal>
+
+          <ScrollReveal y={40}>
+            <article className="feature-row">
+              <div className="feature-copy">
+                <span>03 · EXPLAINABLE RESULTS</span>
+                <h3>Go beyond the label.</h3>
+                <p>Understand the result, its supporting information, and its limitations with visual breakdowns.</p>
+                <button onClick={() => navigate('/detection')}>Explore sample results →</button>
+              </div>
+              <div className="result-mock">
+                <header>
+                  <Badge tone="amber">AI PATTERNS LIKELY</Badge>
+                  <strong>68<span>/100</span></strong>
+                </header>
+                {[
+                  ['Predictability', 82],
+                  ['Variation', 61],
+                  ['Repetition', 48],
+                ].map(([n, v]) => (
+                  <div key={n as string}>
+                    <span>{n}</span>
+                    <i>
+                      <em style={{ width: `${v}%` }} />
+                    </i>
+                    <b>{v}</b>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </ScrollReveal>
+
+          <ScrollReveal y={40}>
+            <article className="feature-row reverse">
+              <div className="feature-copy">
+                <span>04 · AI ADVISOR</span>
+                <h3>Ask better questions about a result.</h3>
+                <p>Explore your latest analysis through contextual questions and guided explanations tailored to your findings.</p>
+                <button onClick={() => navigate('/advisor')}>Meet the Advisor →</button>
+              </div>
+              <div className="advisor-mock">
+                <div>
+                  <b>AI Advisor</b>
+                  <p>I can help explain which signals influenced this illustrative score and where uncertainty remains.</p>
+                </div>
+                <div className="advisor-question">Which indicator mattered most?</div>
+                <small>Linked to latest analysis in this workspace</small>
+              </div>
+            </article>
+          </ScrollReveal>
         </section>
+
+        {/* Process Section */}
+        <ScrollReveal y={35}>
+          <section className="process-section" id="method">
+            <div>
+              <span className="eyebrow">HOW IT WORKS</span>
+              <h2>Three steps. No black-box theater.</h2>
+            </div>
+            <div className="process-steps">
+              <article>
+                <b>01</b>
+                <span>
+                  <h3>Submit</h3>
+                  <p>Enter supported text in the analysis workspace.</p>
+                </span>
+              </article>
+              <article>
+                <b>02</b>
+                <span>
+                  <h3>Analyze</h3>
+                  <p>Let the application process the submitted content across multi-layered linguistic models.</p>
+                </span>
+              </article>
+              <article>
+                <b>03</b>
+                <span>
+                  <h3>Understand</h3>
+                  <p>Review available findings, signal breakdowns, and interpret them in appropriate context.</p>
+                </span>
+              </article>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* Product Preview Section */}
+        <ScrollReveal y={40}>
+          <section className="product-preview-section">
+            <div className="preview-heading">
+              <div>
+                <span className="eyebrow">PRODUCT PREVIEW</span>
+                <h2>Explore the analysis experience.</h2>
+              </div>
+              <MagneticButton kind="secondary" onClick={() => navigate('/detection')}>
+                Open New Analysis →
+              </MagneticButton>
+            </div>
+
+            <div className="full-product-mock verdant-glass-panel">
+              <aside>
+                <b>AI Verify</b>
+                <span>Overview</span>
+                <span className="active">New Analysis</span>
+                <span>Scan History</span>
+                <span>Reports</span>
+                <small>Intelligence</small>
+                <span>AI Advisor</span>
+              </aside>
+              <div className="mock-workspace">
+                <header>
+                  New Analysis <Badge>ILLUSTRATIVE DATA</Badge>
+                </header>
+                <main>
+                  <div className="mock-editor">
+                    <span>Text input</span>
+                    <p>Paste or write the content you want to analyze...</p>
+                    <footer>
+                      1,284 words <b>Analyze content</b>
+                    </footer>
+                  </div>
+                  <div className="mock-evidence">
+                    <Badge tone="amber">SAMPLE RESULT</Badge>
+                    <strong>68%</strong>
+                    <p>AI-associated patterns likely</p>
+                    <i />
+                    <small>Review score limitations before drawing conclusions.</small>
+                  </div>
+                </main>
+              </div>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* Potential Uses */}
+        <ScrollReveal y={35}>
+          <section className="use-cases" id="about">
+            <div>
+              <span className="eyebrow">POTENTIAL USES</span>
+              <h2>Built for people who need to look closer.</h2>
+            </div>
+            <div className="use-grid">
+              {[
+                ['Content creators', 'Review drafts and examine how writing patterns appear.'],
+                ['Students & educators', 'Explore detection results as one part of a broader review.'],
+                ['Researchers', 'Study generated content and model-observed signals.'],
+                ['Professionals', 'Review submitted material with clearer context.'],
+              ].map(([a, b]) => (
+                <article key={a}>
+                  <span>↗</span>
+                  <h3>{a}</h3>
+                  <p>{b}</p>
+                </article>
+              ))}
+            </div>
+            <p className="use-note">
+              These are potential uses, not endorsements of fitness for high-stakes decisions. Results should not be used alone to judge authorship or misconduct.
+            </p>
+          </section>
+        </ScrollReveal>
+
+        {/* Limitations */}
+        <ScrollReveal y={30}>
+          <section className="limitation-section" id="limitations">
+            <div>
+              <span className="eyebrow">RESPONSIBLE BY DESIGN</span>
+              <h2>Designed for informed decisions, not blind certainty.</h2>
+            </div>
+            <div className="limitation-list">
+              <p>Detection results are estimates, not definitive proof.</p>
+              <p>Human-written content may be incorrectly flagged.</p>
+              <p>AI-generated content may not always be detected.</p>
+              <p>Every score requires context and careful interpretation.</p>
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* FAQ with Framer Motion Accordion */}
+        <ScrollReveal y={30}>
+          <section className="faq-section">
+            <div>
+              <span className="eyebrow">FREQUENTLY ASKED</span>
+              <h2>Questions deserve clear answers.</h2>
+            </div>
+            <div className="faq-list">
+              {faqs.map(([question, answer], index) => (
+                <div className={`faq-item ${openFaq === index ? 'open' : ''}`} key={question}>
+                  <button
+                    onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                    aria-expanded={openFaq === index}
+                  >
+                    <span>{question}</span>
+                    <b>{openFaq === index ? '−' : '+'}</b>
+                  </button>
+                  <AnimatePresence>
+                    {openFaq === index && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                        style={{ overflow: 'hidden' }}
+                      >
+                        <p>{answer}</p>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+            </div>
+          </section>
+        </ScrollReveal>
+
+        {/* Landing CTA with Citrine Accent Magnetic Button */}
+        <ScrollReveal y={35}>
+          <section className="landing-cta">
+            <span className="eyebrow">START WITH THE EVIDENCE</span>
+            <h2>Make your next analysis more understandable.</h2>
+            <p>Explore your content, review the available findings, and make better-informed decisions.</p>
+            <div className="button-row">
+              <MagneticButton kind="citrine" onClick={() => navigate('/detection')}>
+                Try AI Verify →
+              </MagneticButton>
+              <MagneticButton kind="secondary" onClick={() => navigate('/dashboard')}>
+                Explore the product
+              </MagneticButton>
+            </div>
+          </section>
+        </ScrollReveal>
       </main>
 
-      <Footer />
+      <footer className="landing-footer">
+        <div>
+          <div className="landing-brand">
+            <img src="/logo.png" alt="AI Verify" style={{ width: 30, height: 30, objectFit: 'contain' }} />
+            <span>AI Verify</span>
+          </div>
+          <p>Pattern analysis for thoughtful human review.</p>
+        </div>
+        <div>
+          <b>Product</b>
+          <button onClick={() => navigate('/detection')}>Text analysis</button>
+          <button onClick={() => navigate('/advisor')}>AI Advisor</button>
+          <a href="#features" onClick={(e) => { e.preventDefault(); scrollTo('#features'); }}>Features</a>
+        </div>
+        <div>
+          <b>Learn</b>
+          <a href="#method" onClick={(e) => { e.preventDefault(); scrollTo('#method'); }}>How it works</a>
+          <button onClick={() => navigate('/how-it-works')}>Detection limitations</button>
+          <a href="https://github.com/SanketP2003/AI_Detection" target="_blank" rel="noreferrer">
+            GitHub repository
+          </a>
+        </div>
+        <span>© {new Date().getFullYear()} AI Verify</span>
+      </footer>
     </div>
   );
 }

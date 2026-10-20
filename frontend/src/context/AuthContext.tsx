@@ -1,9 +1,15 @@
 import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
-import { getCurrentUser, login as apiLogin, logout as apiLogout, register as apiRegister, parseApiError } from '../api/client';
+import { useUser, useClerk, useAuth as useClerkAuth } from '@clerk/clerk-react';
+import { getCurrentUser, setClerkTokenGetter } from '../api/client';
 
 export interface AuthUser {
   username: string | null;
   isAdmin: boolean;
+  email?: string | null;
+  fullName?: string | null;
+  imageUrl?: string | null;
+  clerkId?: string | null;
+  roles?: string[];
 }
 
 export interface AuthContextType {
@@ -32,54 +38,87 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
+  const { signOut } = useClerk();
+  const { getToken } = useClerkAuth();
+
+  const [backendUser, setBackendUser] = useState<{ username: string | null; isAdmin: boolean } | null>(null);
+
+  // Wire Clerk token retriever into apiClient
+  useEffect(() => {
+    setClerkTokenGetter(async () => {
+      try {
+        return await getToken();
+      } catch {
+        return null;
+      }
+    });
+  }, [getToken]);
 
   const refreshUser = async () => {
-    const currentUser = await getCurrentUser();
-    setUser(
-      currentUser.authenticated
-        ? {
-            username: currentUser.username,
-            isAdmin: currentUser.isAdmin,
-          }
-        : null,
-    );
-    setIsLoading(false);
+    if (!isSignedIn) {
+      setBackendUser(null);
+      return;
+    }
+    try {
+      const currentUser = await getCurrentUser();
+      if (currentUser.authenticated) {
+        setBackendUser({
+          username: currentUser.username,
+          isAdmin: currentUser.isAdmin,
+        });
+      }
+    } catch {
+      // Backend may be offline or syncing
+    }
   };
 
   useEffect(() => {
-    void refreshUser();
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    try {
-      await apiLogin({ email, password });
-      await refreshUser();
-    } catch (error) {
-      throw new Error(parseApiError(error, 'Unable to sign in.'));
+    if (isLoaded && isSignedIn) {
+      void refreshUser();
+    } else if (isLoaded && !isSignedIn) {
+      setBackendUser(null);
     }
+  }, [isLoaded, isSignedIn, clerkUser?.id]);
+
+  const login = async () => {
+    // Navigation to Clerk sign in is handled by Clerk components
   };
 
-  const register = async (username: string, email: string, password: string) => {
-    try {
-      await apiRegister({ username, email, password });
-      await apiLogin({ email, password });
-      await refreshUser();
-    } catch (error) {
-      throw new Error(parseApiError(error, 'Unable to create your account.'));
-    }
+  const register = async () => {
+    // Navigation to Clerk sign up is handled by Clerk components
   };
 
   const logout = async () => {
-    await apiLogout();
-    setUser(null);
+    try {
+      await signOut();
+    } catch (e) {
+      console.error('Error signing out:', e);
+    }
+    setBackendUser(null);
   };
+
+  const user: AuthUser | null = isSignedIn && clerkUser
+    ? {
+        username:
+          backendUser?.username ||
+          clerkUser.username ||
+          clerkUser.fullName ||
+          clerkUser.firstName ||
+          clerkUser.primaryEmailAddress?.emailAddress?.split('@')[0] ||
+          clerkUser.id,
+        isAdmin: backendUser?.isAdmin ?? (clerkUser.publicMetadata?.role === 'admin'),
+        email: clerkUser.primaryEmailAddress?.emailAddress || null,
+        fullName: clerkUser.fullName || clerkUser.firstName || null,
+        imageUrl: clerkUser.imageUrl || null,
+        clerkId: clerkUser.id,
+      }
+    : null;
 
   const value: AuthContextType = {
     user,
-    isLoading,
-    isAuthenticated: Boolean(user),
+    isLoading: !isLoaded,
+    isAuthenticated: Boolean(isSignedIn),
     isAdmin: Boolean(user?.isAdmin),
     login,
     register,
@@ -89,3 +128,4 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+

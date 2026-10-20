@@ -19,25 +19,22 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   security:
     oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID:dummy-google-client-id}
-            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-google-client-secret}
-            scope:
-              - email
-              - profile
+      resourceserver:
+        jwt:
+          issuer-uri: ${CLERK_ISSUER_URI:https://fond-teal-84.clerk.accounts.dev}
+          jwk-set-uri: ${CLERK_JWK_SET_URI:https://fond-teal-84.clerk.accounts.dev/.well-known/jwks.json}
 
-mistral:
-  api:
-    url: ${MISTRAL_API_URL:https://api.mistral.ai/v1/chat/completions}
-    key: ${MISTRAL_API_KEY:}
-  detection:
-    model: ${MISTRAL_DETECTION_MODEL:mistral-large-latest}
+clerk:
+  secret-key: ${CLERK_SECRET_KEY:}
+  issuer: ${CLERK_ISSUER_URI:https://fond-teal-84.clerk.accounts.dev}
 
-gemini:
+openrouter:
   api:
-    key: ${GEMINI_API_KEY:}
+    url: ${OPENROUTER_API_URL:https://openrouter.ai/api/v1/chat/completions}
+    key: ${OPENROUTER_API_KEY:}
+  model:
+    detection: ${OPENROUTER_DETECTION_MODEL:google/gemini-2.5-flash}
+    advisor: ${OPENROUTER_ADVISOR_MODEL:google/gemini-2.5-flash}
 
 
 server:

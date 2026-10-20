@@ -33,6 +33,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     @Value("${security.rate-limit.enabled:true}")
     private boolean enabled;
 
+    @Value("${security.rate-limit.trust-proxy:false}")
+    private boolean trustProxy;
+
     @Value("${security.rate-limit.login.max-attempts:5}")
     private int loginMaxAttempts;
 
@@ -124,6 +127,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private String getClientIp(HttpServletRequest request) {
+        if (!trustProxy) {
+            return request.getRemoteAddr();
+        }
         String xForwardedFor = request.getHeader("X-Forwarded-For");
         if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
             // Take the first IP if there are multiple

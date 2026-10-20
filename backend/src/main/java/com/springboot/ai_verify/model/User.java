@@ -42,6 +42,21 @@ public class User {
     @Column(length = 100)
     private String roles;
 
+    @Column(name = "clerk_id", unique = true, length = 128)
+    private String clerkId;
+
+    @Column(name = "default_workspace_id")
+    private Long defaultWorkspaceId;
+
+    @Column(name = "plan", length = 32)
+    private String plan = "FREE";
+
+    @Column(name = "trial_ends_at")
+    private Instant trialEndsAt;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
     // Audit fields
     @Column(name = "created_at", updatable = false)
     private Instant createdAt;
@@ -86,6 +101,21 @@ public class User {
 
     public String getRoles() { return roles; }
     public void setRoles(String roles) { this.roles = roles; }
+
+    public String getClerkId() { return clerkId; }
+    public void setClerkId(String clerkId) { this.clerkId = clerkId; }
+
+    public Long getDefaultWorkspaceId() { return defaultWorkspaceId; }
+    public void setDefaultWorkspaceId(Long defaultWorkspaceId) { this.defaultWorkspaceId = defaultWorkspaceId; }
+
+    public String getPlan() { return plan; }
+    public void setPlan(String plan) { this.plan = plan; }
+
+    public Instant getTrialEndsAt() { return trialEndsAt; }
+    public void setTrialEndsAt(Instant trialEndsAt) { this.trialEndsAt = trialEndsAt; }
+
+    public Instant getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(Instant deletedAt) { this.deletedAt = deletedAt; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

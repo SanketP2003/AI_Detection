@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -37,11 +39,33 @@ public class DetectionHistoryService {
         return repo.findTop20ByUsernameOrderByCreatedAtDesc(username);
     }
 
+    public List<DetectionHistory> recentForUser(String username, int retentionDays) {
+        if (username == null || username.isBlank()) {
+            throw new InvalidRequestException("Username is required");
+        }
+        if (retentionDays <= 0) {
+            return recentForUser(username);
+        }
+        Instant cutoff = Instant.now().minus(retentionDays, ChronoUnit.DAYS);
+        return repo.findTop20ByUsernameAndCreatedAtGreaterThanEqualOrderByCreatedAtDesc(username, cutoff);
+    }
+
     public List<DetectionHistory> allForUser(String username) {
         if (username == null || username.isBlank()) {
             throw new InvalidRequestException("Username is required");
         }
         return repo.findAllByUsernameOrderByCreatedAtDesc(username);
+    }
+
+    public List<DetectionHistory> allForUser(String username, int retentionDays) {
+        if (username == null || username.isBlank()) {
+            throw new InvalidRequestException("Username is required");
+        }
+        if (retentionDays <= 0) {
+            return allForUser(username);
+        }
+        Instant cutoff = Instant.now().minus(retentionDays, ChronoUnit.DAYS);
+        return repo.findAllByUsernameAndCreatedAtGreaterThanEqualOrderByCreatedAtDesc(username, cutoff);
     }
 
     public List<DetectionHistory> getAllHistory() {
@@ -53,8 +77,7 @@ public class DetectionHistoryService {
     }
 
     /**
-     * SECURITY FIX: Delete with ownership verification
-     * Only allows deletion if the record belongs to the specified user.
+     * Delete with ownership verification. Only allows deletion if the record belongs to the specified user.
      */
     @Transactional
     public void deleteById(Long id, String username) {
@@ -65,7 +88,6 @@ public class DetectionHistoryService {
         DetectionHistory history = repo.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Detection history not found with id: " + id));
 
-        // SECURITY FIX: Verify ownership before deletion
         if (!username.equals(history.getUsername())) {
             log.warn("User '{}' attempted to delete detection history id {} belonging to '{}'",
                     username, id, history.getUsername());
@@ -77,7 +99,7 @@ public class DetectionHistoryService {
     }
 
     /**
-     * Admin-only deletion without ownership check
+     * Admin-only deletion without ownership check.
      */
     @Transactional
     public void deleteByIdAsAdmin(Long id) {

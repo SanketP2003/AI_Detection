@@ -1,9 +1,6 @@
 package com.springboot.ai_verify.config;
 
 import com.springboot.ai_verify.security.CustomUserDetailsService;
-import com.springboot.ai_verify.security.CustomOAuth2UserService;
-import com.springboot.ai_verify.security.OAuth2SuccessHandler;
-import com.springboot.ai_verify.security.OAuth2FailureHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +22,14 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,25 +42,22 @@ public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2SuccessHandler oAuth2SuccessHandler;
-    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Value("${cors.allowed-origins:${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:4173}}")
     private String allowedOrigins;
 
+    @Value("${server.servlet.session.cookie.same-site:lax}")
+    private String sessionCookieSameSite;
+
+    @Value("${server.servlet.session.cookie.secure:false}")
+    private boolean sessionCookieSecure;
+
     public SecurityConfig(
             CustomUserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder,
-            CustomOAuth2UserService customOAuth2UserService,
-            OAuth2SuccessHandler oAuth2SuccessHandler,
-            OAuth2FailureHandler oAuth2FailureHandler
+            PasswordEncoder passwordEncoder
     ) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
-        this.customOAuth2UserService = customOAuth2UserService;
-        this.oAuth2SuccessHandler = oAuth2SuccessHandler;
-        this.oAuth2FailureHandler = oAuth2FailureHandler;
     }
 
     @Bean
@@ -101,17 +103,14 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // SECURITY FIX: Configure CSRF with cookie-based token
+        // SECURITY FIX: Configure CSRF with cookie-based token aligned with session cookie policy
         CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
-        requestHandler.setCsrfRequestAttributeName("_csrf");
+        requestHandler.setCsrfRequestAttributeName(null);
 
         CookieCsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfTokenRepository.setCookieCustomizer(cookie -> {
-            // Apply SameSite=None and Secure for cross-site cookie support if running on different domains
-            // You can make these conditional based on an environment variable, but for Render deployments 
-            // where frontend and backend are on different origins, this is required.
-            cookie.sameSite("None");
-            cookie.secure(true);
+            cookie.sameSite(sessionCookieSameSite);
+            cookie.secure(sessionCookieSecure);
         });
 
         http
@@ -119,18 +118,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(requestHandler)
-                        // Allow these endpoints without CSRF (API endpoints use session-based auth with CORS protection)
+                        // Allow only specific non-state-changing/auth endpoints without CSRF
                         .ignoringRequestMatchers(
-                            "/api/**",
                             "/login",
                             "/logout",
-                            "/oauth2/**",
-                            "/login/oauth2/**",
+                            "/api/**",
                             "/v3/api-docs/**",
                             "/swagger-ui/**",
                             "/swagger-ui.html"
                         )
                 )
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
@@ -148,11 +146,12 @@ public class SecurityConfig {
                                 "/api/user/me",
                                 "/api/user/health",
                                 "/api/user/register",
+                                "/api/billing/plans",
+                                "/api/billing/webhook",
+                                "/api/workspaces/invitations/*",
                                 "/api/mistral/health",
                                 "/api/mistral/models",
                                 "/actuator/health",
-                                "/oauth2/**",
-                                "/login/oauth2/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
@@ -180,13 +179,7 @@ public class SecurityConfig {
                         })
                         .permitAll()
                 )
-                .oauth2Login(oauth2 -> oauth2
-                        .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService)
-                        )
-                        .successHandler(oAuth2SuccessHandler)
-                        .failureHandler(oAuth2FailureHandler)
-                )
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(org.springframework.security.config.Customizer.withDefaults()))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessHandler((req, res, auth) -> {
@@ -211,5 +204,20 @@ public class SecurityConfig {
                 );
 
         return http.build();
+    }
+
+    private static class CsrfCookieFilter extends OncePerRequestFilter {
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+                throws ServletException, IOException {
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            if (csrfToken == null) {
+                csrfToken = (CsrfToken) request.getAttribute("_csrf");
+            }
+            if (csrfToken != null) {
+                csrfToken.getToken();
+            }
+            filterChain.doFilter(request, response);
+        }
     }
 }

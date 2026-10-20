@@ -21,14 +21,22 @@ spring:
     open-in-view: false
   security:
     oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
+      resourceserver:
+        jwt:
+          issuer-uri: ${CLERK_ISSUER_URI:https://fond-teal-84.clerk.accounts.dev}
+          jwk-set-uri: ${CLERK_JWK_SET_URI:https://fond-teal-84.clerk.accounts.dev/.well-known/jwks.json}
+
+clerk:
+  secret-key: ${CLERK_SECRET_KEY:}
+  issuer: ${CLERK_ISSUER_URI:https://fond-teal-84.clerk.accounts.dev}
+
+openrouter:
+  api:
+    url: ${OPENROUTER_API_URL:https://openrouter.ai/api/v1/chat/completions}
+    key: ${OPENROUTER_API_KEY:}
+  model:
+    detection: ${OPENROUTER_DETECTION_MODEL:google/gemini-2.5-flash}
+    advisor: ${OPENROUTER_ADVISOR_MODEL:google/gemini-2.5-flash}
 
 mistral:
   api:
@@ -36,6 +44,7 @@ mistral:
     key: ${MISTRAL_API_KEY:}
   detection:
     model: ${MISTRAL_DETECTION_MODEL:mistral-large-latest}
+
 
 server:
   error:

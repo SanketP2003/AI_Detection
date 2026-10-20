@@ -26,8 +26,22 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<?> getUsers(
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String q) {
+        if (page == null && size == null && q == null) {
+            return ResponseEntity.ok(userService.getAllUsers());
+        }
+        int p = page != null ? Math.max(0, page) : 0;
+        int s = size != null ? Math.min(Math.max(1, size), 100) : 20;
+        return ResponseEntity.ok(userService.getUsersPaginated(p, s, q));
+    }
+
+    @PatchMapping("/users/{id}/lock")
+    public ResponseEntity<User> setUserLocked(@PathVariable Long id, @RequestParam boolean locked) {
+        User updated = userService.setUserLockedStatus(id, locked);
+        return ResponseEntity.ok(updated);
     }
 
     @GetMapping("/users/username/{username}")
@@ -80,4 +94,3 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("Detection history entry deleted successfully", null));
     }
 }
-
