@@ -4,7 +4,10 @@ import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App.tsx';
 import './index.css';
 
-const CLERK_PUBLISHABLE_KEY = (import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY as string | undefined;
+const CLERK_PUBLISHABLE_KEY =
+  ((import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY as string | undefined) ||
+  ((import.meta as any).env?.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY as string | undefined) ||
+  'pk_test_Zm9uZC10ZWFsLTg0LmNsZXJrLmFjY291bnRzLmRldiQ';
 
 const rootElement = document.getElementById('root')!;
 
